@@ -5,6 +5,7 @@ services:
       POSTGRES_DB: glowsync
       POSTGRES_USER: glowsync
       POSTGRES_PASSWORD: glowsync
+    ports: ["5432:5432"]          # para conectarte desde tu PC (python manage.py ...)
     volumes: [pgdata:/var/lib/postgresql/data]
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U glowsync"]
@@ -14,6 +15,7 @@ services:
   redis:
     image: redis:7
     command: ["redis-server", "--appendonly", "yes"]
+    ports: ["6379:6379"]
     volumes: [redisdata:/data]
 
   web:
@@ -22,8 +24,7 @@ services:
     environment: &entorno
       POSTGRES_HOST: db
       REDIS_URL: redis://redis:6379/0
-    # PASO 2: aquí se agregará "python manage.py migrate &&" antes de gunicorn
-    command: gunicorn config.wsgi:application --bind 0.0.0.0:8000 --workers 3
+    command: sh -c "python manage.py migrate && gunicorn config.wsgi:application --bind 0.0.0.0:8000 --workers 3"
     ports: ["8000:8000"]
     depends_on:
       db: {condition: service_healthy}
