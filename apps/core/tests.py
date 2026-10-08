@@ -1,5 +1,6 @@
 from datetime import timedelta
 
+from django.core.cache import cache
 from django.utils import timezone
 from rest_framework.test import APIClient, APITestCase
 from rest_framework_simplejwt.tokens import AccessToken
@@ -18,6 +19,7 @@ def crear_usuario(email, rol, centro=None):
 
 
 def cliente(usuario, **extra):
+    cache.clear()
     c = APIClient()
     r = c.post("/api/auth/login/", {"email": usuario.email, "password": CLAVE}, format="json")
     assert r.status_code == 200, r.content
@@ -73,15 +75,13 @@ class AuthYRolesTest(APITestCase):
 
     def test_el_usuario_creado_queda_en_el_centro_de_quien_lo_crea(self):
         c = cliente(self.recA)
-        r = c.post("/api/usuarios/", {"email": "nueva@x.co", "nombre": "Nueva", "rol": "ESTETICISTA",
-                                      "password": "Clave12345!", "centro": self.B.id}, format="json")
+        r = c.post("/api/usuarios/", {"email": "nueva@x.co", "nombre": "Nueva", "rol": "ESTETICISTA", "password": "Clave12345!", "centro": self.B.id}, format="json")
         self.assertEqual(r.status_code, 201, r.content)
         self.assertEqual(Usuario.objects.get(email="nueva@x.co").centro_id, self.A.id)  # ignora el 'centro' del body
 
     # ---------- roles ----------
     def test_no_se_puede_crear_un_admin_saas_por_la_api(self):
-        r = cliente(self.recA).post("/api/usuarios/", {"email": "x@x.co", "nombre": "X", "rol": "ADMIN_SAAS",
-                                                       "password": "Clave12345!"}, format="json")
+        r = cliente(self.recA).post("/api/usuarios/", {"email": "x@x.co", "nombre": "X", "rol": "ADMIN_SAAS", "password": "Clave12345!"}, format="json")
         self.assertEqual(r.status_code, 400)
 
     def test_esteticista_no_administra_usuarios(self):
