@@ -106,8 +106,7 @@ class AuthYRolesTest(APITestCase):
         self.assertEqual(cliente(self.admin).get("/api/usuarios/").status_code, 403)
 
     def test_clave_debil_es_rechazada(self):
-        r = cliente(self.recA).post("/api/usuarios/", {"email": "d@x.co", "nombre": "D", "rol": "ESTETICISTA",
-                                                       "password": "12345678"}, format="json")
+        r = cliente(self.recA).post("/api/usuarios/", {"email": "d@x.co", "nombre": "D", "rol": "ESTETICISTA","password": "12345678"}, format="json")
         self.assertEqual(r.status_code, 400)
         self.assertIn("password", r.data)
 
