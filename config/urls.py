@@ -5,6 +5,7 @@ from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 from rest_framework.routers import DefaultRouter
 from rest_framework_simplejwt.views import TokenRefreshView
 
+from apps.agenda.views import (BloqueoViewSet, CabinaViewSet, DisponibilidadViewSet, ProfesionalViewSet, ServicioViewSet)
 from apps.core.views import CentroViewSet, LoginView, MeView, UsuarioViewSet
 
 
@@ -16,6 +17,11 @@ def health(request):
 router = DefaultRouter()
 router.register("centros", CentroViewSet, basename="centro")
 router.register("usuarios", UsuarioViewSet, basename="usuario")
+router.register("cabinas", CabinaViewSet, basename="cabina")
+router.register("servicios", ServicioViewSet, basename="servicio")
+router.register("profesionales", ProfesionalViewSet, basename="profesional")
+router.register("disponibilidades", DisponibilidadViewSet, basename="disponibilidad")
+router.register("bloqueos", BloqueoViewSet, basename="bloqueo")
 
 urlpatterns = [
     path("admin/", admin.site.urls),
