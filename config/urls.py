@@ -6,6 +6,7 @@ from rest_framework.routers import DefaultRouter
 from rest_framework_simplejwt.views import TokenRefreshView
 
 from apps.agenda.views import (BloqueoViewSet, CabinaViewSet, DisponibilidadViewSet, ProfesionalViewSet, ServicioViewSet)
+from apps.clientas.views import (ClientaViewSet, FichaEsteticaViewSet)
 from apps.core.views import CentroViewSet, LoginView, MeView, UsuarioViewSet
 
 
@@ -22,6 +23,8 @@ router.register("servicios", ServicioViewSet, basename="servicio")
 router.register("profesionales", ProfesionalViewSet, basename="profesional")
 router.register("disponibilidades", DisponibilidadViewSet, basename="disponibilidad")
 router.register("bloqueos", BloqueoViewSet, basename="bloqueo")
+router.register("clientas", ClientaViewSet, basename="clienta")
+router.register("fichas-esteticas", FichaEsteticaViewSet, basename="ficha-estetica")
 
 urlpatterns = [
     path("admin/", admin.site.urls),
