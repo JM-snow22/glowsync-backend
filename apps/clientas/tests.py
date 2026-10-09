@@ -7,7 +7,6 @@ from .models import Clienta, FichaEstetica
 
 
 class ClientasFichaEsteticaTest(APITestCase):
-
     def setUp(self):
         self.A, self.B = (
             crear_centro("A"),
@@ -33,9 +32,7 @@ class ClientasFichaEsteticaTest(APITestCase):
         )
 
     def test_crear_clienta_asigna_el_centro_automaticamente(self):
-
         c = cliente(self.recA)
-
         r = c.post(
             "/api/clientas/",
             {
