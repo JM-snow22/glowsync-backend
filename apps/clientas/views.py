@@ -19,8 +19,6 @@ class ClientaViewSet(BorradoSeguroMixin, TenantMixin, viewsets.ModelViewSet):
 
 
 class FichaViewSet(TenantMixin, viewsets.ModelViewSet):
-    """Ficha estética. La esteticista puede editarla (es quien conoce a la clienta en cabina)."""
-
     queryset = FichaEstetica.objects.select_related("clienta").order_by("id")
     serializer_class = FichaEsteticaSerializer
     permission_classes = [CentroPermission]
