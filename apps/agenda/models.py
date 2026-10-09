@@ -1,9 +1,18 @@
+from django.contrib.postgres.constraints import ExclusionConstraint
+from django.contrib.postgres.fields import DateTimeRangeField, RangeBoundary, RangeOperators
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
-from django.db.models import Q
+from django.db.models import Func, Q
 from django.utils.translation import gettext_lazy as _
 
 from apps.core.models import TenantModel
+
+
+class TsTzRange(Func):
+    """Rango de tiempo (inicio, fin) para las restricciones anti-solapamiento de PostgreSQL."""
+
+    function = "TSTZRANGE"
+    output_field = DateTimeRangeField()
 
 
 class Cabina(TenantModel):
@@ -80,3 +89,77 @@ class BloqueoAgenda(TenantModel):
     class Meta:
         db_table = "bloqueo_agenda"
         constraints = [models.CheckConstraint(name="bloqueo_rango_valido", condition=Q(fin__gt=models.F("inicio")))]
+
+
+class Cita(TenantModel):
+    class Estado(models.TextChoices):
+        PENDIENTE = "PENDIENTE", _("Pendiente")
+        CONFIRMADA = "CONFIRMADA", _("Confirmada")
+        CANCELADA = "CANCELADA", _("Cancelada")
+        COMPLETADA = "COMPLETADA", _("Completada")
+        NO_ASISTIO = "NO_ASISTIO", _("No asistió")
+
+    class Origen(models.TextChoices):
+        NORMAL = "NORMAL", _("Normal")
+        REASIGNACION = "REASIGNACION", _("Reasignación exprés")
+
+    clienta = models.ForeignKey("clientas.Clienta", on_delete=models.PROTECT, related_name="citas")
+    servicio = models.ForeignKey(Servicio, on_delete=models.PROTECT, related_name="citas")
+    profesional = models.ForeignKey(Profesional, on_delete=models.PROTECT, related_name="citas")
+    cabina = models.ForeignKey(Cabina, on_delete=models.PROTECT, related_name="citas")
+    hora_inicio = models.DateTimeField()
+    hora_fin = models.DateTimeField()
+    estado = models.CharField(max_length=12, choices=Estado.choices, default=Estado.PENDIENTE)
+    origen = models.CharField(max_length=12, choices=Origen.choices, default=Origen.NORMAL)
+    creado_en = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = "cita"
+        ordering = ["hora_inicio"]
+        indexes = [
+            models.Index(fields=["centro", "hora_inicio"]),
+            models.Index(fields=["cabina", "hora_inicio"]),
+            models.Index(fields=["profesional", "hora_inicio"]),
+        ]
+        constraints = [
+            models.CheckConstraint(name="cita_rango_valido", condition=Q(hora_fin__gt=models.F("hora_inicio"))),
+            # Garantía a nivel de BD: una cabina o un profesional no pueden tener dos citas activas que se crucen.
+            ExclusionConstraint(
+                name="sin_cruce_cabina",
+                expressions=[
+                    (TsTzRange("hora_inicio", "hora_fin", RangeBoundary()), RangeOperators.OVERLAPS),
+                    ("cabina", RangeOperators.EQUAL),
+                ],
+                condition=Q(estado__in=["PENDIENTE", "CONFIRMADA"]),
+            ),
+            ExclusionConstraint(
+                name="sin_cruce_profesional",
+                expressions=[
+                    (TsTzRange("hora_inicio", "hora_fin", RangeBoundary()), RangeOperators.OVERLAPS),
+                    ("profesional", RangeOperators.EQUAL),
+                ],
+                condition=Q(estado__in=["PENDIENTE", "CONFIRMADA"]),
+            ),
+        ]
+
+
+class Recordatorio(models.Model):
+    class Tipo(models.TextChoices):
+        H48 = "H48", _("48 horas antes")
+        H24 = "H24", _("24 horas antes")
+
+    class Respuesta(models.TextChoices):
+        SIN_RESPUESTA = "SIN_RESPUESTA", _("Sin respuesta")
+        CONFIRMA = "CONFIRMA", _("Confirma")
+        CANCELA = "CANCELA", _("Cancela")
+
+    cita = models.ForeignKey(Cita, on_delete=models.CASCADE, related_name="recordatorios")
+    tipo = models.CharField(max_length=3, choices=Tipo.choices)
+    programado_para = models.DateTimeField()
+    enviado_en = models.DateTimeField(null=True, blank=True)
+    respuesta = models.CharField(max_length=14, choices=Respuesta.choices, default=Respuesta.SIN_RESPUESTA)
+    wa_message_id = models.CharField(max_length=120, blank=True)
+
+    class Meta:
+        db_table = "recordatorio"
+        constraints = [models.UniqueConstraint(fields=["cita", "tipo"], name="recordatorio_unico_por_tipo")]
