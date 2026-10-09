@@ -36,6 +36,10 @@ INSTALLED_APPS = [
     "apps.core",
     "apps.agenda",
     "apps.clientas",
+    "apps.reasignacion",
+    "apps.pagos",
+    "apps.whatsapp",
+    "apps.dashboard",
 ]
 
 MIDDLEWARE = [
@@ -153,3 +157,10 @@ if not DEBUG:
     CSRF_COOKIE_SECURE = True
     SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
     SECURE_HSTS_SECONDS = 31536000
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {"console": {"class": "logging.StreamHandler"}},
+    "root": {"handlers": ["console"], "level": "INFO"},
+}
