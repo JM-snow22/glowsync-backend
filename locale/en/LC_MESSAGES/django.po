@@ -1,0 +1,224 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-10-08 18:06-0500\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+msgid "Ese horario ya está ocupado (cabina o profesional)."
+msgstr "That time slot is already taken (room or professional)."
+
+#, python-format
+msgid "% del precio cobrado como seña"
+msgstr "% of the price charged as a deposit"
+
+msgid "Pendiente"
+msgstr "Pending"
+
+msgid "Confirmada"
+msgstr "Confirmed"
+
+msgid "Cancelada"
+msgstr "Cancelled"
+
+msgid "Completada"
+msgstr "Completed"
+
+msgid "No asistió"
+msgstr "No-show"
+
+msgid "Normal"
+msgstr "Normal"
+
+msgid "Reasignación exprés"
+msgstr "Express reassignment"
+
+msgid "48 horas antes"
+msgstr "48 hours before"
+
+msgid "24 horas antes"
+msgstr "24 hours before"
+
+msgid "Sin respuesta"
+msgstr "No response"
+
+msgid "Confirma"
+msgstr "Confirms"
+
+msgid "Cancela"
+msgstr "Cancels"
+
+msgid "Ya existe una cabina con ese nombre."
+msgstr "A room with that name already exists."
+
+msgid "hora_hasta debe ser mayor que hora_desde."
+msgstr "hora_hasta must be later than hora_desde."
+
+msgid "dia_semana debe estar entre 0 (lunes) y 6 (domingo)."
+msgstr "dia_semana must be between 0 (Monday) and 6 (Sunday)."
+
+msgid "fin debe ser posterior a inicio."
+msgstr "fin must be later than inicio."
+
+msgid "Para reprogramar, cancela la cita y crea una nueva."
+msgstr "To reschedule, cancel the appointment and create a new one."
+
+msgid "No pertenece a este centro."
+msgstr "It does not belong to this center."
+
+msgid "La cabina está inactiva."
+msgstr "The room is inactive."
+
+msgid "El profesional está inactivo."
+msgstr "The professional is inactive."
+
+msgid "El servicio está inactivo."
+msgstr "The service is inactive."
+
+msgid "La cita no puede cruzar de un día a otro."
+msgstr "An appointment cannot span two days."
+
+msgid "El profesional no atiende en ese día/horario."
+msgstr "The professional does not work on that day/time."
+
+msgid "Ese horario está bloqueado en la agenda."
+msgstr "That time is blocked in the schedule."
+
+msgid "La cita debe ser a futuro."
+msgstr "The appointment must be in the future."
+
+#, python-format
+msgid "No se puede pasar de %(origen)s a %(destino)s."
+msgstr "Cannot change from %(origen)s to %(destino)s."
+
+msgid "Teléfono inválido (incluye el indicativo)."
+msgstr "Invalid phone number (include the country code)."
+
+msgid "Ya existe una clienta con este teléfono."
+msgstr "A client with this phone number already exists."
+
+msgid "No se puede cambiar la clienta de una ficha."
+msgstr "A file cannot be moved to a different client."
+
+msgid "Esta clienta ya tiene una ficha."
+msgstr "This client already has a file."
+
+msgid ""
+"No se puede eliminar porque tiene registros asociados. Desactívalo en su "
+"lugar."
+msgstr ""
+
+msgid "Básico"
+msgstr "Basic"
+
+msgid "Pro"
+msgstr "Pro"
+
+msgid "Premium"
+msgstr "Premium"
+
+msgid "Activa"
+msgstr "Active"
+
+msgid "Vencida"
+msgstr "Expired"
+
+msgid "Suspendida"
+msgstr "Suspended"
+
+msgid "Administrador SaaS"
+msgstr "SaaS administrator"
+
+msgid "Recepcionista"
+msgstr "Receptionist"
+
+msgid "Esteticista"
+msgstr "Aesthetician"
+
+msgid "No tienes acceso a este recurso."
+msgstr "You do not have access to this resource."
+
+msgid "La suscripción del centro está vencida o suspendida."
+msgstr "The center's subscription is expired or suspended."
+
+msgid "Tu rol solo permite consultar."
+msgstr "Your role only allows viewing."
+
+msgid "Rol no permitido."
+msgstr "Role not allowed."
+
+msgid "Idioma no soportado."
+msgstr "Language not supported."
+
+msgid "Formato de fecha inválido (YYYY-MM-DD)."
+msgstr "Invalid date format (YYYY-MM-DD)."
+
+msgid "Seña"
+msgstr "Deposit"
+
+msgid "Saldo"
+msgstr "Balance"
+
+msgid "Reembolso"
+msgstr "Refund"
+
+msgid "Aprobado"
+msgstr "Approved"
+
+msgid "Fallido"
+msgstr "Failed"
+
+msgid "Reembolsado"
+msgstr "Refunded"
+
+msgid "ID de la transacción en la pasarela"
+msgstr "Transaction ID at the payment gateway"
+
+msgid "Los reembolsos los registra el sistema desde la pasarela."
+msgstr "Refunds are recorded by the system from the payment gateway."
+
+msgid "Esta cita ya tiene una seña pendiente o aprobada."
+msgstr "This appointment already has a pending or approved deposit."
+
+msgid "Atendida"
+msgstr "Served"
+
+msgid "Aceptada"
+msgstr "Accepted"
+
+msgid "Rechazada"
+msgstr "Rejected"
+
+msgid "¡Listo! Tu cita quedó confirmada ✅"
+msgstr "Done! Your appointment is confirmed ✅"
+
+msgid "Tu cita fue cancelada. ¡Esperamos verte pronto!"
+msgstr "Your appointment has been cancelled. We hope to see you soon!"
+
+msgid "¡Cupo asignado! Tu cita quedó confirmada ✅"
+msgstr "Slot assigned! Your appointment is confirmed ✅"
+
+msgid "Entendido, ofreceremos el cupo a otra persona."
+msgstr "Understood, we'll offer the slot to someone else."
+
+msgid "Lo sentimos, el cupo ya no está disponible."
+msgstr "Sorry, the slot is no longer available."
+
+msgid "Esta oferta ya expiró."
+msgstr "This offer has expired."
+
+msgid "Listo."
+msgstr "Done."
