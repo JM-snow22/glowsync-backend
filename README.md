@@ -37,14 +37,13 @@ API REST multitenant para centros de estética. Gestiona clientas, agenda, pagos
 - Git
 - Una base de datos PostgreSQL con la extensión `btree_gist` (recomendado: [Neon](https://neon.tech), plan gratuito)
 
-No se requiere Docker ni Redis para desarrollo.
 
 ## Instalación
 
 ### 1. Clonar el repositorio
 
 ```bash
-git clone <URL-DEL-REPOSITORIO>
+git clone https://github.com/JM-snow22/glowsync-backend.git
 cd glowsync_backend
 ```
 
