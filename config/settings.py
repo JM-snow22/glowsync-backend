@@ -82,6 +82,7 @@ DATABASES = {
         "PASSWORD": env("POSTGRES_PASSWORD", "glowsync"),
         "HOST": env("POSTGRES_HOST", "localhost"),
         "PORT": env("POSTGRES_PORT", "5432"),
+        "OPTIONS": {"sslmode": env("POSTGRES_SSLMODE", "prefer")},
     }
 }
 
