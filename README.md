@@ -250,10 +250,10 @@ docker compose exec web python manage.py seed_demo --n 100
 
 ## Pendientes para producción
 
-1. Pasarela de pago real (checkout con Wompi, ePayco o Bold) y liberación del cupo si no se paga la seña.
-2. Adelanto de turno cuando una clienta acepta una oferta.
-3. Cifrado de la ficha estética y auditoría de accesos (Ley 1581 de 2012).
-4. Endpoint de huecos libres para sugerir horarios.
-5. Cobro de la suscripción a los centros.
-6. `DEBUG=False`, HTTPS, copias de seguridad de PostgreSQL y monitoreo.
-7. Restringir a la esteticista a sus propias citas.
+1. Integrar una pasarela de pagos real (checkout con Wompi, ePayco o Bold) y liberar el cupo cuando la clienta no pague la seña a tiempo.
+2. Adelantar el turno de una clienta cuando acepta una oferta.
+3. Cifrar la ficha estética y registrar quién accede a ella, en cumplimiento de la Ley 1581 de 2012.
+4. Crear un endpoint que consulte los huecos libres de la agenda para sugerir horarios disponibles.
+5. Implementar el cobro de la suscripción a los centros.
+6. Preparar el despliegue en producción: `DEBUG=False`, HTTPS, copias de seguridad de PostgreSQL y monitoreo.
+7. Limitar el acceso de la esteticista para que solo vea y gestione sus propias citas.
