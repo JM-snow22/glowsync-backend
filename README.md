@@ -21,15 +21,15 @@ API REST multitenant para centros de estética. Gestiona clientas, agenda, pagos
 
 ## Características
 
-- Autenticación JWT con roles: `ADMIN_SAAS`, `RECEPCIONISTA` y `ESTETICISTA`.
-- Multitenant: cada centro accede únicamente a sus datos.
-- Agenda sin solapamientos, garantizada por restricciones de PostgreSQL (`409 Conflict`).
-- Reasignación exprés: al cancelar una cita, el cupo se ofrece por WhatsApp a la lista de espera.
-- Recordatorios automáticos 48 h y 24 h antes de cada cita.
-- Pagos con webhook idempotente.
-- Dashboard con inasistencia, ingresos y dinero recuperado.
-- Español e inglés.
-- Documentación interactiva con Swagger.
+- Inicio de sesión con JWT y tres roles de usuario: `ADMIN_SAAS`, `RECEPCIONISTA` y `ESTETICISTA`.
+- Arquitectura multitenant: cada centro solo puede ver y manejar su propia información.
+- Agenda sin cruces de horario, respaldada por restricciones de PostgreSQL que devuelven un `409 Conflict` cuando hay conflicto.
+- Reasignación exprés: cuando se cancela una cita, el cupo liberado se ofrece por WhatsApp a las clientas de la lista de espera.
+- Recordatorios enviados automáticamente 48 h y 24 h antes de cada cita.
+- Registro de pagos mediante un webhook idempotente, que evita duplicados.
+- Dashboard con indicadores de inasistencia, ingresos y dinero recuperado.
+- Disponible en español e inglés.
+- Documentación interactiva de la API con Swagger.
 
 ## Requisitos
 
