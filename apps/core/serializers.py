@@ -4,6 +4,7 @@ from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 from .models import Centro, Idioma, Usuario
+from .permissions import centro_actual
 
 
 class TenantPKField(serializers.PrimaryKeyRelatedField):
@@ -13,8 +14,8 @@ class TenantPKField(serializers.PrimaryKeyRelatedField):
     def get_queryset(self):
         qs = super().get_queryset()
         request = self.context.get("request")
-        if request and request.user.is_authenticated and request.user.centro_id:
-            return qs.filter(centro_id=request.user.centro_id)
+        if request and request.user.is_authenticated:
+            return qs.filter(centro_id=centro_actual(request).id)
         return qs.none()
 
 
@@ -55,6 +56,11 @@ class UsuarioSerializer(serializers.ModelSerializer):
     def validate_rol(self, value):
         if value == Usuario.Rol.ADMIN_SAAS:
             raise serializers.ValidationError(_("Rol no permitido."))
+        request = self.context.get("request")
+        if request and request.user.is_authenticated and request.user.rol != Usuario.Rol.ADMIN_SAAS and value == Usuario.Rol.ADMIN_NEGOCIO and request.user.rol != Usuario.Rol.ADMIN_NEGOCIO:
+            raise serializers.ValidationError(_("No puedes crear administradores."))
+        if request and request.user.is_authenticated and request.user.rol == Usuario.Rol.ADMIN_NEGOCIO and value == Usuario.Rol.ADMIN_NEGOCIO:
+            raise serializers.ValidationError(_("Solo el administrador SaaS puede crear administradores de negocio."))
         return value
 
     def validate_password(self, value):

@@ -2,6 +2,7 @@ from django.utils.translation import gettext as _
 from rest_framework import serializers
 
 from apps.core.serializers import TenantPKField
+from apps.core.permissions import centro_actual
 
 from .models import Clienta, FichaEstetica
 
@@ -25,7 +26,7 @@ class ClientaSerializer(serializers.ModelSerializer):
                 _("Teléfono inválido (incluye el indicativo).")
             )
         qs = Clienta.objects.filter(
-            centro=self.context["request"].user.centro,
+            centro=centro_actual(self.context["request"]),
             telefono_whatsapp=digits,
         )
         if self.instance:

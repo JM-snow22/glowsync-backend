@@ -79,6 +79,7 @@ class UsuarioManager(BaseUserManager):
 class Usuario(AbstractBaseUser, PermissionsMixin):
     class Rol(models.TextChoices):
         ADMIN_SAAS = "ADMIN_SAAS", _("Administrador SaaS")
+        ADMIN_NEGOCIO = "ADMIN_NEGOCIO", _("Administrador de negocio")
         RECEPCIONISTA = "RECEPCIONISTA", _("Recepcionista")
         ESTETICISTA = "ESTETICISTA", _("Esteticista")
 

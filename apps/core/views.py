@@ -10,7 +10,7 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.views import TokenObtainPairView
 
 from .models import Centro, Idioma, Usuario
-from .permissions import CentroPermission, IsAdminSaas, SoloRecepcionista
+from .permissions import CentroPermission, IsAdminSaas, SoloRecepcionista, centro_actual
 from .serializers import CentroSerializer, IdiomaSerializer, LoginSerializer, MeSerializer, UsuarioSerializer
 
 
@@ -51,7 +51,7 @@ class CentroViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=["post"], url_path="usuarios", serializer_class=UsuarioSerializer)
     def crear_usuario(self, request, pk=None):
-        """El admin del SaaS crea el primer usuario (recepcionista) de un centro."""
+        """El admin SaaS crea un administrador o integrante para un negocio."""
         centro = self.get_object()
         ser = UsuarioSerializer(data=request.data, context={"request": request})
         ser.is_valid(raise_exception=True)
@@ -60,7 +60,7 @@ class CentroViewSet(viewsets.ModelViewSet):
 
 
 class UsuarioViewSet(viewsets.ModelViewSet):
-    """La recepcionista administra el equipo de su propio centro."""
+    """La administración opera únicamente sobre usuarios del negocio seleccionado."""
 
     queryset = Usuario.objects.all().order_by("id")
     serializer_class = UsuarioSerializer
@@ -70,7 +70,19 @@ class UsuarioViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         if getattr(self, "swagger_fake_view", False):
             return Usuario.objects.none()
-        return super().get_queryset().filter(centro_id=self.request.user.centro_id)
+        return super().get_queryset().filter(centro_id=centro_actual(self.request).id)
 
     def perform_create(self, serializer):
-        serializer.save(centro=self.request.user.centro)
+        serializer.save(centro=centro_actual(self.request))
+
+    def perform_update(self, serializer):
+        if serializer.instance.rol == Usuario.Rol.ADMIN_NEGOCIO and self.request.user.rol != Usuario.Rol.ADMIN_SAAS:
+            from rest_framework.exceptions import PermissionDenied
+            raise PermissionDenied("Solo el administrador SaaS puede modificar administradores.")
+        serializer.save()
+
+    def perform_destroy(self, instance):
+        if instance.rol == Usuario.Rol.ADMIN_NEGOCIO and self.request.user.rol != Usuario.Rol.ADMIN_SAAS:
+            from rest_framework.exceptions import PermissionDenied
+            raise PermissionDenied("Solo el administrador SaaS puede eliminar administradores.")
+        instance.delete()

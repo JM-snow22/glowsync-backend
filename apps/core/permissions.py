@@ -1,7 +1,29 @@
 from django.utils.translation import gettext_lazy as _
 from rest_framework.permissions import SAFE_METHODS, BasePermission
 
-from .models import Usuario
+from .models import Centro, Usuario
+from rest_framework.exceptions import PermissionDenied, ValidationError
+
+
+def centro_actual(request):
+    """SaaS elige una sede explícita; los demás usuarios solo acceden a la suya."""
+    u = request.user
+    if u.rol != Usuario.Rol.ADMIN_SAAS:
+        if not u.centro_id:
+            raise PermissionDenied("No tienes un negocio asignado.")
+        return u.centro
+    raw = request.headers.get("X-Centro-ID")
+    if not raw:
+        raise ValidationError({"centro": "Selecciona un negocio para consultar sus datos."})
+    try:
+        pk = int(raw)
+    except (ValueError, TypeError):
+        raise ValidationError({"centro": "Identificador inválido."})
+    try:
+        return Centro.objects.get(pk=pk)
+    except Centro.DoesNotExist:
+        raise PermissionDenied("El negocio seleccionado no existe.")
+
 
 
 class IsAdminSaas(BasePermission):
@@ -20,7 +42,12 @@ class CentroPermission(BasePermission):
 
     def has_permission(self, request, view):
         u = request.user
-        if not (u.is_authenticated and u.centro_id):
+        if not u.is_authenticated:
+            return False
+        if u.rol == Usuario.Rol.ADMIN_SAAS:
+            centro_actual(request)
+            return True
+        if not u.centro_id:
             return False
         if not u.centro.suscripcion_activa:
             self.message = _("La suscripción del centro está vencida o suspendida.")
@@ -37,4 +64,4 @@ class CentroPermission(BasePermission):
 
 class SoloRecepcionista(BasePermission):
     def has_permission(self, request, view):
-        return request.user.is_authenticated and request.user.rol == Usuario.Rol.RECEPCIONISTA
+        return request.user.is_authenticated and request.user.rol in (Usuario.Rol.RECEPCIONISTA, Usuario.Rol.ADMIN_NEGOCIO, Usuario.Rol.ADMIN_SAAS)

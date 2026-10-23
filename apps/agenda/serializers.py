@@ -3,6 +3,7 @@ from rest_framework import serializers
 
 from apps.clientas.models import Clienta
 from apps.core.serializers import TenantPKField
+from apps.core.permissions import centro_actual
 
 from . import services
 from .models import (BloqueoAgenda, Cabina, Cita, DisponibilidadProfesional, Profesional, Recordatorio,
@@ -16,7 +17,7 @@ class CabinaSerializer(serializers.ModelSerializer):
 
     def validate_nombre(self, value):
         """Dos cabinas del mismo centro no pueden llamarse igual (se valida aquí para dar un 400 claro)."""
-        qs = Cabina.objects.filter(centro=self.context["request"].user.centro, nombre__iexact=value)
+        qs = Cabina.objects.filter(centro=centro_actual(self.context["request"]), nombre__iexact=value)
         if self.instance:
             qs = qs.exclude(pk=self.instance.pk)
         if qs.exists():
@@ -96,7 +97,7 @@ class CitaSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         validated_data.pop("centro", None)  # lo inyecta TenantMixin; el servicio usa el del usuario
-        return services.crear_cita(centro=self.context["request"].user.centro, **validated_data)
+        return services.crear_cita(centro=centro_actual(self.context["request"]), **validated_data)
 
     def update(self, instance, validated_data):
         raise serializers.ValidationError(_("Para reprogramar, cancela la cita y crea una nueva."))

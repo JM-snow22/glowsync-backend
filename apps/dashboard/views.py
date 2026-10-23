@@ -8,7 +8,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from apps.agenda.models import Cita
-from apps.core.permissions import CentroPermission
+from apps.core.permissions import CentroPermission, centro_actual
 from apps.pagos.models import Pago
 from apps.reasignacion.models import OfertaReasignacion
 
@@ -26,7 +26,7 @@ class ResumenView(APIView):
         except ValueError:
             return Response({"detail": _("Formato de fecha inválido (YYYY-MM-DD).")}, status=400)
 
-        centro = request.user.centro_id
+        centro = centro_actual(request).id
         citas = Cita.objects.filter(centro_id=centro, hora_inicio__date__gte=desde, hora_inicio__date__lte=hasta)
         por_estado = dict(citas.values_list("estado").annotate(n=Count("id")))
         E = Cita.Estado

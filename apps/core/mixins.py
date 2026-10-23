@@ -1,4 +1,5 @@
 from django.db.models import ProtectedError
+from .permissions import centro_actual
 from django.utils.translation import gettext as _
 from rest_framework.exceptions import APIException
 
@@ -13,11 +14,11 @@ class TenantMixin:
         qs = super().get_queryset()
         if getattr(self, "swagger_fake_view", False):  # para la documentación automática
             return qs.none()
-        return qs.filter(**{self.tenant_lookup: self.request.user.centro_id})
+        return qs.filter(**{self.tenant_lookup: centro_actual(self.request).id})
 
     def perform_create(self, serializer):
         if self.tenant_lookup == "centro":
-            serializer.save(centro=self.request.user.centro)
+            serializer.save(centro=centro_actual(self.request))
         else:
             serializer.save()
 
