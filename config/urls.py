@@ -4,6 +4,7 @@ from django.urls import include, path
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 from rest_framework.routers import DefaultRouter
 from rest_framework_simplejwt.views import TokenRefreshView
+from django.views.generic import TemplateView
 
 from apps.agenda.views import (BloqueoViewSet, CabinaViewSet, CitaViewSet, DisponibilidadViewSet,ProfesionalViewSet, ServicioViewSet)
 from apps.clientas.views import ClientaViewSet, FichaViewSet
@@ -35,6 +36,7 @@ router.register("ofertas", OfertaViewSet, basename="oferta")
 router.register("pagos", PagoViewSet, basename="pago")
 
 urlpatterns = [
+    path("", TemplateView.as_view(template_name="frontend/index.html"), name="app"),
     path("admin/", admin.site.urls),
     path("api/health/", health, name="health"),
     path("api/auth/login/", LoginView.as_view(), name="login"),

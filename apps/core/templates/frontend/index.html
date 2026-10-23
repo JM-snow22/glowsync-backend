@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>GlowSync</title><meta name="theme-color" content="#b9708f">
+<style>
+:root{--v:#b9708f;--r:#d9889b;--g:#d4a373;--ink:#3a2a31;--mut:#8b7780;--bg:#fbf6f3;--line:#f0e4de;--grad:linear-gradient(135deg,#d9889b,#b9708f 55%,#9b5a8c);--sh:0 10px 30px #b9708f1f;--serif:"Playfair Display",Georgia,"Times New Roman",serif}
+*{box-sizing:border-box}body{margin:0;font-family:Inter,"Segoe UI",system-ui,-apple-system,Arial,sans-serif;background:radial-gradient(circle at 100% 0,#f9e1e0 0,transparent 35%),radial-gradient(circle at 0 100%,#f3e6ef 0,transparent 30%),var(--bg);background-attachment:fixed;color:var(--ink);-webkit-font-smoothing:antialiased}
+button{font-family:inherit;cursor:pointer}h1,h2,h3,p{margin:0}h1,h2,.logo,.hi b,.kpi b{font-family:var(--serif)}.mut{color:var(--mut)}.gt{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+.logo{font-weight:700;font-size:24px;letter-spacing:-.3px}.logo i{font-style:normal;color:var(--g)}
+.auth{min-height:100vh;display:grid;grid-template-columns:1.15fr 1fr}
+.hero{color:#fff;padding:52px 60px;display:flex;flex-direction:column;justify-content:space-between;position:relative;overflow:hidden;background:radial-gradient(circle at 18% 12%,#f2b9c0 0,transparent 42%),radial-gradient(circle at 88% 85%,#c58bc0 0,transparent 48%),linear-gradient(135deg,#b5617f,#7a3d6c)}
+.hero:before{content:"✿";position:absolute;right:-30px;top:-60px;font-size:380px;color:#ffffff14;line-height:1}.hero:after{content:"";position:absolute;left:-90px;bottom:-90px;width:320px;height:320px;border-radius:50%;background:#ffffff14}
+.hero>*{position:relative;z-index:1}.hero .logo{color:#fff;font-size:28px}.eyebrow{letter-spacing:3px;font-size:12px;text-transform:uppercase;opacity:.85;margin-bottom:14px}
+.hero h2{font-size:50px;line-height:1.05;letter-spacing:-1px;margin-bottom:18px;font-weight:600}.hero p{font-size:17px;opacity:.93;max-width:490px;line-height:1.65}
+.hero ul{list-style:none;padding:0;margin:28px 0 0;display:grid;gap:12px}.hero li{background:#ffffff1f;border:1px solid #ffffff2e;backdrop-filter:blur(8px);padding:13px 18px;border-radius:999px;font-size:15px;max-width:480px}.hero small{opacity:.85;letter-spacing:1px}
+.fside{display:flex;flex-direction:column;padding:22px 44px;background:#fffdfb}.lgbox{align-self:flex-end}.fc{margin:auto;width:100%;max-width:390px}.fc h2{font-size:34px;margin-bottom:6px;font-weight:600}.fc p{margin-bottom:24px}
+label{display:block;font-size:12px;font-weight:600;letter-spacing:.4px;color:var(--mut);margin:15px 0 6px;text-transform:uppercase}
+input,select,textarea{width:100%;padding:13px 16px;border:1.5px solid var(--line);border-radius:14px;font:inherit;font-size:14.5px;background:#fff;color:var(--ink);outline:0;transition:.2s}
+input:focus,select:focus,textarea:focus{border-color:var(--r);box-shadow:0 0 0 4px #d9889b2b}
+.pri{background:var(--grad);color:#fff;border:0;border-radius:999px;padding:13px 24px;font-weight:700;font-size:14.5px;box-shadow:0 10px 22px #b9708f40;transition:.2s}.pri:hover{transform:translateY(-2px);box-shadow:0 14px 26px #b9708f50}
+.wide{width:100%;margin-top:22px;padding:15px}.ghost{background:#fff;color:var(--ink);border:1.5px solid var(--line);border-radius:999px;padding:13px 22px;font-weight:600}
+.sm{background:#f8e9ee;color:#a9456c;border:0;border-radius:999px;padding:8px 14px;font-size:12.5px;font-weight:700;transition:.15s}.sm.d{background:#fff0ee;color:#c2503f}.sm:hover{transform:translateY(-1px);filter:brightness(.97)}
+.err{background:#fdeaee;color:#b83a5a;padding:12px 16px;border-radius:14px;margin:0 0 6px;font-size:14px}
+.app{display:grid;grid-template-columns:268px 1fr;min-height:100vh}
+.side{background:linear-gradient(180deg,#43233a,#2a1524);color:#ecd9e1;padding:24px 16px;display:flex;flex-direction:column;gap:18px;position:sticky;top:0;height:100vh}
+.side .logo{color:#fff;padding:4px 12px 12px}.side nav{display:flex;flex-direction:column;gap:5px;flex:1}
+.side nav a{display:flex;gap:12px;align-items:center;padding:12px 15px;border-radius:999px;color:#ecd9e1;text-decoration:none;font-size:14.5px;font-weight:500;transition:.15s}
+.side nav a:hover{background:#ffffff14}.side nav a.on{background:var(--grad);color:#fff;font-weight:700;box-shadow:0 8px 20px #d9889b44}
+.me{display:flex;gap:12px;align-items:center;background:#ffffff12;border:1px solid #ffffff14;border-radius:20px;padding:12px}.me b{display:block;color:#fff;font-size:14px}.me small{color:#d9bccb}
+.av{width:42px;height:42px;border-radius:50%;background:var(--grad);color:#fff;display:grid;place-items:center;font-weight:700;font-size:14px;flex:none;font-family:var(--serif);box-shadow:0 4px 10px #b9708f44}
+.ctl{display:flex;gap:8px}.ctl select{background:#ffffff14;color:#fff;border-color:#ffffff22;padding:10px;font-size:13px;border-radius:999px}.ctl option{color:#000}.ctl .sm{background:#ffffff1a;color:#fff;white-space:nowrap}
+.body{padding:32px 40px;min-width:0}.top{display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:8px;margin-bottom:24px}.top h1{font-size:36px;letter-spacing:-.8px;font-weight:600}.top span{color:var(--mut);font-size:14px;text-transform:capitalize}
+.card{background:#fffffff2;border:1px solid var(--line);border-radius:24px;padding:24px;margin-bottom:20px;box-shadow:var(--sh)}.card h2{font-size:21px;margin-bottom:16px;font-weight:600}
+.hi{background:linear-gradient(135deg,#e29aa6,#b9708f 60%,#8d5088);color:#fff;border:0;display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap;position:relative;overflow:hidden}
+.hi:after{content:"✿";position:absolute;right:20px;top:-40px;font-size:230px;color:#ffffff1c;line-height:1}.hi>*{position:relative;z-index:1}
+.hi small{opacity:.92;font-size:13px;letter-spacing:1.5px;text-transform:uppercase}.hi b{display:block;font-size:54px;letter-spacing:-1.5px;margin:6px 0;font-weight:600}.hi p{opacity:.94;font-size:14.5px;max-width:440px;line-height:1.55}
+.kpi{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:18px;margin-bottom:20px}.kpi .card{margin:0;display:flex;gap:15px;align-items:center;transition:.2s}.kpi .card:hover{transform:translateY(-3px)}
+.ic{width:50px;height:50px;border-radius:50%;background:linear-gradient(135deg,#fbe4e4,#f6e3ef);display:grid;place-items:center;font-size:22px;flex:none}.kpi small{color:var(--mut);font-size:13px}.kpi b{display:block;font-size:28px;letter-spacing:-.6px;font-weight:600}
+.ring{width:64px;height:64px;border-radius:50%;background:conic-gradient(var(--r) calc(var(--p)*1%),#f3e7e5 0);display:grid;place-items:center;flex:none}.ring span{width:48px;height:48px;border-radius:50%;background:#fff;display:grid;place-items:center;font-weight:800;font-size:13px}
+.day{font-size:13px;text-transform:uppercase;letter-spacing:1.5px;color:var(--mut);margin:22px 0 10px;font-family:var(--serif);font-style:italic}.day:first-child{margin-top:0}
+.row{display:flex;gap:14px;align-items:center;padding:14px 6px;border-bottom:1px dashed var(--line)}.row:last-child{border:0}
+.hr{font-weight:700;color:var(--v);min-width:62px;font-size:15px;font-family:var(--serif)}.row .grow{flex:1;min-width:0}.row b{display:block}.row small{color:var(--mut)}.acts{display:flex;gap:6px;flex-wrap:wrap}
+.pill{display:inline-block;padding:5px 12px;border-radius:99px;font-size:12px;font-weight:700;background:#f3eceb;color:#7a6a70}.pill.ok{background:#e4f2e8;color:#2f7a55}.pill.no{background:#fdeaee;color:#b83a5a}.pill.w{background:#fbf0dc;color:#9a6a1c}.pill.v{background:#f6e8f1;color:#a9648f}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:16px}.tile{border:1px solid var(--line);border-radius:22px;padding:18px;display:flex;flex-direction:column;gap:12px;background:linear-gradient(180deg,#fff,#fff8f6);transition:.2s}.tile:hover{transform:translateY(-3px);box-shadow:var(--sh)}
+.tile .h{display:flex;gap:12px;align-items:center}.tile b{display:block}.tile small{color:var(--mut)}.tags{display:flex;gap:6px;flex-wrap:wrap}
+.search{max-width:360px;margin-bottom:18px;border-radius:999px}.fg{display:grid;grid-template-columns:repeat(auto-fit,minmax(185px,1fr));gap:12px;align-items:end}.fg label{margin-top:0}
+table{width:100%;border-collapse:collapse;font-size:14px}th,td{text-align:left;padding:13px 10px;border-bottom:1px solid var(--line)}th{color:var(--mut);font-size:12px;text-transform:uppercase;letter-spacing:.8px}.tw{overflow-x:auto}
+.empty{text-align:center;padding:40px;color:var(--mut)}.empty b{display:block;font-size:40px;margin-bottom:8px}.cnt{color:var(--mut);font-size:13px;margin-bottom:12px}
+.ov{position:fixed;inset:0;background:#2a152499;backdrop-filter:blur(4px);display:grid;place-items:center;padding:16px;z-index:50}.mod{background:#fffdfb;border-radius:26px;padding:28px;width:100%;max-width:470px;animation:up .25s ease}.mod h2{margin-bottom:6px}.act{display:flex;gap:10px;justify-content:flex-end;margin-top:22px}
+.toast{position:fixed;right:22px;bottom:22px;background:#2a1524;color:#fff;padding:14px 20px;border-radius:999px;font-size:14px;z-index:60;box-shadow:0 12px 30px #0004;max-width:340px}.toast.bad{background:#b83a5a}
+.sk{height:72px;border-radius:20px;background:linear-gradient(90deg,#f6eceb,#fff8f6,#f6eceb);background-size:200% 100%;animation:sh 1.2s infinite;margin-bottom:12px}@keyframes sh{to{background-position:-200% 0}}
+@keyframes up{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}main>*{animation:up .4s ease both}
+@media(max-width:900px){.auth{grid-template-columns:1fr}.hero{display:none}.app{grid-template-columns:1fr}.side{position:static;height:auto;flex-direction:row;flex-wrap:wrap;align-items:center;padding:12px}.side nav{flex-direction:row;overflow-x:auto;flex:1 1 100%;order:3}.side nav a{white-space:nowrap}.me{display:none}.body{padding:18px}.hi b{font-size:38px}.top h1{font-size:28px}}
+</style></head>
+<body><div id="app"></div>
+<script>
+const T={es:{login:"Iniciar sesión",logout:"Salir",email:"Correo electrónico",pass:"Contraseña",bad:"Credenciales inválidas o suscripción del centro vencida",expired:"Tu sesión expiró",
+welcome:"Bienvenida de nuevo",signin:"Ingresa a tu panel de GlowSync",h1:"Cada cancelación, una cita recuperada.",h2:"GlowSync llena tu agenda: ofrece al instante los cupos libres a tu lista de espera por WhatsApp, evita cruces y recuerda a tus clientas.",
+b1:"⚡ Reasignación exprés por WhatsApp",b2:"🗓️ Agenda sin cruces entre cabinas y profesionales",b3:"🔔 Recordatorios 48 h y 24 h antes",b4:"🌎 Interfaz y mensajes en español e inglés",foot:"Hecho para centros de estética",
+dashboard:"Resumen",citas:"Citas",clientas:"Clientas",usuarios:"Equipo",fichas:"Fichas",centros:"Centros",rbac:"Permisos",denied:"Acceso denegado: tu rol no puede ver esta sección.",
+rol:"Rol",centro:"Centro",name:"Nombre",phone:"Teléfono",state:"Estado",plan:"Plan",expires:"Vence",active:"Activo",city:"Ciudad",
+create:"Crear",saved:"Guardado",confirm:"Confirmar",cancel:"Cancelar",edit:"Editar",save:"Guardar",search:"Buscar por nombre o teléfono…",showing:"Mostrando",of:"de",
+recovered:"Dinero recuperado",recNote:"Ingresos de citas que antes estaban canceladas y se reasignaron desde la lista de espera.",k1:"Citas del periodo",k2:"Inasistencia",k4:"Ingresos aprobados",k5:"Ofertas aceptadas",
+newUser:"Nuevo integrante del equipo",newCentro:"Nuevo centro",centroUser:"Crear usuario para un centro",obs:"Observaciones",skin:"Tipo de cutis",allergy:"Alergias",
+matrix:"Qué puede hacer cada rol",view:"Solo ver",full:"Ver y modificar",none:"Sin acceso",noAl:"Sin alergias registradas",
+eC:"No hay citas próximas",eCl:"No se encontraron clientas",eF:"Aún no hay fichas",eU:"Sin integrantes",askCancel:"¿Cancelar esta cita? Se ofrecerá el cupo a la lista de espera.",
+ADMIN_SAAS:"Admin SaaS",RECEPCIONISTA:"Recepcionista",ESTETICISTA:"Esteticista",note:"La interfaz oculta lo que no corresponde, pero quien decide es el servidor (JWT + permisos por rol)."},
+en:{login:"Sign in",logout:"Sign out",email:"Email",pass:"Password",bad:"Invalid credentials or the center's subscription has expired",expired:"Your session expired",
+welcome:"Welcome back",signin:"Sign in to your GlowSync dashboard",h1:"Every cancellation, a recovered appointment.",h2:"GlowSync fills your calendar: free slots are instantly offered to your waiting list via WhatsApp, with no double bookings and automatic client reminders.",
+b1:"⚡ Express reassignment via WhatsApp",b2:"🗓️ Conflict-free scheduling for rooms and staff",b3:"🔔 Reminders 48 h and 24 h before",b4:"🌎 Interface and messages in English and Spanish",foot:"Built for aesthetic centers",
+dashboard:"Summary",citas:"Appointments",clientas:"Clients",usuarios:"Team",fichas:"Files",centros:"Centers",rbac:"Permissions",denied:"Access denied: your role cannot view this section.",
+rol:"Role",centro:"Center",name:"Name",phone:"Phone",state:"Status",plan:"Plan",expires:"Expires",active:"Active",city:"City",
+create:"Create",saved:"Saved",confirm:"Confirm",cancel:"Cancel",edit:"Edit",save:"Save",search:"Search by name or phone…",showing:"Showing",of:"of",
+recovered:"Recovered revenue",recNote:"Income from appointments that were cancelled and then reassigned from the waiting list.",k1:"Appointments in period",k2:"No-show rate",k4:"Approved income",k5:"Accepted offers",
+newUser:"New team member",newCentro:"New center",centroUser:"Create user for a center",obs:"Notes",skin:"Skin type",allergy:"Allergies",
+matrix:"What each role can do",view:"View only",full:"View and edit",none:"No access",noAl:"No allergies on file",
+eC:"No upcoming appointments",eCl:"No clients found",eF:"No files yet",eU:"No team members",askCancel:"Cancel this appointment? The slot will be offered to the waiting list.",
+ADMIN_SAAS:"SaaS admin",RECEPCIONISTA:"Receptionist",ESTETICISTA:"Aesthetician",note:"The UI hides what does not apply, but the server decides (JWT + role permissions)."}};
+// ---- RBAC: secciones visibles por rol y dónde puede escribir ----
+const MENU={ADMIN_SAAS:["centros","rbac"],RECEPCIONISTA:["dashboard","citas","clientas","fichas","usuarios","rbac"],ESTETICISTA:["citas","clientas","fichas","rbac"]};
+const WRITE={centros:["ADMIN_SAAS"],usuarios:["RECEPCIONISTA"],citas:["RECEPCIONISTA"],clientas:["RECEPCIONISTA"],fichas:["RECEPCIONISTA","ESTETICISTA"],dashboard:[]};
+const ICON={dashboard:"✨",citas:"📅",clientas:"💆‍♀️",fichas:"🧴",usuarios:"🤍",centros:"🌿",rbac:"🔐"};
+const TAGC={CONFIRMADA:"ok",COMPLETADA:"ok",ACTIVA:"ok",CANCELADA:"no",NO_ASISTIO:"no",PENDIENTE:"w"};
+let lang=localStorage.getItem("lang")||"es",S=JSON.parse(sessionStorage.getItem("gs")||"null");
+const t=k=>(T[lang][k]||k),$=s=>document.querySelector(s),loc=()=>lang==="es"?"es-CO":"en-US";
+const esc=v=>String(v==null?"":v).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const can=v=>(WRITE[v]||[]).includes(S.me.rol),save=()=>sessionStorage.setItem("gs",JSON.stringify(S));
+const ini=n=>String(n||"?").split(/\s+/).slice(0,2).map(x=>x[0]).join("").toUpperCase(),money=n=>"$"+Number(n||0).toLocaleString(loc());
+const pill=(s,l)=>`<span class="pill ${TAGC[s]||"v"}">${esc(l||s)}</span>`;
+const empty=(i,m)=>`<div class="empty"><b>${i}</b>${m}</div>`,cnt=d=>`<p class="cnt">${t("showing")} ${d.results.length} ${t("of")} ${d.count}</p>`;
+function toast(m,ok=1){const e=document.createElement("div");e.className="toast"+(ok?"":" bad");e.textContent=m;document.body.appendChild(e);setTimeout(()=>e.remove(),3200)}
+function msg(d){if(!d)return"";if(d.detail)return d.detail;return Object.entries(d).map(([k,v])=>k+": "+[].concat(v).join(" ")).join(" · ")}
+async function refresh(){try{const r=await fetch("/api/auth/refresh/",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({refresh:S.refresh})});if(!r.ok)return false;S.access=(await r.json()).access;save();return true}catch(e){return false}}
+async function api(path,o={},retry=true){
+  const h={"Content-Type":"application/json","Accept-Language":lang};if(S&&S.access)h.Authorization="Bearer "+S.access;
+  const r=await fetch(path,{method:o.method||"GET",headers:h,body:o.body?JSON.stringify(o.body):undefined});
+  if(r.status===401&&retry&&S&&S.refresh){if(await refresh())return api(path,o,false);logout(t("expired"));throw new Error(t("expired"))}
+  const d=await r.json().catch(()=>null);if(!r.ok)throw new Error(msg(d)||r.status);return d}
+function logout(m){S=null;sessionStorage.removeItem("gs");location.hash="";draw(m)}
+const langSel=()=>`<select id="lg" aria-label="Language"><option value="es"${lang==="es"?" selected":""}>Español</option><option value="en"${lang==="en"?" selected":""}>English</option></select>`;
+async function setLang(v){lang=v;localStorage.setItem("lang",v);document.documentElement.lang=v;if(S){try{await api("/api/auth/me/",{method:"PATCH",body:{idioma:v}})}catch(e){}S.me.idioma=v;save()}draw()}
+function draw(m){
+  if(!S){$("#app").innerHTML=`<div class="auth"><section class="hero"><div class="logo"><i>✦</i> GlowSync</div><div><div class="eyebrow">${lang==="es"?"Spa · Estética · Bienestar":"Spa · Aesthetics · Wellness"}</div><h2>${t("h1")}</h2><p>${t("h2")}</p><ul>${[1,2,3,4].map(i=>`<li>${t("b"+i)}</li>`).join("")}</ul></div><small>${t("foot")}</small></section>
+  <section class="fside"><div class="lgbox">${langSel()}</div><form id="f" class="fc"><div class="logo gt" style="margin-bottom:22px">✦ GlowSync</div><h2>${t("welcome")}</h2><p class="mut">${t("signin")}</p>${m?`<div class="err">${esc(m)}</div>`:""}
+  <label>${t("email")}</label><input id="e" type="email" required autofocus autocomplete="username"><label>${t("pass")}</label><input id="p" type="password" required autocomplete="current-password"><button class="pri wide">${t("login")}</button></form></section></div>`;
+    $("#lg").onchange=e=>setLang(e.target.value);
+    $("#f").onsubmit=async ev=>{ev.preventDefault();try{const d=await api("/api/auth/login/",{method:"POST",body:{email:$("#e").value,password:$("#p").value}});
+      S={access:d.access,refresh:d.refresh,me:d.usuario};lang=S.me.idioma||lang;localStorage.setItem("lang",lang);save();draw();go()}catch(e){draw(t("bad"))}};return}
+  const me=S.me;
+  $("#app").innerHTML=`<div class="app"><aside class="side"><div class="logo"><i>✦</i> GlowSync</div><nav>${MENU[me.rol].map(v=>`<a href="#/${v}"><span>${ICON[v]}</span>${t(v)}</a>`).join("")}</nav>
+  <div class="me"><div class="av">${esc(ini(me.nombre))}</div><div><b>${esc(me.nombre)}</b><small>${t(me.rol)}</small></div></div><div class="ctl">${langSel()}<button class="sm" id="out">${t("logout")}</button></div></aside>
+  <section class="body"><div class="top"><h1 id="ttl"></h1><span>${new Date().toLocaleDateString(loc(),{weekday:"long",day:"numeric",month:"long"})}</span></div><main id="m"></main></section></div>`;
+  $("#lg").onchange=e=>setLang(e.target.value);$("#out").onclick=()=>logout();go()}
+async function go(){
+  if(!S)return;const v=(location.hash||"").slice(2)||MENU[S.me.rol][0],m=$("#m");if(!m)return draw();
+  document.querySelectorAll("nav a").forEach(a=>a.classList.toggle("on",a.getAttribute("href")==="#/"+v));$("#ttl").textContent=t(v)||"";
+  if(!MENU[S.me.rol].includes(v)){m.innerHTML=`<div class="card"><div class="err">${t("denied")}</div></div>`;return}
+  m.innerHTML='<div class="sk"></div><div class="sk"></div>';
+  try{m.innerHTML=await VIEWS[v]()}catch(e){m.innerHTML=`<div class="card"><div class="err">${esc(e.message)}</div></div>`}bind()}
+window.onhashchange=go;
+const VIEWS={
+ async dashboard(){const d=await api("/api/dashboard/resumen/"),pct=Math.round(d.tasa_inasistencia*1000)/10;
+  return `<div class="card hi"><div><small>${t("recovered")}</small><b>${money(d.dinero_recuperado)}</b><p>${t("recNote")}</p></div><div style="font-size:64px">🌸</div></div>
+  <div class="kpi"><div class="card"><div class="ic">🗓️</div><div><small>${t("k1")}</small><b>${d.citas_total}</b></div></div>
+  <div class="card"><div class="ring" style="--p:${pct}"><span>${pct.toFixed(1)}%</span></div><div><small>${t("k2")}</small></div></div>
+  <div class="card"><div class="ic">💰</div><div><small>${t("k4")}</small><b>${money(d.ingresos_aprobados)}</b></div></div>
+  <div class="card"><div class="ic">⚡</div><div><small>${t("k5")}</small><b>${d.ofertas_aceptadas}</b></div></div></div>`},
+ async citas(){const d=await api("/api/citas/?ordering=hora_inicio&hora_inicio__gte="+encodeURIComponent(new Date().toISOString()));
+  if(!d.results.length)return `<div class="card">${empty("🗓️",t("eC"))}</div>`;
+  const g={};d.results.forEach(c=>{const k=new Date(c.hora_inicio).toLocaleDateString(loc(),{weekday:"long",day:"numeric",month:"long"});(g[k]=g[k]||[]).push(c)});
+  return `<div class="card">${cnt(d)}${Object.entries(g).map(([k,l])=>`<h3 class="day">${esc(k)}</h3>${l.map(c=>`<div class="row"><div class="hr">${new Date(c.hora_inicio).toLocaleTimeString(loc(),{hour:"2-digit",minute:"2-digit"})}</div>
+   <div class="av">${esc(ini(c.clienta_nombre))}</div><div class="grow"><b>${esc(c.clienta_nombre)}</b><small>${esc(c.servicio_nombre)}</small></div>${pill(c.estado)}
+   ${can("citas")&&["PENDIENTE","CONFIRMADA"].includes(c.estado)?`<div class="acts">${c.estado==="PENDIENTE"?`<button class="sm" data-a="${c.id}:confirmar">${t("confirm")}</button>`:""}<button class="sm d" data-a="${c.id}:cancelar">${t("cancel")}</button></div>`:""}</div>`).join("")}`).join("")}</div>`},
+ async clientas(){const q=window._q||"",d=await api("/api/clientas/?search="+encodeURIComponent(q));
+  return `<div class="card"><input id="q" class="search" placeholder="${t("search")}" value="${esc(q)}">${d.results.length?cnt(d)+`<div class="grid">${d.results.map(c=>`<div class="tile"><div class="h"><div class="av">${esc(ini(c.nombre))}</div><div><b>${esc(c.nombre)}</b><small>📱 ${esc(c.telefono_whatsapp)}</small></div></div><div class="tags">${pill("",c.idioma==="en"?"English":"Español")}</div></div>`).join("")}</div>`:empty("👩",t("eCl"))}</div>`},
+ async fichas(){const d=await api("/api/fichas/");window._F={};d.results.forEach(f=>window._F[f.id]=f);
+  return `<div class="card">${d.results.length?cnt(d)+`<div class="grid">${d.results.map(f=>`<div class="tile"><div class="h"><div class="av">#${f.clienta}</div><div><b>${t("skin")}: ${esc(f.tipo_cutis||"—")}</b><small>${esc(f.observaciones||"")}</small></div></div>
+   <div class="tags">${f.alergias?`<span class="pill no">⚠ ${esc(f.alergias)}</span>`:`<span class="pill ok">${t("noAl")}</span>`}</div>${can("fichas")?`<div><button class="sm" data-f="${f.id}">${t("edit")}</button></div>`:""}</div>`).join("")}</div>`:empty("📋",t("eF"))}</div>`},
+ async usuarios(){const d=await api("/api/usuarios/");return `<div class="card"><h2>${t("usuarios")}</h2>${d.results.length?`<div class="tw"><table><tr><th>${t("name")}</th><th>${t("email")}</th><th>${t("rol")}</th><th>${t("active")}</th></tr>${d.results.map(u=>`<tr><td><b>${esc(u.nombre)}</b></td><td>${esc(u.email)}</td><td>${pill("",t(u.rol))}</td><td>${u.is_active?"✔":"✖"}</td></tr>`).join("")}</table></div>`:empty("👥",t("eU"))}</div>
+  <div class="card"><h2>${t("newUser")}</h2><form id="nu" class="fg"><div><label>${t("name")}</label><input name="nombre" required></div><div><label>${t("email")}</label><input name="email" type="email" required></div>
+  <div><label>${t("rol")}</label><select name="rol"><option value="ESTETICISTA">${t("ESTETICISTA")}</option><option value="RECEPCIONISTA">${t("RECEPCIONISTA")}</option></select></div><div><label>${t("pass")}</label><input name="password" type="password" minlength="8" required></div><div><button class="pri">${t("create")}</button></div></form></div>`},
+ async centros(){const d=await api("/api/centros/");return `<div class="card"><h2>${t("centros")}</h2><div class="tw"><table><tr><th>ID</th><th>${t("name")}</th><th>${t("plan")}</th><th>${t("state")}</th><th>${t("expires")}</th></tr>${d.results.map(c=>`<tr><td>${c.id}</td><td><b>${esc(c.nombre)}</b></td><td>${pill("",c.plan)}</td><td>${pill(c.estado_suscripcion)}</td><td>${esc(c.fecha_vencimiento)}</td></tr>`).join("")}</table></div></div>
+  <div class="card"><h2>${t("newCentro")}</h2><form id="nc" class="fg"><div><label>${t("name")}</label><input name="nombre" required></div><div><label>${t("city")}</label><input name="ciudad"></div>
+  <div><label>${t("plan")}</label><select name="plan"><option>BASICO</option><option>PRO</option><option>PREMIUM</option></select></div><div><label>${t("expires")}</label><input name="fecha_vencimiento" type="date" required></div><div><button class="pri">${t("create")}</button></div></form></div>
+  <div class="card"><h2>${t("centroUser")}</h2><form id="cu" class="fg"><div><label>${t("centro")}</label><select name="centro">${d.results.map(c=>`<option value="${c.id}">${esc(c.nombre)}</option>`).join("")}</select></div>
+  <div><label>${t("name")}</label><input name="nombre" required></div><div><label>${t("email")}</label><input name="email" type="email" required></div><div><label>${t("pass")}</label><input name="password" type="password" minlength="8" required></div>
+  <input type="hidden" name="rol" value="RECEPCIONISTA"><div><button class="pri">${t("create")}</button></div></form></div>`},
+ async rbac(){const R=["ADMIN_SAAS","RECEPCIONISTA","ESTETICISTA"],rows=["dashboard","citas","clientas","fichas","usuarios","centros"].map(v=>`<tr><td><b>${ICON[v]} ${t(v)}</b></td>${R.map(r=>`<td>${!MENU[r].includes(v)?`<span class="pill">✖ ${t("none")}</span>`:WRITE[v].includes(r)?`<span class="pill ok">✔ ${t("full")}</span>`:`<span class="pill v">👁 ${t("view")}</span>`}</td>`).join("")}</tr>`).join("");
+  return `<div class="card"><h2>${t("matrix")}</h2><div class="tw"><table><tr><th></th>${R.map(r=>`<th>${t(r)}</th>`).join("")}</tr>${rows}</table></div><p class="mut" style="font-size:13px;margin-top:14px">${t("note")}</p></div>`}};
+function modal(title,body,onsub){const o=document.createElement("div");o.className="ov";o.innerHTML=`<form class="mod" id="mf"><h2>${title}</h2>${body}<div class="act"><button type="button" class="ghost" id="mc">${t("cancel")}</button><button class="pri">${t("save")}</button></div></form>`;document.body.appendChild(o);
+  o.querySelector("#mc").onclick=()=>o.remove();o.querySelector("#mf").onsubmit=async e=>{e.preventDefault();try{await onsub(Object.fromEntries(new FormData(e.target)));o.remove()}catch(x){toast(x.message,0)}}}
+function bind(){
+  const q=$("#q");if(q)q.onchange=()=>{window._q=q.value;go()};
+  document.querySelectorAll("[data-a]").forEach(b=>b.onclick=async()=>{const[id,a]=b.dataset.a.split(":");if(a==="cancelar"&&window.confirm&&!confirm(t("askCancel")))return;try{await api(`/api/citas/${id}/${a}/`,{method:"POST"});toast(t("saved"));go()}catch(e){toast(e.message,0)}});
+  document.querySelectorAll("[data-f]").forEach(b=>b.onclick=()=>{const f=window._F[b.dataset.f];
+    modal(t("fichas")+" #"+f.clienta,`<label>${t("skin")}</label><input name="tipo_cutis" value="${esc(f.tipo_cutis)}"><label>${t("allergy")}</label><input name="alergias" value="${esc(f.alergias)}"><label>${t("obs")}</label><textarea name="observaciones" rows="3">${esc(f.observaciones)}</textarea>`,
+    async d=>{await api(`/api/fichas/${f.id}/`,{method:"PATCH",body:d});toast(t("saved"));go()})});
+  const post=(id,url,fix)=>{const f=$(id);if(f)f.onsubmit=async ev=>{ev.preventDefault();try{let d=Object.fromEntries(new FormData(f)),u=url;if(fix){u=url.replace("{c}",d.centro);delete d.centro}await api(u,{method:"POST",body:d});toast(t("saved"));f.reset();setTimeout(go,600)}catch(e){toast(e.message,0)}}};
+  post("#nu","/api/usuarios/");post("#nc","/api/centros/");post("#cu","/api/centros/{c}/usuarios/",1)}
+if(S){api("/api/auth/me/").then(me=>{S.me=me;save();draw()}).catch(()=>logout())}else draw();
+</script></body></html>
