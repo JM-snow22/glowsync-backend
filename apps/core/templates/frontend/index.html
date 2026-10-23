@@ -50,28 +50,52 @@ table{width:100%;border-collapse:collapse;font-size:14px}th,td{text-align:left;p
 .sk{height:72px;border-radius:20px;background:linear-gradient(90deg,#f6eceb,#fff8f6,#f6eceb);background-size:200% 100%;animation:sh 1.2s infinite;margin-bottom:12px}@keyframes sh{to{background-position:-200% 0}}
 @keyframes up{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}main>*{animation:up .4s ease both}
 @media(max-width:900px){.auth{grid-template-columns:1fr}.hero{display:none}.app{grid-template-columns:1fr}.side{position:static;height:auto;flex-direction:row;flex-wrap:wrap;align-items:center;padding:12px}.side nav{flex-direction:row;overflow-x:auto;flex:1 1 100%;order:3}.side nav a{white-space:nowrap}.me{display:none}.body{padding:18px}.hi b{font-size:38px}.top h1{font-size:28px}}
+
+/* GlowSync · acceso editorial */
+.auth{grid-template-columns:minmax(0,1.05fr) minmax(400px,.95fr);background:#fffaf8}
+.hero{isolation:isolate;background:linear-gradient(180deg,rgba(39,19,35,.12),rgba(45,19,39,.86)),url('/static/img/login-beauty-hero.png') center/cover no-repeat,#6c4259;padding:clamp(28px,5vw,76px)}
+.hero:before{content:"";inset:0;right:auto;top:auto;position:absolute;width:100%;height:100%;background:linear-gradient(110deg,rgba(52,22,44,.45),transparent 75%);z-index:0}
+.hero:after{display:none}
+.hero h2{font-size:clamp(38px,4.4vw,66px);max-width:670px;line-height:1.07;text-wrap:balance}
+.hero p{max-width:550px}
+.hero ul{max-width:530px}
+.hero li{border-radius:16px;background:rgba(255,255,255,.12);backdrop-filter:blur(14px)}
+.fside{background:radial-gradient(circle at 90% 10%,#f7e9ed,transparent 40%),#fffaf8;padding:28px clamp(22px,5vw,72px)}
+.fc{max-width:430px;background:#fff;border:1px solid #f0e1e5;border-radius:28px;padding:clamp(25px,3vw,40px);box-shadow:0 25px 70px #693b5114}
+.fc h2{font-size:clamp(30px,3vw,40px)}
+.fc p{line-height:1.65}
+.auth input{padding:15px 17px}
+.auth .pri{width:100%;border-radius:14px;padding:16px}
+.auth .err{border:1px solid #f2cbd6}
+.auth .password-field{position:relative}
+.auth .password-field input{padding-right:90px}
+.auth .password-toggle{position:absolute;right:10px;top:50%;transform:translateY(-50%);border:0;background:#f8e9ee;color:#854662;border-radius:10px;padding:8px 10px;font-size:12px;font-weight:700}
+.auth .auth-note{margin-top:18px;font-size:12px;color:var(--mut);text-align:center}
+@media(max-width:900px){.auth{grid-template-columns:1fr}.hero{display:flex;min-height:280px;padding:28px}.hero ul,.hero small{display:none}.hero h2{font-size:36px}.hero p{font-size:14px}.fside{padding:22px}.fc{margin:0 auto 30px;width:100%}}
+@media(max-width:480px){.hero{min-height:230px}.hero h2{font-size:30px}.fc{padding:24px 20px}}
+@media(prefers-reduced-motion:reduce){.auth *{animation:none!important;transition:none!important}}
 </style></head>
 <body><div id="app"></div>
 <script>
-const T={es:{login:"Iniciar sesión",logout:"Salir",email:"Correo electrónico",pass:"Contraseña",bad:"Credenciales inválidas o suscripción del centro vencida",expired:"Tu sesión expiró",
+const T={es:{login:"Iniciar sesión",logout:"Salir",email:"Correo electrónico",pass:"Contraseña",bad:"No pudimos iniciar sesión. Revisa tus datos o consulta el estado de tu suscripción.",expired:"Tu sesión expiró",
 welcome:"Bienvenida de nuevo",signin:"Ingresa a tu panel de GlowSync",h1:"Cada cancelación, una cita recuperada.",h2:"GlowSync llena tu agenda: ofrece al instante los cupos libres a tu lista de espera por WhatsApp, evita cruces y recuerda a tus clientas.",
-b1:"⚡ Reasignación exprés por WhatsApp",b2:"🗓️ Agenda sin cruces entre cabinas y profesionales",b3:"🔔 Recordatorios 48 h y 24 h antes",b4:"🌎 Interfaz y mensajes en español e inglés",foot:"Hecho para centros de estética",
-dashboard:"Resumen",citas:"Citas",clientas:"Clientas",usuarios:"Equipo",fichas:"Fichas",centros:"Centros",rbac:"Permisos",denied:"Acceso denegado: tu rol no puede ver esta sección.",
-rol:"Rol",centro:"Centro",name:"Nombre",phone:"Teléfono",state:"Estado",plan:"Plan",expires:"Vence",active:"Activo",city:"Ciudad",
+b1:"⚡ Reasignación exprés por WhatsApp",b2:"🗓️ Agenda sin cruces entre cabinas y profesionales",b3:"🔔 Recordatorios 48 h y 24 h antes",b4:"🌎 Interfaz y mensajes en español e inglés",foot:"Pensado para profesionales de belleza y bienestar",
+dashboard:"Resumen",citas:"Citas",clientas:"Clientas",usuarios:"Equipo",fichas:"Fichas",centros:"Negocios",rbac:"Permisos",denied:"Acceso denegado: tu rol no puede ver esta sección.",
+rol:"Rol",centro:"Sede",name:"Nombre",phone:"Teléfono",state:"Estado",plan:"Plan",expires:"Vence",active:"Activo",city:"Ciudad",
 create:"Crear",saved:"Guardado",confirm:"Confirmar",cancel:"Cancelar",edit:"Editar",save:"Guardar",search:"Buscar por nombre o teléfono…",showing:"Mostrando",of:"de",
 recovered:"Dinero recuperado",recNote:"Ingresos de citas que antes estaban canceladas y se reasignaron desde la lista de espera.",k1:"Citas del periodo",k2:"Inasistencia",k4:"Ingresos aprobados",k5:"Ofertas aceptadas",
-newUser:"Nuevo integrante del equipo",newCentro:"Nuevo centro",centroUser:"Crear usuario para un centro",obs:"Observaciones",skin:"Tipo de cutis",allergy:"Alergias",
+newUser:"Nuevo integrante del equipo",newCentro:"Nuevo negocio",centroUser:"Crear acceso para una sede",obs:"Observaciones",skin:"Tipo de cutis",allergy:"Alergias",
 matrix:"Qué puede hacer cada rol",view:"Solo ver",full:"Ver y modificar",none:"Sin acceso",noAl:"Sin alergias registradas",
 eC:"No hay citas próximas",eCl:"No se encontraron clientas",eF:"Aún no hay fichas",eU:"Sin integrantes",askCancel:"¿Cancelar esta cita? Se ofrecerá el cupo a la lista de espera.",
 ADMIN_SAAS:"Admin SaaS",RECEPCIONISTA:"Recepcionista",ESTETICISTA:"Esteticista",note:"La interfaz oculta lo que no corresponde, pero quien decide es el servidor (JWT + permisos por rol)."},
 en:{login:"Sign in",logout:"Sign out",email:"Email",pass:"Password",bad:"Invalid credentials or the center's subscription has expired",expired:"Your session expired",
 welcome:"Welcome back",signin:"Sign in to your GlowSync dashboard",h1:"Every cancellation, a recovered appointment.",h2:"GlowSync fills your calendar: free slots are instantly offered to your waiting list via WhatsApp, with no double bookings and automatic client reminders.",
-b1:"⚡ Express reassignment via WhatsApp",b2:"🗓️ Conflict-free scheduling for rooms and staff",b3:"🔔 Reminders 48 h and 24 h before",b4:"🌎 Interface and messages in English and Spanish",foot:"Built for aesthetic centers",
-dashboard:"Summary",citas:"Appointments",clientas:"Clients",usuarios:"Team",fichas:"Files",centros:"Centers",rbac:"Permissions",denied:"Access denied: your role cannot view this section.",
-rol:"Role",centro:"Center",name:"Name",phone:"Phone",state:"Status",plan:"Plan",expires:"Expires",active:"Active",city:"City",
+b1:"⚡ Express reassignment via WhatsApp",b2:"🗓️ Conflict-free scheduling for rooms and staff",b3:"🔔 Reminders 48 h and 24 h before",b4:"🌎 Interface and messages in English and Spanish",foot:"Designed for beauty and wellness professionals",
+dashboard:"Summary",citas:"Appointments",clientas:"Clients",usuarios:"Team",fichas:"Files",centros:"Businesses",rbac:"Permissions",denied:"Access denied: your role cannot view this section.",
+rol:"Role",centro:"Location",name:"Name",phone:"Phone",state:"Status",plan:"Plan",expires:"Expires",active:"Active",city:"City",
 create:"Create",saved:"Saved",confirm:"Confirm",cancel:"Cancel",edit:"Edit",save:"Save",search:"Search by name or phone…",showing:"Showing",of:"of",
 recovered:"Recovered revenue",recNote:"Income from appointments that were cancelled and then reassigned from the waiting list.",k1:"Appointments in period",k2:"No-show rate",k4:"Approved income",k5:"Accepted offers",
-newUser:"New team member",newCentro:"New center",centroUser:"Create user for a center",obs:"Notes",skin:"Skin type",allergy:"Allergies",
+newUser:"New team member",newCentro:"New business",centroUser:"Create access for a location",obs:"Notes",skin:"Skin type",allergy:"Allergies",
 matrix:"What each role can do",view:"View only",full:"View and edit",none:"No access",noAl:"No allergies on file",
 eC:"No upcoming appointments",eCl:"No clients found",eF:"No files yet",eU:"No team members",askCancel:"Cancel this appointment? The slot will be offered to the waiting list.",
 ADMIN_SAAS:"SaaS admin",RECEPCIONISTA:"Receptionist",ESTETICISTA:"Aesthetician",note:"The UI hides what does not apply, but the server decides (JWT + role permissions)."}};
@@ -99,12 +123,27 @@ function logout(m){S=null;sessionStorage.removeItem("gs");location.hash="";draw(
 const langSel=()=>`<select id="lg" aria-label="Language"><option value="es"${lang==="es"?" selected":""}>Español</option><option value="en"${lang==="en"?" selected":""}>English</option></select>`;
 async function setLang(v){lang=v;localStorage.setItem("lang",v);document.documentElement.lang=v;if(S){try{await api("/api/auth/me/",{method:"PATCH",body:{idioma:v}})}catch(e){}S.me.idioma=v;save()}draw()}
 function draw(m){
-  if(!S){$("#app").innerHTML=`<div class="auth"><section class="hero"><div class="logo"><i>✦</i> GlowSync</div><div><div class="eyebrow">${lang==="es"?"Spa · Estética · Bienestar":"Spa · Aesthetics · Wellness"}</div><h2>${t("h1")}</h2><p>${t("h2")}</p><ul>${[1,2,3,4].map(i=>`<li>${t("b"+i)}</li>`).join("")}</ul></div><small>${t("foot")}</small></section>
-  <section class="fside"><div class="lgbox">${langSel()}</div><form id="f" class="fc"><div class="logo gt" style="margin-bottom:22px">✦ GlowSync</div><h2>${t("welcome")}</h2><p class="mut">${t("signin")}</p>${m?`<div class="err">${esc(m)}</div>`:""}
-  <label>${t("email")}</label><input id="e" type="email" required autofocus autocomplete="username"><label>${t("pass")}</label><input id="p" type="password" required autocomplete="current-password"><button class="pri wide">${t("login")}</button></form></section></div>`;
+  if(!S){
+    $("#app").innerHTML=`<div class="auth"><section class="hero">
+      <div class="logo"><i>✦</i> GlowSync</div>
+      <div><div class="eyebrow">Beauty · Wellness · Technology</div>
+      <h2>${t("h1")}</h2><p>${t("h2")}</p>
+      <ul><li>${t("b1")}</li><li>${t("b2")}</li><li>${t("b3")}</li></ul></div>
+      <small>${t("foot")}</small></section>
+      <section class="fside"><div class="lgbox">${langSel()}</div>
+      <div class="fc"><h2>${t("welcome")}</h2><p>${t("signin")}</p>
+      <form id="f"><div id="login-error" role="alert" aria-live="polite"></div>
+      <label for="e">${t("email")}</label><input id="e" type="email" autocomplete="username" placeholder="nombre@ejemplo.com" required>
+      <label for="p">${t("pass")}</label><div class="password-field"><input id="p" type="password" autocomplete="current-password" required>
+      <button type="button" id="toggle-password" class="password-toggle" aria-label="${lang==="es"?"Mostrar contraseña":"Show password"}">${lang==="es"?"Mostrar":"Show"}</button></div>
+      <button type="submit" class="pri wide" id="login-submit">${t("login")}</button>
+      <div class="auth-note">GlowSync · ${lang==="es"?"Tu espacio de trabajo, en orden.":"Your workspace, beautifully organized."}</div></form></div></section></div>`;
     $("#lg").onchange=e=>setLang(e.target.value);
-    $("#f").onsubmit=async ev=>{ev.preventDefault();try{const d=await api("/api/auth/login/",{method:"POST",body:{email:$("#e").value,password:$("#p").value}});
-      S={access:d.access,refresh:d.refresh,me:d.usuario};lang=S.me.idioma||lang;localStorage.setItem("lang",lang);save();draw();go()}catch(e){draw(t("bad"))}};return}
+    $("#toggle-password").onclick=()=>{const p=$("#p"),b=$("#toggle-password"),show=p.type==="password";p.type=show?"text":"password";b.textContent=show?(lang==="es"?"Ocultar":"Hide"):(lang==="es"?"Mostrar":"Show");b.setAttribute("aria-label",lang==="es"?(show?"Ocultar contraseña":"Mostrar contraseña"):(show?"Hide password":"Show password"))};
+    $("#f").onsubmit=async ev=>{ev.preventDefault();const btn=$("#login-submit");btn.disabled=true;btn.textContent=lang==="es"?"Ingresando…":"Signing in…";
+      try{const d=await api("/api/auth/login/",{method:"POST",body:{email:$("#e").value,password:$("#p").value}});
+      S={access:d.access,refresh:d.refresh,me:d.usuario};lang=S.me.idioma||lang;localStorage.setItem("lang",lang);save();draw();go()}
+      catch(e){const box=$("#login-error");if(box)box.innerHTML=`<div class="err">${esc(t("bad"))}</div>`;btn.disabled=false;btn.textContent=t("login")}};return}
   const me=S.me;
   $("#app").innerHTML=`<div class="app"><aside class="side"><div class="logo"><i>✦</i> GlowSync</div><nav>${MENU[me.rol].map(v=>`<a href="#/${v}"><span>${ICON[v]}</span>${t(v)}</a>`).join("")}</nav>
   <div class="me"><div class="av">${esc(ini(me.nombre))}</div><div><b>${esc(me.nombre)}</b><small>${t(me.rol)}</small></div></div><div class="ctl">${langSel()}<button class="sm" id="out">${t("logout")}</button></div></aside>
