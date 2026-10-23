@@ -238,7 +238,7 @@ docker compose up --build -d
 docker compose exec web python manage.py seed_demo --n 100
 ```
 
-## Solución de problema
+## Solución de problemas
 
 | Síntoma | Causa y solución |
 |---|---|
