@@ -74,7 +74,7 @@ table{width:100%;border-collapse:collapse;font-size:14px}th,td{text-align:left;p
 @media(max-width:900px){.auth{grid-template-columns:1fr}.hero{display:flex;min-height:280px;padding:28px}.hero ul,.hero small{display:none}.hero h2{font-size:36px}.hero p{font-size:14px}.fside{padding:22px}.fc{margin:0 auto 30px;width:100%}}
 @media(max-width:480px){.hero{min-height:230px}.hero h2{font-size:30px}.fc{padding:24px 20px}}
 @media(prefers-reduced-motion:reduce){.auth *{animation:none!important;transition:none!important}}
-</style></head>
+.tenant-chooser{padding:8px 10px;background:#ffffff12;border-radius:16px}.tenant-chooser label{color:#f2dce6;margin:0 0 7px}.tenant-chooser select{background:#fff;color:#4a273b;border:0;font-size:13px;padding:11px} </style></head>
 <body><div id="app"></div>
 <script>
 const T={es:{login:"Iniciar sesión",logout:"Salir",email:"Correo electrónico",pass:"Contraseña",bad:"No pudimos iniciar sesión. Revisa tus datos o consulta el estado de tu suscripción.",expired:"Tu sesión expiró",
@@ -87,7 +87,7 @@ recovered:"Dinero recuperado",recNote:"Ingresos de citas que antes estaban cance
 newUser:"Nuevo integrante del equipo",newCentro:"Nuevo negocio",centroUser:"Crear acceso para una sede",obs:"Observaciones",skin:"Tipo de cutis",allergy:"Alergias",
 matrix:"Qué puede hacer cada rol",view:"Solo ver",full:"Ver y modificar",none:"Sin acceso",noAl:"Sin alergias registradas",
 eC:"No hay citas próximas",eCl:"No se encontraron clientas",eF:"Aún no hay fichas",eU:"Sin integrantes",askCancel:"¿Cancelar esta cita? Se ofrecerá el cupo a la lista de espera.",
-ADMIN_SAAS:"Admin SaaS",RECEPCIONISTA:"Recepcionista",ESTETICISTA:"Esteticista",note:"La interfaz oculta lo que no corresponde, pero quien decide es el servidor (JWT + permisos por rol)."},
+ADMIN_SAAS:"Admin SaaS",ADMIN_NEGOCIO:"Administrador de negocio",RECEPCIONISTA:"Recepcionista",ESTETICISTA:"Esteticista",note:"La interfaz oculta lo que no corresponde, pero quien decide es el servidor (JWT + permisos por rol)."},
 en:{login:"Sign in",logout:"Sign out",email:"Email",pass:"Password",bad:"Invalid credentials or the center's subscription has expired",expired:"Your session expired",
 welcome:"Welcome back",signin:"Sign in to your GlowSync dashboard",h1:"Every cancellation, a recovered appointment.",h2:"GlowSync fills your calendar: free slots are instantly offered to your waiting list via WhatsApp, with no double bookings and automatic client reminders.",
 b1:"⚡ Express reassignment via WhatsApp",b2:"🗓️ Conflict-free scheduling for rooms and staff",b3:"🔔 Reminders 48 h and 24 h before",b4:"🌎 Interface and messages in English and Spanish",foot:"Designed for beauty and wellness professionals",
@@ -98,13 +98,13 @@ recovered:"Recovered revenue",recNote:"Income from appointments that were cancel
 newUser:"New team member",newCentro:"New business",centroUser:"Create access for a location",obs:"Notes",skin:"Skin type",allergy:"Allergies",
 matrix:"What each role can do",view:"View only",full:"View and edit",none:"No access",noAl:"No allergies on file",
 eC:"No upcoming appointments",eCl:"No clients found",eF:"No files yet",eU:"No team members",askCancel:"Cancel this appointment? The slot will be offered to the waiting list.",
-ADMIN_SAAS:"SaaS admin",RECEPCIONISTA:"Receptionist",ESTETICISTA:"Aesthetician",note:"The UI hides what does not apply, but the server decides (JWT + role permissions)."}};
+ADMIN_SAAS:"SaaS admin",ADMIN_NEGOCIO:"Business admin",RECEPCIONISTA:"Receptionist",ESTETICISTA:"Aesthetician",note:"The UI hides what does not apply, but the server decides (JWT + role permissions)."}};
 // ---- RBAC: secciones visibles por rol y dónde puede escribir ----
-const MENU={ADMIN_SAAS:["centros","rbac"],RECEPCIONISTA:["dashboard","citas","clientas","fichas","usuarios","rbac"],ESTETICISTA:["citas","clientas","fichas","rbac"]};
-const WRITE={centros:["ADMIN_SAAS"],usuarios:["RECEPCIONISTA"],citas:["RECEPCIONISTA"],clientas:["RECEPCIONISTA"],fichas:["RECEPCIONISTA","ESTETICISTA"],dashboard:[]};
+const MENU={ADMIN_SAAS:["centros","dashboard","citas","clientas","fichas","usuarios","rbac"],ADMIN_NEGOCIO:["dashboard","citas","clientas","fichas","usuarios","rbac"],RECEPCIONISTA:["dashboard","citas","clientas","fichas","usuarios","rbac"],ESTETICISTA:["citas","clientas","fichas","rbac"]};
+const WRITE={centros:["ADMIN_SAAS"],usuarios:["ADMIN_SAAS","ADMIN_NEGOCIO","RECEPCIONISTA"],citas:["ADMIN_SAAS","ADMIN_NEGOCIO","RECEPCIONISTA"],clientas:["ADMIN_SAAS","ADMIN_NEGOCIO","RECEPCIONISTA"],fichas:["ADMIN_SAAS","ADMIN_NEGOCIO","RECEPCIONISTA","ESTETICISTA"],dashboard:[]};
 const ICON={dashboard:"✨",citas:"📅",clientas:"💆‍♀️",fichas:"🧴",usuarios:"🤍",centros:"🌿",rbac:"🔐"};
 const TAGC={CONFIRMADA:"ok",COMPLETADA:"ok",ACTIVA:"ok",CANCELADA:"no",NO_ASISTIO:"no",PENDIENTE:"w"};
-let lang=localStorage.getItem("lang")||"es",S=JSON.parse(sessionStorage.getItem("gs")||"null");
+let selectedCentro=sessionStorage.getItem("gs_centro")||"",lang=localStorage.getItem("lang")||"es",S=JSON.parse(sessionStorage.getItem("gs")||"null");
 const t=k=>(T[lang][k]||k),$=s=>document.querySelector(s),loc=()=>lang==="es"?"es-CO":"en-US";
 const esc=v=>String(v==null?"":v).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const can=v=>(WRITE[v]||[]).includes(S.me.rol),save=()=>sessionStorage.setItem("gs",JSON.stringify(S));
@@ -115,11 +115,11 @@ function toast(m,ok=1){const e=document.createElement("div");e.className="toast"
 function msg(d){if(!d)return"";if(d.detail)return d.detail;return Object.entries(d).map(([k,v])=>k+": "+[].concat(v).join(" ")).join(" · ")}
 async function refresh(){try{const r=await fetch("/api/auth/refresh/",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({refresh:S.refresh})});if(!r.ok)return false;S.access=(await r.json()).access;save();return true}catch(e){return false}}
 async function api(path,o={},retry=true){
-  const h={"Content-Type":"application/json","Accept-Language":lang};if(S&&S.access)h.Authorization="Bearer "+S.access;
+  const h={"Content-Type":"application/json","Accept-Language":lang};if(S&&S.access)h.Authorization="Bearer "+S.access;if(S?.me?.rol==="ADMIN_SAAS"&&selectedCentro)h["X-Centro-ID"]=selectedCentro;
   const r=await fetch(path,{method:o.method||"GET",headers:h,body:o.body?JSON.stringify(o.body):undefined});
   if(r.status===401&&retry&&S&&S.refresh){if(await refresh())return api(path,o,false);logout(t("expired"));throw new Error(t("expired"))}
   const d=await r.json().catch(()=>null);if(!r.ok)throw new Error(msg(d)||r.status);return d}
-function logout(m){S=null;sessionStorage.removeItem("gs");location.hash="";draw(m)}
+function logout(m){S=null;selectedCentro="";sessionStorage.removeItem("gs_centro");sessionStorage.removeItem("gs");location.hash="";draw(m)}
 const langSel=()=>`<select id="lg" aria-label="Language"><option value="es"${lang==="es"?" selected":""}>Español</option><option value="en"${lang==="en"?" selected":""}>English</option></select>`;
 async function setLang(v){lang=v;localStorage.setItem("lang",v);document.documentElement.lang=v;if(S){try{await api("/api/auth/me/",{method:"PATCH",body:{idioma:v}})}catch(e){}S.me.idioma=v;save()}draw()}
 function draw(m){
@@ -132,7 +132,7 @@ function draw(m){
       <small>${t("foot")}</small></section>
       <section class="fside"><div class="lgbox">${langSel()}</div>
       <div class="fc"><h2>${t("welcome")}</h2><p>${t("signin")}</p>
-      <form id="f"><div id="login-error" role="alert" aria-live="polite"></div>
+      <form id="f"><div id="login-error" role="alert" aria-live="polite">${m?`<div class="err">${esc(m)}</div>`:""}</div>
       <label for="e">${t("email")}</label><input id="e" type="email" autocomplete="username" placeholder="nombre@ejemplo.com" required>
       <label for="p">${t("pass")}</label><div class="password-field"><input id="p" type="password" autocomplete="current-password" required>
       <button type="button" id="toggle-password" class="password-toggle" aria-label="${lang==="es"?"Mostrar contraseña":"Show password"}">${lang==="es"?"Mostrar":"Show"}</button></div>
@@ -146,13 +146,16 @@ function draw(m){
       catch(e){const box=$("#login-error");if(box)box.innerHTML=`<div class="err">${esc(t("bad"))}</div>`;btn.disabled=false;btn.textContent=t("login")}};return}
   const me=S.me;
   $("#app").innerHTML=`<div class="app"><aside class="side"><div class="logo"><i>✦</i> GlowSync</div><nav>${MENU[me.rol].map(v=>`<a href="#/${v}"><span>${ICON[v]}</span>${t(v)}</a>`).join("")}</nav>
+  ${me.rol==="ADMIN_SAAS"?`<div class="tenant-chooser"><label for="tenant-select">${lang==="es"?"Sede activa":"Active location"}</label><select id="tenant-select"><option value="">${lang==="es"?"Selecciona un negocio":"Select business"}</option></select></div>`:""}
   <div class="me"><div class="av">${esc(ini(me.nombre))}</div><div><b>${esc(me.nombre)}</b><small>${t(me.rol)}</small></div></div><div class="ctl">${langSel()}<button class="sm" id="out">${t("logout")}</button></div></aside>
   <section class="body"><div class="top"><h1 id="ttl"></h1><span>${new Date().toLocaleDateString(loc(),{weekday:"long",day:"numeric",month:"long"})}</span></div><main id="m"></main></section></div>`;
-  $("#lg").onchange=e=>setLang(e.target.value);$("#out").onclick=()=>logout();go()}
+  $("#lg").onchange=e=>setLang(e.target.value);$("#out").onclick=()=>logout();if(me.rol==="ADMIN_SAAS")loadCentros();go()}
+async function loadCentros(){const el=$("#tenant-select");if(!el)return;try{const data=await api("/api/centros/");const items=data.results||data;el.innerHTML=`<option value="">${lang==="es"?"Selecciona un negocio":"Select business"}</option>`+items.map(c=>`<option value="${c.id}">${esc(c.nombre)}</option>`).join("");if(!items.some(c=>String(c.id)===selectedCentro)){selectedCentro="";sessionStorage.removeItem("gs_centro")}el.value=selectedCentro;el.onchange=()=>{selectedCentro=el.value;sessionStorage.setItem("gs_centro",selectedCentro);go()}}catch(e){toast(e.message,0)}}
 async function go(){
   if(!S)return;const v=(location.hash||"").slice(2)||MENU[S.me.rol][0],m=$("#m");if(!m)return draw();
   document.querySelectorAll("nav a").forEach(a=>a.classList.toggle("on",a.getAttribute("href")==="#/"+v));$("#ttl").textContent=t(v)||"";
   if(!MENU[S.me.rol].includes(v)){m.innerHTML=`<div class="card"><div class="err">${t("denied")}</div></div>`;return}
+  if(S.me.rol==="ADMIN_SAAS"&&v!=="centros"&&v!=="rbac"&&!selectedCentro){m.innerHTML=`<div class="card empty">${lang==="es"?"Selecciona una sede en el menú lateral para gestionar sus datos.":"Choose a location in the sidebar to manage its data."}</div>`;return}
   m.innerHTML='<div class="sk"></div><div class="sk"></div>';
   try{m.innerHTML=await VIEWS[v]()}catch(e){m.innerHTML=`<div class="card"><div class="err">${esc(e.message)}</div></div>`}bind()}
 window.onhashchange=go;
@@ -182,8 +185,8 @@ const VIEWS={
   <div><label>${t("plan")}</label><select name="plan"><option>BASICO</option><option>PRO</option><option>PREMIUM</option></select></div><div><label>${t("expires")}</label><input name="fecha_vencimiento" type="date" required></div><div><button class="pri">${t("create")}</button></div></form></div>
   <div class="card"><h2>${t("centroUser")}</h2><form id="cu" class="fg"><div><label>${t("centro")}</label><select name="centro">${d.results.map(c=>`<option value="${c.id}">${esc(c.nombre)}</option>`).join("")}</select></div>
   <div><label>${t("name")}</label><input name="nombre" required></div><div><label>${t("email")}</label><input name="email" type="email" required></div><div><label>${t("pass")}</label><input name="password" type="password" minlength="8" required></div>
-  <input type="hidden" name="rol" value="RECEPCIONISTA"><div><button class="pri">${t("create")}</button></div></form></div>`},
- async rbac(){const R=["ADMIN_SAAS","RECEPCIONISTA","ESTETICISTA"],rows=["dashboard","citas","clientas","fichas","usuarios","centros"].map(v=>`<tr><td><b>${ICON[v]} ${t(v)}</b></td>${R.map(r=>`<td>${!MENU[r].includes(v)?`<span class="pill">✖ ${t("none")}</span>`:WRITE[v].includes(r)?`<span class="pill ok">✔ ${t("full")}</span>`:`<span class="pill v">👁 ${t("view")}</span>`}</td>`).join("")}</tr>`).join("");
+  <div><label>${t("rol")}</label><select name="rol"><option value="ADMIN_NEGOCIO">${t("ADMIN_NEGOCIO")}</option><option value="RECEPCIONISTA">${t("RECEPCIONISTA")}</option><option value="ESTETICISTA">${t("ESTETICISTA")}</option></select></div><div><button class="pri">${t("create")}</button></div></form></div>`},
+ async rbac(){const R=["ADMIN_SAAS","ADMIN_NEGOCIO","RECEPCIONISTA","ESTETICISTA"],rows=["dashboard","citas","clientas","fichas","usuarios","centros"].map(v=>`<tr><td><b>${ICON[v]} ${t(v)}</b></td>${R.map(r=>`<td>${!MENU[r].includes(v)?`<span class="pill">✖ ${t("none")}</span>`:WRITE[v].includes(r)?`<span class="pill ok">✔ ${t("full")}</span>`:`<span class="pill v">👁 ${t("view")}</span>`}</td>`).join("")}</tr>`).join("");
   return `<div class="card"><h2>${t("matrix")}</h2><div class="tw"><table><tr><th></th>${R.map(r=>`<th>${t(r)}</th>`).join("")}</tr>${rows}</table></div><p class="mut" style="font-size:13px;margin-top:14px">${t("note")}</p></div>`}};
 function modal(title,body,onsub){const o=document.createElement("div");o.className="ov";o.innerHTML=`<form class="mod" id="mf"><h2>${title}</h2>${body}<div class="act"><button type="button" class="ghost" id="mc">${t("cancel")}</button><button class="pri">${t("save")}</button></div></form>`;document.body.appendChild(o);
   o.querySelector("#mc").onclick=()=>o.remove();o.querySelector("#mf").onsubmit=async e=>{e.preventDefault();try{await onsub(Object.fromEntries(new FormData(e.target)));o.remove()}catch(x){toast(x.message,0)}}}
