@@ -102,8 +102,23 @@ class AuthYRolesTest(APITestCase):
         self.assertEqual(r.status_code, 201, r.content)
         self.assertEqual(Usuario.objects.get(email="primera@x.co").centro_id, self.B.id)
 
-    def test_admin_saas_no_usa_los_endpoints_de_un_centro(self):
-        self.assertEqual(cliente(self.admin).get("/api/usuarios/").status_code, 403)
+    def test_admin_saas_debe_seleccionar_un_centro(self):
+        c = cliente(self.admin)
+
+        # Sin seleccionar negocio, debe responder 400.
+        respuesta = c.get("/api/usuarios/")
+        self.assertEqual(respuesta.status_code, 400)
+
+        # Seleccionando un negocio válido, debe responder 200.
+        respuesta = c.get(
+            "/api/usuarios/",
+            HTTP_X_CENTRO_ID=str(self.A.id)
+        )
+        self.assertEqual(respuesta.status_code, 200)
+
+        # No puede consultar usuarios de otros negocios.
+        emails = {u["email"] for u in respuesta.data["results"]}
+        self.assertNotIn("recb@x.co", emails)
 
     def test_clave_debil_es_rechazada(self):
         r = cliente(self.recA).post("/api/usuarios/", {"email": "d@x.co", "nombre": "D", "rol": "ESTETICISTA","password": "12345678"}, format="json")
@@ -144,3 +159,42 @@ class AuthYRolesTest(APITestCase):
                 for _ in range(22)]
         self.assertEqual(codigos[-1], 429)
         cache.clear()
+from .models import PermisoRol
+
+
+class MatrizRBACEditableTest(APITestCase):
+    def setUp(self):
+        self.a = crear_centro("Negocio A")
+        self.b = crear_centro("Negocio B")
+        self.admin = crear_usuario("root-rbac@x.co", Usuario.Rol.ADMIN_SAAS)
+        self.rec_a = crear_usuario("rec-rbac@x.co", Usuario.Rol.RECEPCIONISTA, self.a)
+        self.rec_b = crear_usuario("recb-rbac@x.co", Usuario.Rol.RECEPCIONISTA, self.b)
+        self.est_a = crear_usuario("est-rbac@x.co", Usuario.Rol.ESTETICISTA, self.a)
+
+    def test_default_and_forbidden_editor(self):
+        self.assertEqual(cliente(self.rec_a).get("/api/rbac/").data["matriz"]["citas"]["RECEPCIONISTA"], 2)
+        self.assertEqual(cliente(self.rec_a).delete("/api/rbac/").status_code, 403)
+        self.assertEqual(cliente(self.rec_a).put("/api/rbac/", {"matriz": {}}, format="json").status_code, 403)
+
+    def test_revocation_immediate_and_isolated_by_tenant(self):
+        admin = cliente(self.admin, HTTP_X_CENTRO_ID=str(self.a.pk))
+        matrix = admin.get("/api/rbac/").data["matriz"]
+        matrix["usuarios"]["RECEPCIONISTA"] = 0
+        matrix["fichas"]["ESTETICISTA"] = 1
+        self.assertEqual(admin.put("/api/rbac/", {"matriz": matrix}, format="json").status_code, 200)
+        self.assertEqual(cliente(self.rec_a).get("/api/usuarios/").status_code, 403)
+        self.assertEqual(cliente(self.rec_b).get("/api/usuarios/").status_code, 200)
+        self.assertEqual(cliente(self.est_a).get("/api/fichas/").status_code, 200)
+        self.assertEqual(cliente(self.est_a).post("/api/fichas/", {}, format="json").status_code, 403)
+        self.assertEqual(PermisoRol.objects.filter(centro=self.b).count(), 0)
+
+    def test_protected_saas_and_reset(self):
+        admin = cliente(self.admin, HTTP_X_CENTRO_ID=str(self.a.pk))
+        matrix = admin.get("/api/rbac/").data["matriz"]
+        matrix["centros"]["RECEPCIONISTA"] = 2
+        self.assertEqual(admin.put("/api/rbac/", {"matriz": matrix}, format="json").status_code, 400)
+        matrix["centros"]["RECEPCIONISTA"] = 0
+        matrix["usuarios"]["RECEPCIONISTA"] = 0
+        self.assertEqual(admin.put("/api/rbac/", {"matriz": matrix}, format="json").status_code, 200)
+        self.assertEqual(admin.delete("/api/rbac/").status_code, 200)
+        self.assertEqual(cliente(self.rec_a).get("/api/usuarios/").status_code, 200)

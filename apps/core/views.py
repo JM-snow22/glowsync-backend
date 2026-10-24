@@ -1,4 +1,9 @@
 from django.utils import translation
+from django.db import transaction
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.exceptions import PermissionDenied
+from .models import PermisoRol
+from .rbac import MODULOS, ROLES, PREDETERMINADOS, matriz
 from django.utils.translation import gettext as _
 from drf_spectacular.utils import extend_schema
 from rest_framework import status, viewsets
@@ -86,3 +91,57 @@ class UsuarioViewSet(viewsets.ModelViewSet):
             from rest_framework.exceptions import PermissionDenied
             raise PermissionDenied("Solo el administrador SaaS puede eliminar administradores.")
         instance.delete()
+
+
+class PermisosRolView(APIView):
+    """Consulta por rol/negocio; edición y restauración reservadas al ADMIN_SAAS."""
+
+    permission_classes = [IsAuthenticated]
+
+    def _centro(self, request):
+        if request.user.rol == Usuario.Rol.ADMIN_SAAS:
+            return centro_actual(request)
+        if not request.user.centro_id or not request.user.centro.suscripcion_activa:
+            raise PermissionDenied("No tienes un negocio activo asignado.")
+        return request.user.centro
+
+    def get(self, request):
+        centro = self._centro(request)
+        return Response({"centro_id": centro.pk, "matriz": matriz(centro.pk),
+                         "editable": request.user.rol == Usuario.Rol.ADMIN_SAAS})
+
+    def put(self, request):
+        if request.user.rol != Usuario.Rol.ADMIN_SAAS:
+            raise PermissionDenied("Solo el administrador SaaS puede editar los permisos.")
+        centro = self._centro(request)
+        payload = request.data.get("matriz")
+        if not isinstance(payload, dict) or set(payload) != set(MODULOS):
+            raise ValidationError({"matriz": "Debes enviar todos los módulos."})
+        for modulo, roles in payload.items():
+            if not isinstance(roles, dict) or set(roles) != set(ROLES):
+                raise ValidationError({"matriz": f"Roles incompletos en {modulo}."})
+            for rol, nivel in roles.items():
+                if type(nivel) is not int or nivel not in (0, 1, 2):
+                    raise ValidationError({"matriz": f"Nivel inválido en {modulo}/{rol}."})
+                if (rol == Usuario.Rol.ADMIN_SAAS or modulo == "centros") and nivel != PREDETERMINADOS[modulo][rol]:
+                    raise ValidationError({"matriz": "Los permisos del administrador SaaS y Negocios son protegidos."})
+                if modulo == "dashboard" and nivel == 2:
+                    raise ValidationError({"matriz": "Resumen es un módulo de solo lectura."})
+        with transaction.atomic():
+            for modulo, roles in payload.items():
+                if modulo == "centros":
+                    continue
+                for rol, nivel in roles.items():
+                    if rol == Usuario.Rol.ADMIN_SAAS:
+                        continue
+                    PermisoRol.objects.update_or_create(
+                        centro=centro, rol=rol, modulo=modulo, defaults={"nivel": nivel}
+                    )
+        return self.get(request)
+
+    def delete(self, request):
+        if request.user.rol != Usuario.Rol.ADMIN_SAAS:
+            raise PermissionDenied("Solo el administrador SaaS puede restaurar los permisos.")
+        centro = self._centro(request)
+        PermisoRol.objects.filter(centro=centro).delete()
+        return self.get(request)
