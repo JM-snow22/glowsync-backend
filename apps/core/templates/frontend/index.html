@@ -114,14 +114,33 @@ const empty=(i,m)=>`<div class="empty"><b>${i}</b>${m}</div>`,cnt=d=>`<p class="
 function toast(m,ok=1){const e=document.createElement("div");e.className="toast"+(ok?"":" bad");e.textContent=m;document.body.appendChild(e);setTimeout(()=>e.remove(),3200)}
 function msg(d){if(!d)return"";if(d.detail)return d.detail;return Object.entries(d).map(([k,v])=>k+": "+[].concat(v).join(" ")).join(" · ")}
 async function refresh(){try{const r=await fetch("/api/auth/refresh/",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({refresh:S.refresh})});if(!r.ok)return false;S.access=(await r.json()).access;save();return true}catch(e){return false}}
+// Respuestas recientes por sesión y sede; nunca se guardan en disco.
+const responseCache=new Map();
+const CACHE_MS=20000;
+function clearResponseCache(){responseCache.clear()}
+function cachedGet(path){
+  const tenant=S?.me?.rol==="ADMIN_SAAS"?selectedCentro:(S?.me?.centro||S?.me?.centro_id||"");
+  const key=JSON.stringify([S?.me?.id,tenant,lang,path]);
+  const previous=responseCache.get(key);
+  if(previous && Date.now()-previous.when<CACHE_MS)return previous.promise;
+  const promise=api(path).catch(err=>{responseCache.delete(key);throw err});
+  responseCache.set(key,{when:Date.now(),promise});
+  return promise;
+}
+function prefetchView(v){
+  if(!S)return;
+  if(S.me.rol==="ADMIN_SAAS"&&!selectedCentro&&v!=="centros")return;
+  const routes={dashboard:"/api/dashboard/resumen/",clientas:"/api/clientas/?search=" ,fichas:"/api/fichas/",usuarios:"/api/usuarios/",centros:"/api/centros/"};
+  const path=routes[v];if(path)cachedGet(path).catch(()=>{});
+}
 async function api(path,o={},retry=true){
   const h={"Content-Type":"application/json","Accept-Language":lang};if(S&&S.access)h.Authorization="Bearer "+S.access;if(S?.me?.rol==="ADMIN_SAAS"&&selectedCentro)h["X-Centro-ID"]=selectedCentro;
   const r=await fetch(path,{method:o.method||"GET",headers:h,body:o.body?JSON.stringify(o.body):undefined});
   if(r.status===401&&retry&&S&&S.refresh){if(await refresh())return api(path,o,false);logout(t("expired"));throw new Error(t("expired"))}
-  const d=await r.json().catch(()=>null);if(!r.ok)throw new Error(msg(d)||r.status);return d}
-function logout(m){S=null;selectedCentro="";sessionStorage.removeItem("gs_centro");sessionStorage.removeItem("gs");location.hash="";draw(m)}
+  const d=await r.json().catch(()=>null);if(!r.ok)throw new Error(msg(d)||r.status);if(o.method&&o.method!=="GET")clearResponseCache();return d}
+function logout(m){clearResponseCache();S=null;selectedCentro="";sessionStorage.removeItem("gs_centro");sessionStorage.removeItem("gs");location.hash="";draw(m)}
 const langSel=()=>`<select id="lg" aria-label="Language"><option value="es"${lang==="es"?" selected":""}>Español</option><option value="en"${lang==="en"?" selected":""}>English</option></select>`;
-async function setLang(v){lang=v;localStorage.setItem("lang",v);document.documentElement.lang=v;if(S){try{await api("/api/auth/me/",{method:"PATCH",body:{idioma:v}})}catch(e){}S.me.idioma=v;save()}draw()}
+async function setLang(v){clearResponseCache();lang=v;localStorage.setItem("lang",v);document.documentElement.lang=v;if(S){try{await api("/api/auth/me/",{method:"PATCH",body:{idioma:v}})}catch(e){}S.me.idioma=v;save()}draw()}
 function draw(m){
   if(!S){
     $("#app").innerHTML=`<div class="auth"><section class="hero">
@@ -142,7 +161,7 @@ function draw(m){
     $("#toggle-password").onclick=()=>{const p=$("#p"),b=$("#toggle-password"),show=p.type==="password";p.type=show?"text":"password";b.textContent=show?(lang==="es"?"Ocultar":"Hide"):(lang==="es"?"Mostrar":"Show");b.setAttribute("aria-label",lang==="es"?(show?"Ocultar contraseña":"Mostrar contraseña"):(show?"Hide password":"Show password"))};
     $("#f").onsubmit=async ev=>{ev.preventDefault();const btn=$("#login-submit");btn.disabled=true;btn.textContent=lang==="es"?"Ingresando…":"Signing in…";
       try{const d=await api("/api/auth/login/",{method:"POST",body:{email:$("#e").value,password:$("#p").value}});
-      S={access:d.access,refresh:d.refresh,me:d.usuario};lang=S.me.idioma||lang;localStorage.setItem("lang",lang);save();draw();go()}
+      clearResponseCache();S={access:d.access,refresh:d.refresh,me:d.usuario};lang=S.me.idioma||lang;localStorage.setItem("lang",lang);save();draw();go()}
       catch(e){const box=$("#login-error");if(box)box.innerHTML=`<div class="err">${esc(t("bad"))}</div>`;btn.disabled=false;btn.textContent=t("login")}};return}
   const me=S.me;
   $("#app").innerHTML=`<div class="app"><aside class="side"><div class="logo"><i>✦</i> GlowSync</div><nav>${MENU[me.rol].map(v=>`<a href="#/${v}"><span>${ICON[v]}</span>${t(v)}</a>`).join("")}</nav>
@@ -150,37 +169,40 @@ function draw(m){
   <div class="me"><div class="av">${esc(ini(me.nombre))}</div><div><b>${esc(me.nombre)}</b><small>${t(me.rol)}</small></div></div><div class="ctl">${langSel()}<button class="sm" id="out">${t("logout")}</button></div></aside>
   <section class="body"><div class="top"><h1 id="ttl"></h1><span>${new Date().toLocaleDateString(loc(),{weekday:"long",day:"numeric",month:"long"})}</span></div><main id="m"></main></section></div>`;
   $("#lg").onchange=e=>setLang(e.target.value);$("#out").onclick=()=>logout();if(me.rol==="ADMIN_SAAS")loadCentros();go()}
-async function loadCentros(){const el=$("#tenant-select");if(!el)return;try{const data=await api("/api/centros/");const items=data.results||data;el.innerHTML=`<option value="">${lang==="es"?"Selecciona un negocio":"Select business"}</option>`+items.map(c=>`<option value="${c.id}">${esc(c.nombre)}</option>`).join("");if(!items.some(c=>String(c.id)===selectedCentro)){selectedCentro="";sessionStorage.removeItem("gs_centro")}el.value=selectedCentro;el.onchange=()=>{selectedCentro=el.value;sessionStorage.setItem("gs_centro",selectedCentro);go()}}catch(e){toast(e.message,0)}}
+async function loadCentros(){const el=$("#tenant-select");if(!el)return;try{const data=await cachedGet("/api/centros/");const items=data.results||data;el.innerHTML=`<option value="">${lang==="es"?"Selecciona un negocio":"Select business"}</option>`+items.map(c=>`<option value="${c.id}">${esc(c.nombre)}</option>`).join("");if(!items.some(c=>String(c.id)===selectedCentro)){selectedCentro="";sessionStorage.removeItem("gs_centro")}el.value=selectedCentro;el.onchange=()=>{selectedCentro=el.value;sessionStorage.setItem("gs_centro",selectedCentro);clearResponseCache();go()}}catch(e){toast(e.message,0)}}
+let navigationVersion=0;
 async function go(){
+  const currentVersion=++navigationVersion;
   if(!S)return;const v=(location.hash||"").slice(2)||MENU[S.me.rol][0],m=$("#m");if(!m)return draw();
   document.querySelectorAll("nav a").forEach(a=>a.classList.toggle("on",a.getAttribute("href")==="#/"+v));$("#ttl").textContent=t(v)||"";
   if(!MENU[S.me.rol].includes(v)){m.innerHTML=`<div class="card"><div class="err">${t("denied")}</div></div>`;return}
   if(S.me.rol==="ADMIN_SAAS"&&v!=="centros"&&v!=="rbac"&&!selectedCentro){m.innerHTML=`<div class="card empty">${lang==="es"?"Selecciona una sede en el menú lateral para gestionar sus datos.":"Choose a location in the sidebar to manage its data."}</div>`;return}
+  const version=currentVersion;
   m.innerHTML='<div class="sk"></div><div class="sk"></div>';
-  try{m.innerHTML=await VIEWS[v]()}catch(e){m.innerHTML=`<div class="card"><div class="err">${esc(e.message)}</div></div>`}bind()}
+  try{const html=await VIEWS[v]();if(version!==navigationVersion)return;m.innerHTML=html}catch(e){if(version!==navigationVersion)return;m.innerHTML=`<div class="card"><div class="err">${esc(e.message)}</div></div>`}bind()}
 window.onhashchange=go;
 const VIEWS={
- async dashboard(){const d=await api("/api/dashboard/resumen/"),pct=Math.round(d.tasa_inasistencia*1000)/10;
+ async dashboard(){const d=await cachedGet("/api/dashboard/resumen/"),pct=Math.round(d.tasa_inasistencia*1000)/10;
   return `<div class="card hi"><div><small>${t("recovered")}</small><b>${money(d.dinero_recuperado)}</b><p>${t("recNote")}</p></div><div style="font-size:64px">🌸</div></div>
   <div class="kpi"><div class="card"><div class="ic">🗓️</div><div><small>${t("k1")}</small><b>${d.citas_total}</b></div></div>
   <div class="card"><div class="ring" style="--p:${pct}"><span>${pct.toFixed(1)}%</span></div><div><small>${t("k2")}</small></div></div>
   <div class="card"><div class="ic">💰</div><div><small>${t("k4")}</small><b>${money(d.ingresos_aprobados)}</b></div></div>
   <div class="card"><div class="ic">⚡</div><div><small>${t("k5")}</small><b>${d.ofertas_aceptadas}</b></div></div></div>`},
- async citas(){const d=await api("/api/citas/?ordering=hora_inicio&hora_inicio__gte="+encodeURIComponent(new Date().toISOString()));
+ async citas(){const d=await cachedGet("/api/citas/?ordering=hora_inicio&hora_inicio__gte="+encodeURIComponent(new Date().toISOString()));
   if(!d.results.length)return `<div class="card">${empty("🗓️",t("eC"))}</div>`;
   const g={};d.results.forEach(c=>{const k=new Date(c.hora_inicio).toLocaleDateString(loc(),{weekday:"long",day:"numeric",month:"long"});(g[k]=g[k]||[]).push(c)});
   return `<div class="card">${cnt(d)}${Object.entries(g).map(([k,l])=>`<h3 class="day">${esc(k)}</h3>${l.map(c=>`<div class="row"><div class="hr">${new Date(c.hora_inicio).toLocaleTimeString(loc(),{hour:"2-digit",minute:"2-digit"})}</div>
    <div class="av">${esc(ini(c.clienta_nombre))}</div><div class="grow"><b>${esc(c.clienta_nombre)}</b><small>${esc(c.servicio_nombre)}</small></div>${pill(c.estado)}
    ${can("citas")&&["PENDIENTE","CONFIRMADA"].includes(c.estado)?`<div class="acts">${c.estado==="PENDIENTE"?`<button class="sm" data-a="${c.id}:confirmar">${t("confirm")}</button>`:""}<button class="sm d" data-a="${c.id}:cancelar">${t("cancel")}</button></div>`:""}</div>`).join("")}`).join("")}</div>`},
- async clientas(){const q=window._q||"",d=await api("/api/clientas/?search="+encodeURIComponent(q));
+ async clientas(){const q=window._q||"",d=await cachedGet("/api/clientas/?search="+encodeURIComponent(q));
   return `<div class="card"><input id="q" class="search" placeholder="${t("search")}" value="${esc(q)}">${d.results.length?cnt(d)+`<div class="grid">${d.results.map(c=>`<div class="tile"><div class="h"><div class="av">${esc(ini(c.nombre))}</div><div><b>${esc(c.nombre)}</b><small>📱 ${esc(c.telefono_whatsapp)}</small></div></div><div class="tags">${pill("",c.idioma==="en"?"English":"Español")}</div></div>`).join("")}</div>`:empty("👩",t("eCl"))}</div>`},
- async fichas(){const d=await api("/api/fichas/");window._F={};d.results.forEach(f=>window._F[f.id]=f);
+ async fichas(){const d=await cachedGet("/api/fichas/");window._F={};d.results.forEach(f=>window._F[f.id]=f);
   return `<div class="card">${d.results.length?cnt(d)+`<div class="grid">${d.results.map(f=>`<div class="tile"><div class="h"><div class="av">#${f.clienta}</div><div><b>${t("skin")}: ${esc(f.tipo_cutis||"—")}</b><small>${esc(f.observaciones||"")}</small></div></div>
    <div class="tags">${f.alergias?`<span class="pill no">⚠ ${esc(f.alergias)}</span>`:`<span class="pill ok">${t("noAl")}</span>`}</div>${can("fichas")?`<div><button class="sm" data-f="${f.id}">${t("edit")}</button></div>`:""}</div>`).join("")}</div>`:empty("📋",t("eF"))}</div>`},
- async usuarios(){const d=await api("/api/usuarios/");return `<div class="card"><h2>${t("usuarios")}</h2>${d.results.length?`<div class="tw"><table><tr><th>${t("name")}</th><th>${t("email")}</th><th>${t("rol")}</th><th>${t("active")}</th></tr>${d.results.map(u=>`<tr><td><b>${esc(u.nombre)}</b></td><td>${esc(u.email)}</td><td>${pill("",t(u.rol))}</td><td>${u.is_active?"✔":"✖"}</td></tr>`).join("")}</table></div>`:empty("👥",t("eU"))}</div>
+ async usuarios(){const d=await cachedGet("/api/usuarios/");return `<div class="card"><h2>${t("usuarios")}</h2>${d.results.length?`<div class="tw"><table><tr><th>${t("name")}</th><th>${t("email")}</th><th>${t("rol")}</th><th>${t("active")}</th></tr>${d.results.map(u=>`<tr><td><b>${esc(u.nombre)}</b></td><td>${esc(u.email)}</td><td>${pill("",t(u.rol))}</td><td>${u.is_active?"✔":"✖"}</td></tr>`).join("")}</table></div>`:empty("👥",t("eU"))}</div>
   <div class="card"><h2>${t("newUser")}</h2><form id="nu" class="fg"><div><label>${t("name")}</label><input name="nombre" required></div><div><label>${t("email")}</label><input name="email" type="email" required></div>
   <div><label>${t("rol")}</label><select name="rol"><option value="ESTETICISTA">${t("ESTETICISTA")}</option><option value="RECEPCIONISTA">${t("RECEPCIONISTA")}</option></select></div><div><label>${t("pass")}</label><input name="password" type="password" minlength="8" required></div><div><button class="pri">${t("create")}</button></div></form></div>`},
- async centros(){const d=await api("/api/centros/");return `<div class="card"><h2>${t("centros")}</h2><div class="tw"><table><tr><th>ID</th><th>${t("name")}</th><th>${t("plan")}</th><th>${t("state")}</th><th>${t("expires")}</th></tr>${d.results.map(c=>`<tr><td>${c.id}</td><td><b>${esc(c.nombre)}</b></td><td>${pill("",c.plan)}</td><td>${pill(c.estado_suscripcion)}</td><td>${esc(c.fecha_vencimiento)}</td></tr>`).join("")}</table></div></div>
+ async centros(){const d=await cachedGet("/api/centros/");return `<div class="card"><h2>${t("centros")}</h2><div class="tw"><table><tr><th>ID</th><th>${t("name")}</th><th>${t("plan")}</th><th>${t("state")}</th><th>${t("expires")}</th></tr>${d.results.map(c=>`<tr><td>${c.id}</td><td><b>${esc(c.nombre)}</b></td><td>${pill("",c.plan)}</td><td>${pill(c.estado_suscripcion)}</td><td>${esc(c.fecha_vencimiento)}</td></tr>`).join("")}</table></div></div>
   <div class="card"><h2>${t("newCentro")}</h2><form id="nc" class="fg"><div><label>${t("name")}</label><input name="nombre" required></div><div><label>${t("city")}</label><input name="ciudad"></div>
   <div><label>${t("plan")}</label><select name="plan"><option>BASICO</option><option>PRO</option><option>PREMIUM</option></select></div><div><label>${t("expires")}</label><input name="fecha_vencimiento" type="date" required></div><div><button class="pri">${t("create")}</button></div></form></div>
   <div class="card"><h2>${t("centroUser")}</h2><form id="cu" class="fg"><div><label>${t("centro")}</label><select name="centro">${d.results.map(c=>`<option value="${c.id}">${esc(c.nombre)}</option>`).join("")}</select></div>
