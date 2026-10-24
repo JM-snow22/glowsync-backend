@@ -82,11 +82,18 @@ DATABASES = {
         "PASSWORD": env("POSTGRES_PASSWORD", "glowsync"),
         "HOST": env("POSTGRES_HOST", "localhost"),
         "PORT": env("POSTGRES_PORT", "5432"),
-        "OPTIONS": {"sslmode": env("POSTGRES_SSLMODE", "prefer")},
-        # Reutiliza conexiones para evitar un handshake con PostgreSQL por cada request.
-        # 60 segundos es un punto de partida conservador; requiere medir con tu hosting.
-        "CONN_MAX_AGE": int(env("POSTGRES_CONN_MAX_AGE", "60")),
+        "CONN_MAX_AGE": int(
+            env("POSTGRES_CONN_MAX_AGE", "300")
+        ),
         "CONN_HEALTH_CHECKS": True,
+
+        "OPTIONS": {
+            "sslmode": env(
+                "POSTGRES_SSLMODE", "require"
+            ),
+            "connect_timeout": 10,
+            "application_name": "glowsync",
+        },
     }
 }
 

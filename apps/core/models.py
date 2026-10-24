@@ -111,3 +111,17 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self):
         return f"{self.nombre} ({self.rol})"
+
+class PermisoRol(models.Model):
+    """Permiso por negocio, módulo y rol. 0=ninguno, 1=lectura, 2=escritura."""
+    centro = models.ForeignKey(Centro, on_delete=models.CASCADE, related_name="permisos_rol")
+    rol = models.CharField(max_length=15, choices=Usuario.Rol.choices)
+    modulo = models.CharField(max_length=20)
+    nivel = models.PositiveSmallIntegerField()
+
+    class Meta:
+        db_table = "permiso_rol"
+        constraints = [
+            models.UniqueConstraint(fields=["centro", "rol", "modulo"], name="permiso_rol_unico"),
+            models.CheckConstraint(condition=models.Q(nivel__in=[0, 1, 2]), name="permiso_rol_nivel_valido"),
+        ]
