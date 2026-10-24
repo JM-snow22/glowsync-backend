@@ -1,80 +1,9 @@
+{% load static %}
 <!doctype html>
 <html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>GlowSync</title><meta name="theme-color" content="#b9708f">
-<style>
-:root{--v:#b9708f;--r:#d9889b;--g:#d4a373;--ink:#3a2a31;--mut:#8b7780;--bg:#fbf6f3;--line:#f0e4de;--grad:linear-gradient(135deg,#d9889b,#b9708f 55%,#9b5a8c);--sh:0 10px 30px #b9708f1f;--serif:"Playfair Display",Georgia,"Times New Roman",serif}
-*{box-sizing:border-box}body{margin:0;font-family:Inter,"Segoe UI",system-ui,-apple-system,Arial,sans-serif;background:radial-gradient(circle at 100% 0,#f9e1e0 0,transparent 35%),radial-gradient(circle at 0 100%,#f3e6ef 0,transparent 30%),var(--bg);background-attachment:fixed;color:var(--ink);-webkit-font-smoothing:antialiased}
-button{font-family:inherit;cursor:pointer}h1,h2,h3,p{margin:0}h1,h2,.logo,.hi b,.kpi b{font-family:var(--serif)}.mut{color:var(--mut)}.gt{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
-.logo{font-weight:700;font-size:24px;letter-spacing:-.3px}.logo i{font-style:normal;color:var(--g)}
-.auth{min-height:100vh;display:grid;grid-template-columns:1.15fr 1fr}
-.hero{color:#fff;padding:52px 60px;display:flex;flex-direction:column;justify-content:space-between;position:relative;overflow:hidden;background:radial-gradient(circle at 18% 12%,#f2b9c0 0,transparent 42%),radial-gradient(circle at 88% 85%,#c58bc0 0,transparent 48%),linear-gradient(135deg,#b5617f,#7a3d6c)}
-.hero:before{content:"✿";position:absolute;right:-30px;top:-60px;font-size:380px;color:#ffffff14;line-height:1}.hero:after{content:"";position:absolute;left:-90px;bottom:-90px;width:320px;height:320px;border-radius:50%;background:#ffffff14}
-.hero>*{position:relative;z-index:1}.hero .logo{color:#fff;font-size:28px}.eyebrow{letter-spacing:3px;font-size:12px;text-transform:uppercase;opacity:.85;margin-bottom:14px}
-.hero h2{font-size:50px;line-height:1.05;letter-spacing:-1px;margin-bottom:18px;font-weight:600}.hero p{font-size:17px;opacity:.93;max-width:490px;line-height:1.65}
-.hero ul{list-style:none;padding:0;margin:28px 0 0;display:grid;gap:12px}.hero li{background:#ffffff1f;border:1px solid #ffffff2e;backdrop-filter:blur(8px);padding:13px 18px;border-radius:999px;font-size:15px;max-width:480px}.hero small{opacity:.85;letter-spacing:1px}
-.fside{display:flex;flex-direction:column;padding:22px 44px;background:#fffdfb}.lgbox{align-self:flex-end}.fc{margin:auto;width:100%;max-width:390px}.fc h2{font-size:34px;margin-bottom:6px;font-weight:600}.fc p{margin-bottom:24px}
-label{display:block;font-size:12px;font-weight:600;letter-spacing:.4px;color:var(--mut);margin:15px 0 6px;text-transform:uppercase}
-input,select,textarea{width:100%;padding:13px 16px;border:1.5px solid var(--line);border-radius:14px;font:inherit;font-size:14.5px;background:#fff;color:var(--ink);outline:0;transition:.2s}
-input:focus,select:focus,textarea:focus{border-color:var(--r);box-shadow:0 0 0 4px #d9889b2b}
-.pri{background:var(--grad);color:#fff;border:0;border-radius:999px;padding:13px 24px;font-weight:700;font-size:14.5px;box-shadow:0 10px 22px #b9708f40;transition:.2s}.pri:hover{transform:translateY(-2px);box-shadow:0 14px 26px #b9708f50}
-.wide{width:100%;margin-top:22px;padding:15px}.ghost{background:#fff;color:var(--ink);border:1.5px solid var(--line);border-radius:999px;padding:13px 22px;font-weight:600}
-.sm{background:#f8e9ee;color:#a9456c;border:0;border-radius:999px;padding:8px 14px;font-size:12.5px;font-weight:700;transition:.15s}.sm.d{background:#fff0ee;color:#c2503f}.sm:hover{transform:translateY(-1px);filter:brightness(.97)}
-.err{background:#fdeaee;color:#b83a5a;padding:12px 16px;border-radius:14px;margin:0 0 6px;font-size:14px}
-.app{display:grid;grid-template-columns:268px 1fr;min-height:100vh}
-.side{background:linear-gradient(180deg,#43233a,#2a1524);color:#ecd9e1;padding:24px 16px;display:flex;flex-direction:column;gap:18px;position:sticky;top:0;height:100vh}
-.side .logo{color:#fff;padding:4px 12px 12px}.side nav{display:flex;flex-direction:column;gap:5px;flex:1}
-.side nav a{display:flex;gap:12px;align-items:center;padding:12px 15px;border-radius:999px;color:#ecd9e1;text-decoration:none;font-size:14.5px;font-weight:500;transition:.15s}
-.side nav a:hover{background:#ffffff14}.side nav a.on{background:var(--grad);color:#fff;font-weight:700;box-shadow:0 8px 20px #d9889b44}
-.me{display:flex;gap:12px;align-items:center;background:#ffffff12;border:1px solid #ffffff14;border-radius:20px;padding:12px}.me b{display:block;color:#fff;font-size:14px}.me small{color:#d9bccb}
-.av{width:42px;height:42px;border-radius:50%;background:var(--grad);color:#fff;display:grid;place-items:center;font-weight:700;font-size:14px;flex:none;font-family:var(--serif);box-shadow:0 4px 10px #b9708f44}
-.ctl{display:flex;gap:8px}.ctl select{background:#ffffff14;color:#fff;border-color:#ffffff22;padding:10px;font-size:13px;border-radius:999px}.ctl option{color:#000}.ctl .sm{background:#ffffff1a;color:#fff;white-space:nowrap}
-.body{padding:32px 40px;min-width:0}.top{display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:8px;margin-bottom:24px}.top h1{font-size:36px;letter-spacing:-.8px;font-weight:600}.top span{color:var(--mut);font-size:14px;text-transform:capitalize}
-.card{background:#fffffff2;border:1px solid var(--line);border-radius:24px;padding:24px;margin-bottom:20px;box-shadow:var(--sh)}.card h2{font-size:21px;margin-bottom:16px;font-weight:600}
-.hi{background:linear-gradient(135deg,#e29aa6,#b9708f 60%,#8d5088);color:#fff;border:0;display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap;position:relative;overflow:hidden}
-.hi:after{content:"✿";position:absolute;right:20px;top:-40px;font-size:230px;color:#ffffff1c;line-height:1}.hi>*{position:relative;z-index:1}
-.hi small{opacity:.92;font-size:13px;letter-spacing:1.5px;text-transform:uppercase}.hi b{display:block;font-size:54px;letter-spacing:-1.5px;margin:6px 0;font-weight:600}.hi p{opacity:.94;font-size:14.5px;max-width:440px;line-height:1.55}
-.kpi{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:18px;margin-bottom:20px}.kpi .card{margin:0;display:flex;gap:15px;align-items:center;transition:.2s}.kpi .card:hover{transform:translateY(-3px)}
-.ic{width:50px;height:50px;border-radius:50%;background:linear-gradient(135deg,#fbe4e4,#f6e3ef);display:grid;place-items:center;font-size:22px;flex:none}.kpi small{color:var(--mut);font-size:13px}.kpi b{display:block;font-size:28px;letter-spacing:-.6px;font-weight:600}
-.ring{width:64px;height:64px;border-radius:50%;background:conic-gradient(var(--r) calc(var(--p)*1%),#f3e7e5 0);display:grid;place-items:center;flex:none}.ring span{width:48px;height:48px;border-radius:50%;background:#fff;display:grid;place-items:center;font-weight:800;font-size:13px}
-.day{font-size:13px;text-transform:uppercase;letter-spacing:1.5px;color:var(--mut);margin:22px 0 10px;font-family:var(--serif);font-style:italic}.day:first-child{margin-top:0}
-.row{display:flex;gap:14px;align-items:center;padding:14px 6px;border-bottom:1px dashed var(--line)}.row:last-child{border:0}
-.hr{font-weight:700;color:var(--v);min-width:62px;font-size:15px;font-family:var(--serif)}.row .grow{flex:1;min-width:0}.row b{display:block}.row small{color:var(--mut)}.acts{display:flex;gap:6px;flex-wrap:wrap}
-.pill{display:inline-block;padding:5px 12px;border-radius:99px;font-size:12px;font-weight:700;background:#f3eceb;color:#7a6a70}.pill.ok{background:#e4f2e8;color:#2f7a55}.pill.no{background:#fdeaee;color:#b83a5a}.pill.w{background:#fbf0dc;color:#9a6a1c}.pill.v{background:#f6e8f1;color:#a9648f}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:16px}.tile{border:1px solid var(--line);border-radius:22px;padding:18px;display:flex;flex-direction:column;gap:12px;background:linear-gradient(180deg,#fff,#fff8f6);transition:.2s}.tile:hover{transform:translateY(-3px);box-shadow:var(--sh)}
-.tile .h{display:flex;gap:12px;align-items:center}.tile b{display:block}.tile small{color:var(--mut)}.tags{display:flex;gap:6px;flex-wrap:wrap}
-.search{max-width:360px;margin-bottom:18px;border-radius:999px}.fg{display:grid;grid-template-columns:repeat(auto-fit,minmax(185px,1fr));gap:12px;align-items:end}.fg label{margin-top:0}
-table{width:100%;border-collapse:collapse;font-size:14px}th,td{text-align:left;padding:13px 10px;border-bottom:1px solid var(--line)}th{color:var(--mut);font-size:12px;text-transform:uppercase;letter-spacing:.8px}.tw{overflow-x:auto}
-.empty{text-align:center;padding:40px;color:var(--mut)}.empty b{display:block;font-size:40px;margin-bottom:8px}.cnt{color:var(--mut);font-size:13px;margin-bottom:12px}
-.ov{position:fixed;inset:0;background:#2a152499;backdrop-filter:blur(4px);display:grid;place-items:center;padding:16px;z-index:50}.mod{background:#fffdfb;border-radius:26px;padding:28px;width:100%;max-width:470px;animation:up .25s ease}.mod h2{margin-bottom:6px}.act{display:flex;gap:10px;justify-content:flex-end;margin-top:22px}
-.toast{position:fixed;right:22px;bottom:22px;background:#2a1524;color:#fff;padding:14px 20px;border-radius:999px;font-size:14px;z-index:60;box-shadow:0 12px 30px #0004;max-width:340px}.toast.bad{background:#b83a5a}
-.sk{height:72px;border-radius:20px;background:linear-gradient(90deg,#f6eceb,#fff8f6,#f6eceb);background-size:200% 100%;animation:sh 1.2s infinite;margin-bottom:12px}@keyframes sh{to{background-position:-200% 0}}
-@keyframes up{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}main>*{animation:up .4s ease both}
-@media(max-width:900px){.auth{grid-template-columns:1fr}.hero{display:none}.app{grid-template-columns:1fr}.side{position:static;height:auto;flex-direction:row;flex-wrap:wrap;align-items:center;padding:12px}.side nav{flex-direction:row;overflow-x:auto;flex:1 1 100%;order:3}.side nav a{white-space:nowrap}.me{display:none}.body{padding:18px}.hi b{font-size:38px}.top h1{font-size:28px}}
-
-/* GlowSync · acceso editorial */
-.auth{grid-template-columns:minmax(0,1.05fr) minmax(400px,.95fr);background:#fffaf8}
-.hero{isolation:isolate;background:linear-gradient(180deg,rgba(39,19,35,.12),rgba(45,19,39,.86)),url('/static/img/login-beauty-hero.png') center/cover no-repeat,#6c4259;padding:clamp(28px,5vw,76px)}
-.hero:before{content:"";inset:0;right:auto;top:auto;position:absolute;width:100%;height:100%;background:linear-gradient(110deg,rgba(52,22,44,.45),transparent 75%);z-index:0}
-.hero:after{display:none}
-.hero h2{font-size:clamp(38px,4.4vw,66px);max-width:670px;line-height:1.07;text-wrap:balance}
-.hero p{max-width:550px}
-.hero ul{max-width:530px}
-.hero li{border-radius:16px;background:rgba(255,255,255,.12);backdrop-filter:blur(14px)}
-.fside{background:radial-gradient(circle at 90% 10%,#f7e9ed,transparent 40%),#fffaf8;padding:28px clamp(22px,5vw,72px)}
-.fc{max-width:430px;background:#fff;border:1px solid #f0e1e5;border-radius:28px;padding:clamp(25px,3vw,40px);box-shadow:0 25px 70px #693b5114}
-.fc h2{font-size:clamp(30px,3vw,40px)}
-.fc p{line-height:1.65}
-.auth input{padding:15px 17px}
-.auth .pri{width:100%;border-radius:14px;padding:16px}
-.auth .err{border:1px solid #f2cbd6}
-.auth .password-field{position:relative}
-.auth .password-field input{padding-right:90px}
-.auth .password-toggle{position:absolute;right:10px;top:50%;transform:translateY(-50%);border:0;background:#f8e9ee;color:#854662;border-radius:10px;padding:8px 10px;font-size:12px;font-weight:700}
-.auth .auth-note{margin-top:18px;font-size:12px;color:var(--mut);text-align:center}
-@media(max-width:900px){.auth{grid-template-columns:1fr}.hero{display:flex;min-height:280px;padding:28px}.hero ul,.hero small{display:none}.hero h2{font-size:36px}.hero p{font-size:14px}.fside{padding:22px}.fc{margin:0 auto 30px;width:100%}}
-@media(max-width:480px){.hero{min-height:230px}.hero h2{font-size:30px}.fc{padding:24px 20px}}
-@media(prefers-reduced-motion:reduce){.auth *{animation:none!important;transition:none!important}}
-.tenant-chooser{padding:8px 10px;background:#ffffff12;border-radius:16px}.tenant-chooser label{color:#f2dce6;margin:0 0 7px}.tenant-chooser select{background:#fff;color:#4a273b;border:0;font-size:13px;padding:11px} </style></head>
+<link rel="stylesheet" href="{% static 'css/base.css' %}">
+<link rel="stylesheet" href="{% static 'css/modules.css' %}"></head>
 <body><div id="app"></div>
 <script>
 const T={es:{login:"Iniciar sesión",logout:"Salir",email:"Correo electrónico",pass:"Contraseña",bad:"No pudimos iniciar sesión. Revisa tus datos o consulta el estado de tu suscripción.",expired:"Tu sesión expiró",
@@ -195,12 +124,63 @@ async function go(){
   try{const html=await VIEWS[v]();if(version!==navigationVersion)return;m.innerHTML=html}catch(e){if(version!==navigationVersion)return;m.innerHTML=`<div class="card"><div class="err">${esc(e.message)}</div></div>`}bind()}
 window.onhashchange=go;
 const VIEWS={
- async dashboard(){const d=await cachedGet("/api/dashboard/resumen/"),pct=Math.round(d.tasa_inasistencia*1000)/10;
-  return `<div class="card hi"><div><small>${t("recovered")}</small><b>${money(d.dinero_recuperado)}</b><p>${t("recNote")}</p></div><div style="font-size:64px">🌸</div></div>
-  <div class="kpi"><div class="card"><div class="ic">🗓️</div><div><small>${t("k1")}</small><b>${d.citas_total}</b></div></div>
-  <div class="card"><div class="ring" style="--p:${pct}"><span>${pct.toFixed(1)}%</span></div><div><small>${t("k2")}</small></div></div>
-  <div class="card"><div class="ic">💰</div><div><small>${t("k4")}</small><b>${money(d.ingresos_aprobados)}</b></div></div>
-  <div class="card"><div class="ic">⚡</div><div><small>${t("k5")}</small><b>${d.ofertas_aceptadas}</b></div></div></div>`},
+ async dashboard(){
+  const d=await cachedGet("/api/dashboard/resumen/");
+  const pct=Math.max(0,Math.min(100,Number(d.tasa_inasistencia||0)*100));
+  const canList=MENU[S.me.rol].includes("citas");
+  const canClients=MENU[S.me.rol].includes("clientas");
+  const data=await Promise.all([
+    canList?cachedGet("/api/citas/?ordering=hora_inicio&hora_inicio__gte="+encodeURIComponent(new Date().toISOString())).catch(()=>null):Promise.resolve(null),
+    canClients?cachedGet("/api/clientas/?search=").catch(()=>null):Promise.resolve(null)
+  ]);
+  const appointments=(data[0]&&Array.isArray(data[0].results)?data[0].results:[]).slice(0,6);
+  const clients=(data[1]&&Array.isArray(data[1].results)?data[1].results:[]).slice(0,4);
+  const userRole=S.me.rol;
+  const quick=[
+    ["citas","🗓","Ir a la agenda","Open appointments"],
+    ["clientas","♡","Consultar clientas","View clients"],
+    ["fichas","▤","Consultar fichas","View files"],
+    ["usuarios","♧","Gestionar equipo","Manage team"],
+    ["rbac","♧","Gestionar permisos","Manage permissions"],
+    ["centros","⌂","Ver negocios","View businesses"]
+  ].filter(([v])=>MENU[userRole].includes(v));
+  const statusClass=s=>["CONFIRMADA","COMPLETADA","ACTIVA"].includes(s)?"ok":s==="PENDIENTE"?"pending":["CANCELADA","NO_ASISTIO"].includes(s)?"bad":"";
+  const dateToday=new Date().toLocaleDateString(loc(),{weekday:"long",day:"numeric",month:"long"});
+  return `<div class="gs-dashboard">
+    <header class="gs-hero"><div class="gs-hero-copy">
+      <div class="gs-kicker">${lang==="es"?"GLOWSYNC · CENTRO DE CONTROL":"GLOWSYNC · CONTROL CENTER"}</div>
+      <h2>${lang==="es"?"Tu negocio, en armonía.":"Your business, in harmony."}</h2>
+      <p>${lang==="es"?"Organiza tu agenda, atiende a tus clientas y haz crecer tu centro con todo a tu alcance.":"Organize appointments, care for your clients and grow your beauty center."}</p>
+    </div></header>
+    <section class="gs-kpis" aria-label="${lang==="es"?"Indicadores del negocio":"Business metrics"}">
+      <div class="gs-kpi"><span class="gs-icon">🗓</span><div><small>${t("k1")}</small><strong>${Number(d.citas_total||0).toLocaleString(loc())}</strong><em>${lang==="es"?"Citas del periodo":"Appointments in period"}</em></div></div>
+      <div class="gs-kpi"><span class="gs-icon">♡</span><div><small>${t("k2")}</small><strong>${pct.toLocaleString(loc(),{maximumFractionDigits:1})}%</strong><em>${lang==="es"?"Tasa de inasistencia":"No-show rate"}</em></div></div>
+      <div class="gs-kpi"><span class="gs-icon">$</span><div><small>${t("k4")}</small><strong>${money(d.ingresos_aprobados)}</strong><em>${lang==="es"?"Ingresos aprobados":"Approved revenue"}</em></div></div>
+      <div class="gs-kpi"><span class="gs-icon">✧</span><div><small>${t("k5")}</small><strong>${Number(d.ofertas_aceptadas||0).toLocaleString(loc())}</strong><em>${lang==="es"?"Ofertas aceptadas":"Accepted offers"}</em></div></div>
+    </section>
+    <div class="gs-columns">
+      <div>
+        <section class="gs-panel"><div class="gs-panel-head"><h3>${lang==="es"?"Próximas citas":"Upcoming appointments"}</h3>${canList?`<a class="gs-link" href="#/citas">${lang==="es"?"Ver agenda →":"View schedule →"}</a>`:""}</div>
+          ${!canList?`<p class="gs-note">${t("denied")}</p>`:!data[0]?`<p class="gs-note">${lang==="es"?"No fue posible cargar las citas.":"Could not load appointments."}</p>`:appointments.length?appointments.map(c=>`<div class="gs-appt"><span class="gs-time">${new Date(c.hora_inicio).toLocaleTimeString(loc(),{hour:"2-digit",minute:"2-digit"})}</span><span class="gs-initial">${esc(ini(c.clienta_nombre))}</span><div class="gs-person"><b>${esc(c.clienta_nombre)}</b><small>${esc(c.servicio_nombre||"")}</small></div><span class="gs-status ${statusClass(c.estado)}">${esc(c.estado||"")}</span></div>`).join(""):`<p class="gs-note">${t("eC")}</p>`}
+          <p class="gs-caption">${esc(dateToday)} · ${lang==="es"?"Próximas citas registradas, no datos de ejemplo":"Upcoming scheduled appointments, not sample data"}</p>
+        </section>
+        ${canClients?`<section class="gs-panel"><div class="gs-panel-head"><h3>${lang==="es"?"Clientas":"Clients"}</h3><a class="gs-link" href="#/clientas">${lang==="es"?"Ver clientas →":"View clients →"}</a></div>
+          ${!data[1]?`<p class="gs-note">${lang==="es"?"No fue posible cargar clientas.":"Could not load clients."}</p>`:clients.length?clients.map(c=>`<div class="gs-appt" style="grid-template-columns:42px minmax(0,1fr);gap:13px"><span class="gs-initial">${esc(ini(c.nombre))}</span><div class="gs-person"><b>${esc(c.nombre)}</b><small>${esc(c.telefono_whatsapp||"")}</small></div></div>`).join(""):`<p class="gs-note">${t("eCl")}</p>`}
+        </section>`:""}
+      </div>
+      <div>
+        <section class="gs-panel"><div class="gs-panel-head"><h3>${t("recovered")}</h3><span class="gs-icon">✧</span></div>
+          <div class="gs-insight"><div><strong>${money(d.dinero_recuperado)}</strong><p>${t("recNote")}</p></div></div>
+        </section>
+        <section class="gs-panel"><div class="gs-panel-head"><h3>${lang==="es"?"Accesos rápidos":"Quick access"}</h3></div><div class="gs-quick-grid">
+          ${quick.map(([v,icon,es,en])=>`<a class="gs-quick" href="#/${v}"><span class="gs-icon">${icon}</span>${lang==="es"?es:en}</a>`).join("")}
+        </div><p class="gs-note">${lang==="es"?"Las opciones disponibles respetan los permisos de tu rol.":"Available options follow your role permissions."}</p></section>
+        <section class="gs-panel"><div class="gs-panel-head"><h3>${lang==="es"?"Tu actividad":"Your activity"}</h3></div><div class="gs-insight"><div><strong>${pct.toLocaleString(loc(),{maximumFractionDigits:1})}%</strong><p>${lang==="es"?"Inasistencias del periodo. Consulta la agenda para gestionar tus citas.":"No-show rate for the period. Open the schedule to manage appointments."}</p></div><div class="ring" style="--p:${pct}"><span>${Math.round(pct)}%</span></div></div></section>
+      </div>
+    </div>
+    <p class="gs-footnote">GlowSync · ${lang==="es"?"Datos obtenidos del negocio seleccionado. Las funciones existentes se mantienen.":"Data from the selected business. Existing features are preserved."}</p>
+  </div>`
+ },
  async citas(){const d=await cachedGet("/api/citas/?ordering=hora_inicio&hora_inicio__gte="+encodeURIComponent(new Date().toISOString()));
   if(!d.results.length)return `<div class="card">${empty("🗓️",t("eC"))}</div>`;
   const g={};d.results.forEach(c=>{const k=new Date(c.hora_inicio).toLocaleDateString(loc(),{weekday:"long",day:"numeric",month:"long"});(g[k]=g[k]||[]).push(c)});
