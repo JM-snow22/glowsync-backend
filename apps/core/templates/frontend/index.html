@@ -3,7 +3,9 @@
 <html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>GlowSync</title><meta name="theme-color" content="#b9708f">
 <link rel="stylesheet" href="{% static 'css/base.css' %}">
-<link rel="stylesheet" href="{% static 'css/modules.css' %}"></head>
+<link rel="stylesheet" href="{% static 'css/modules.css' %}">
+<link rel="stylesheet" href="{% static 'css/navigation.css' %}"><link rel="stylesheet" href="{% static 'css/dashboard-polish.css' %}">
+</head>
 <body><div id="app"></div>
 <script>
 const T={es:{login:"Iniciar sesión",logout:"Salir",email:"Correo electrónico",pass:"Contraseña",bad:"No pudimos iniciar sesión. Revisa tus datos o consulta el estado de tu suscripción.",expired:"Tu sesión expiró",
@@ -31,6 +33,15 @@ ADMIN_SAAS:"SaaS admin",ADMIN_NEGOCIO:"Business admin",RECEPCIONISTA:"Receptioni
 // ---- RBAC: secciones visibles por rol y dónde puede escribir ----
 let MENU={ADMIN_SAAS:["centros","dashboard","citas","clientas","fichas","usuarios","rbac"],ADMIN_NEGOCIO:["dashboard","citas","clientas","fichas","usuarios","rbac"],RECEPCIONISTA:["dashboard","citas","clientas","fichas","usuarios","rbac"],ESTETICISTA:["citas","clientas","fichas","rbac"]};
 let WRITE={centros:["ADMIN_SAAS"],usuarios:["ADMIN_SAAS","ADMIN_NEGOCIO","RECEPCIONISTA"],citas:["ADMIN_SAAS","ADMIN_NEGOCIO","RECEPCIONISTA"],clientas:["ADMIN_SAAS","ADMIN_NEGOCIO","RECEPCIONISTA"],fichas:["ADMIN_SAAS","ADMIN_NEGOCIO","RECEPCIONISTA","ESTETICISTA"],dashboard:[]};
+const GS_NAV_ICONS={
+  "dashboard":`<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>`,
+  "citas":`<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/></svg>`,
+  "clientas":`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>`,
+  "fichas":`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 13h8M8 17h8"/></svg>`,
+  "usuarios":`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M20 21v-4M18 19h4"/></svg>`,
+  "centros":`<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="8" width="18" height="13" rx="2"/><path d="m3 8 3-5h12l3 5M9 21v-8h6v8"/></svg>`,
+  "rbac":`<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/><circle cx="12" cy="15" r="1"/></svg>`
+};
 const ICON={dashboard:"✨",citas:"📅",clientas:"💆‍♀️",fichas:"🧴",usuarios:"🤍",centros:"🌿",rbac:"🔐"};
 const TAGC={CONFIRMADA:"ok",COMPLETADA:"ok",ACTIVA:"ok",CANCELADA:"no",NO_ASISTIO:"no",PENDIENTE:"w"};
 let selectedCentro=sessionStorage.getItem("gs_centro")||"",lang=localStorage.getItem("lang")||"es",S=JSON.parse(sessionStorage.getItem("gs")||"null");
@@ -106,10 +117,12 @@ function draw(m){
       clearResponseCache();S={access:d.access,refresh:d.refresh,me:d.usuario};lang=S.me.idioma||lang;localStorage.setItem("lang",lang);save();draw();loadPermissions().then(()=>draw()).catch(()=>{})}
       catch(e){const box=$("#login-error");if(box)box.innerHTML=`<div class="err">${esc(t("bad"))}</div>`;btn.disabled=false;btn.textContent=t("login")}};return}
   const me=S.me;
-  $("#app").innerHTML=`<div class="app"><aside class="side"><div class="logo"><i>✦</i> GlowSync</div><nav>${MENU[me.rol].map(v=>`<a href="#/${v}"><span>${ICON[v]}</span>${t(v)}</a>`).join("")}</nav>
-  ${me.rol==="ADMIN_SAAS"?`<div class="tenant-chooser"><label for="tenant-select">${lang==="es"?"Sede activa":"Active location"}</label><select id="tenant-select"><option value="">${lang==="es"?"Selecciona un negocio":"Select business"}</option></select></div>`:""}
-  <div class="me"><div class="av">${esc(ini(me.nombre))}</div><div><b>${esc(me.nombre)}</b><small>${t(me.rol)}</small></div></div><div class="ctl">${langSel()}<button class="sm" id="out">${t("logout")}</button></div></aside>
-  <section class="body"><div class="top"><h1 id="ttl"></h1><span>${new Date().toLocaleDateString(loc(),{weekday:"long",day:"numeric",month:"long"})}</span></div><main id="m"></main></section></div>`;
+  $("#app").innerHTML=`<div class="app"><header class="side" role="banner">
+    <div class="gs-header-main"><div class="gs-brand"><div class="logo"><i>✦</i> GlowSync</div><div class="gs-brand-caption">${lang==="es"?"Gestión de belleza":"Beauty management"}</div></div>
+    <div class="gs-header-tools">${me.rol==="ADMIN_SAAS"?`<div class="tenant-chooser"><label for="tenant-select">${lang==="es"?"NEGOCIO ACTIVO":"ACTIVE BUSINESS"}</label><select id="tenant-select"><option value="">${lang==="es"?"Selecciona un negocio":"Select business"}</option></select></div>`:""}
+    <div class="me"><div class="av">${esc(ini(me.nombre))}</div><div><b>${esc(me.nombre)}</b><small>${t(me.rol)}</small></div></div><div class="ctl">${langSel()}<button class="sm" id="out">${t("logout")}</button></div></div></div>
+    <div class="gs-nav-shell"><nav aria-label="${lang==="es"?"Navegación principal":"Main navigation"}">${MENU[me.rol].map(v=>`<a href="#/${v}"><span class="gs-nav-icon" aria-hidden="true">${GS_NAV_ICONS[v]||""}</span>${t(v)}</a>`).join("")}</nav></div></header>
+    <section class="body"><div class="top"><h1 id="ttl"></h1><span>${new Date().toLocaleDateString(loc(),{weekday:"long",day:"numeric",month:"long"})}</span></div><main id="m"></main></section></div>`;
   $("#lg").onchange=e=>setLang(e.target.value);$("#out").onclick=()=>logout();if(me.rol==="ADMIN_SAAS")loadCentros();go()}
 async function loadCentros(){const el=$("#tenant-select");if(!el)return;try{const data=await cachedGet("/api/centros/");const items=data.results||data;el.innerHTML=`<option value="">${lang==="es"?"Selecciona un negocio":"Select business"}</option>`+items.map(c=>`<option value="${c.id}">${esc(c.nombre)}</option>`).join("");if(!items.some(c=>String(c.id)===selectedCentro)){selectedCentro="";sessionStorage.removeItem("gs_centro")}el.value=selectedCentro;el.onchange=()=>{selectedCentro=el.value;sessionStorage.setItem("gs_centro",selectedCentro);clearResponseCache();loadPermissions().then(()=>draw()).catch(()=>go())}}catch(e){toast(e.message,0)}}
 let navigationVersion=0;

@@ -1,0 +1,106 @@
+/* GlowSync — reparación del layout y pulido global, 2026-10-24.
+   Se carga DESPUÉS de base.css, modules.css y navigation.css.
+   No contiene datos ni modifica el control de acceso. */
+:root{
+ --polish-plum:#422a3d;--polish-rose:#b9708f;--polish-deep:#332334;
+ --polish-text:#342a34;--polish-muted:#857784;--polish-canvas:#f9f7f8;
+ --polish-line:#eadfe5;--polish-blush:#f6edf2;
+ --polish-shadow:0 4px 20px rgba(67,42,61,.045);
+}
+html,body{background:var(--polish-canvas)!important}
+.app{background:var(--polish-canvas)!important}
+/* Estructura global y navegación superior: más pulida y con estados claros */
+.app .side{background:rgba(255,255,255,.97)!important;border-bottom:1px solid var(--polish-line)!important}
+.gs-header-main{max-width:1510px!important;gap:24px!important}
+.app .side .logo{letter-spacing:-1.2px!important}
+.app .side nav{max-width:1510px!important;gap:4px!important}
+.app .side nav a{height:54px!important;position:relative;transition:background .18s,color .18s,border-color .18s!important}
+.app .side nav a:hover{background:#fcf7fa!important;color:var(--polish-plum)!important}
+.app .side nav a.on{background:#f9f0f5!important;color:var(--polish-plum)!important;border-bottom-color:var(--polish-rose)!important}
+.app .side nav a:focus-visible,.gs-quick:focus-visible,.gs-link:focus-visible{outline:3px solid #b9708f66!important;outline-offset:2px}
+.gs-header-tools .tenant-chooser select{min-width:200px}
+/* Espaciado y tarjetas compartidos en TODOS los módulos */
+.app .body{max-width:1550px!important;margin:auto!important;padding:32px clamp(18px,3vw,46px) 66px!important}
+.app .body .top{margin-bottom:24px!important}
+.app .body .top h1{font-family:Inter,'Segoe UI',system-ui,sans-serif!important;font-size:clamp(30px,3.2vw,42px)!important;letter-spacing:-1.25px!important;font-weight:700!important}
+.app .card{background:#fff!important;border:1px solid var(--polish-line)!important;border-radius:20px!important;box-shadow:var(--polish-shadow)!important;padding:clamp(20px,2.2vw,30px)!important}
+.app .card h2{font:650 20px/1.25 Inter,'Segoe UI',system-ui,sans-serif!important;letter-spacing:-.55px!important}
+.app .tile{border-radius:17px!important;transition:border-color .16s,box-shadow .16s,transform .16s!important}
+.app .tile:hover{border-color:#d9c1cf!important;box-shadow:0 8px 24px #422a3d11!important;transform:translateY(-2px)!important}
+.app .row{transition:background .18s!important;border-radius:10px}
+.app .row:hover{background:#fcf8fa}
+.app .sm,.app .ghost,.app .pri{transition:background .18s,box-shadow .18s,transform .18s!important}
+.app .pri:hover,.app .sm:hover,.app .ghost:hover{transform:translateY(-1px)!important}
+.app .pri{background:var(--polish-plum)!important}
+.app .pri:hover{background:#684460!important;box-shadow:0 6px 16px #422a3d1b!important}
+.app .tw{border:1px solid var(--polish-line)!important;border-radius:15px!important}
+.app table{width:100%!important}
+.app th{background:#fcfafb!important;color:#847381!important;letter-spacing:.7px!important}
+.app td{vertical-align:middle!important}
+.app table tr:hover td{background:#fdf9fb!important}
+.app input,.app select,.app textarea{transition:border-color .2s,box-shadow .2s,background .2s!important}
+.app input:focus,.app select:focus,.app textarea:focus{border-color:var(--polish-rose)!important;box-shadow:0 0 0 3px #b9708f24!important}
+.app .pill{font-weight:600!important}
+/* --- DASHBOARD REAL: clases que aparecen en la plantilla del proyecto --- */
+.app .body:has(.gs-dashboard){max-width:1550px!important;padding:30px clamp(18px,3vw,46px) 64px!important}
+.app .body:has(.gs-dashboard) #m{max-width:none!important;padding:0!important;margin:0!important}
+.app .body:has(.gs-dashboard)>.top{display:none!important}
+.app #m>.gs-dashboard{max-width:none!important;display:block!important;width:100%;margin:0!important}
+.gs-dashboard,.gs-dashboard *{box-sizing:border-box}
+.gs-dashboard>.gs-hero{display:flex!important;align-items:center!important;position:relative;isolation:isolate;overflow:hidden;border-radius:23px;border:1px solid #eedfe4;min-height:215px;padding:clamp(24px,4vw,48px)!important;margin-bottom:22px!important;background:#f5e9eb url('/static/img/glowsync-spa-dashboard.webp') center 48%/cover no-repeat!important}
+.gs-dashboard>.gs-hero:before{content:"";position:absolute;inset:0;z-index:0;background:linear-gradient(90deg,rgba(254,250,250,.97) 0%,rgba(254,250,250,.91) 33%,rgba(254,250,250,.44) 66%,rgba(254,250,250,.05) 100%)}
+.gs-dashboard .gs-hero-copy{position:relative;z-index:1;max-width:630px}
+.gs-dashboard .gs-kicker{display:block;font-size:11px;font-weight:750;letter-spacing:2.1px;color:#93677f;text-transform:uppercase;margin-bottom:13px}
+.gs-dashboard .gs-hero h2{font:500 clamp(34px,4vw,55px)/1.08 Georgia,'Times New Roman',serif!important;color:var(--polish-deep);letter-spacing:-1.7px;margin:0 0 13px}
+.gs-dashboard .gs-hero p{font:400 15px/1.65 Inter,'Segoe UI',sans-serif;color:#705e69;max-width:540px}
+.gs-dashboard .gs-kpis{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:16px!important;margin:0 0 22px!important;width:100%}
+.gs-dashboard .gs-kpi{min-width:0;min-height:142px;padding:23px 21px;display:flex!important;flex-direction:row;align-items:flex-start;gap:15px;background:#fff!important;border:1px solid var(--polish-line)!important;border-radius:20px!important;box-shadow:var(--polish-shadow);transition:transform .2s,box-shadow .2s,border-color .2s}
+.gs-dashboard .gs-kpi:hover{transform:translateY(-3px);box-shadow:0 12px 28px #422a3d10;border-color:#dec8d5!important}
+.gs-dashboard .gs-kpi>div{min-width:0;flex:1;display:flex;flex-direction:column;align-items:flex-start}
+.gs-dashboard .gs-icon{display:inline-grid;place-items:center;width:43px;height:43px;min-width:43px;border-radius:13px;background:#f7e9ef;color:#9c5376;font:600 19px/1 Inter,'Segoe UI',sans-serif;flex:none}
+.gs-dashboard .gs-kpi small{display:block!important;color:var(--polish-muted);font:500 12px/1.4 Inter,'Segoe UI',sans-serif!important;margin:1px 0 11px!important}
+.gs-dashboard .gs-kpi strong{display:block!important;color:var(--polish-deep);font:700 clamp(23px,2.2vw,32px)/1.15 Inter,'Segoe UI',sans-serif!important;letter-spacing:-1px;overflow-wrap:anywhere;margin:0!important}
+.gs-dashboard .gs-kpi em{display:block!important;color:#998a94;font:400 11px/1.45 Inter,'Segoe UI',sans-serif!important;margin:10px 0 0!important}
+.gs-dashboard .gs-columns{display:grid!important;grid-template-columns:minmax(0,1.34fr) minmax(320px,.9fr)!important;align-items:start!important;gap:20px!important}
+.gs-dashboard .gs-columns>div{min-width:0;display:flex;flex-direction:column;gap:20px}
+.gs-dashboard .gs-panel{display:block!important;min-width:0;background:#fff!important;border:1px solid var(--polish-line)!important;border-radius:20px!important;padding:clamp(19px,2vw,27px)!important;box-shadow:var(--polish-shadow)!important;margin:0!important}
+.gs-dashboard .gs-panel-head{display:flex!important;align-items:center;justify-content:space-between;gap:14px;margin-bottom:17px!important}
+.gs-dashboard .gs-panel-head h3{font:650 clamp(18px,1.65vw,22px)/1.3 Inter,'Segoe UI',sans-serif!important;color:var(--polish-deep);letter-spacing:-.5px;margin:0}
+.gs-dashboard .gs-link{display:inline-flex;align-items:center;white-space:nowrap;gap:5px;text-decoration:none;color:#9a5276;font:600 12px/1.4 Inter,'Segoe UI',sans-serif!important;transition:color .18s,transform .18s}
+.gs-dashboard .gs-link:hover{color:#713950;text-decoration:underline;transform:translateX(2px)}
+.gs-dashboard .gs-appt{display:grid!important;grid-template-columns:75px 39px minmax(0,1fr) auto;align-items:center;column-gap:13px;min-height:67px;border-bottom:1px solid #f0e8ec;padding:11px 2px!important;transition:background .15s}
+.gs-dashboard .gs-appt:last-of-type{border-bottom:0}
+.gs-dashboard .gs-appt:hover{background:#fcf8fa}
+.gs-dashboard .gs-time{font:600 12px/1.5 Inter,'Segoe UI',sans-serif!important;color:#7d6676;white-space:nowrap}
+.gs-dashboard .gs-initial{display:grid;place-items:center;width:39px;height:39px;border-radius:50%;background:#f6e9ef;color:#8f5574;font:650 13px Inter,'Segoe UI',sans-serif}
+.gs-dashboard .gs-person{min-width:0}
+.gs-dashboard .gs-person b{display:block;font:650 13px/1.35 Inter,'Segoe UI',sans-serif!important;color:var(--polish-text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.gs-dashboard .gs-person small{display:block;font:400 12px/1.45 Inter,'Segoe UI',sans-serif;color:#9a8a94;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.gs-dashboard .gs-status{justify-self:end;font:600 11px/1.4 Inter,'Segoe UI',sans-serif;color:#82717b;background:#f4eff2;border-radius:100px;padding:7px 10px;white-space:nowrap}
+.gs-dashboard .gs-status.ok{color:#41765a;background:#e7f3eb}
+.gs-dashboard .gs-status.pending{color:#976c32;background:#fff0dd}
+.gs-dashboard .gs-status.bad{color:#a55266;background:#fbe5ec}
+.gs-dashboard .gs-caption,.gs-dashboard .gs-note{display:block;color:#92818c;font:400 12px/1.6 Inter,'Segoe UI',sans-serif!important;margin-top:16px}
+.gs-dashboard .gs-insight{display:flex!important;gap:15px;align-items:center;justify-content:space-between;padding:6px 0}
+.gs-dashboard .gs-insight>div:first-child{min-width:0}
+.gs-dashboard .gs-insight strong{display:block;color:var(--polish-deep);font:700 clamp(26px,2.8vw,38px)/1.15 Inter,'Segoe UI',sans-serif!important;letter-spacing:-1px;overflow-wrap:anywhere}
+.gs-dashboard .gs-insight p{color:#857681;font:400 12px/1.65 Inter,'Segoe UI',sans-serif!important;margin-top:9px;max-width:340px}
+.gs-dashboard .gs-quick-grid{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:10px!important;margin-top:12px}
+.gs-dashboard .gs-quick{display:flex!important;align-items:center;gap:11px;min-width:0;padding:13px;border:1px solid #eee3e9;background:#fdf9fb;color:#624758;border-radius:13px;text-decoration:none;font:600 12px/1.4 Inter,'Segoe UI',sans-serif!important;transition:background .18s,transform .18s,border-color .18s,box-shadow .18s}
+.gs-dashboard .gs-quick:hover{background:#f8edf2;color:#4d3445;border-color:#dec5d3;box-shadow:0 5px 15px #422a3d0a;transform:translateY(-2px)}
+.gs-dashboard .gs-quick .gs-icon{width:34px;height:34px;min-width:34px;font-size:16px;border-radius:10px}
+.gs-dashboard .ring{width:76px;height:76px;flex:none}
+.gs-dashboard .ring span{width:57px;height:57px}
+.gs-dashboard .gs-footnote{margin:20px 2px 0;color:#a08f99;font:400 11px/1.5 Inter,'Segoe UI',sans-serif}
+/* Módulos existentes: responsive consistente */
+.app #m:has(#nc){grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:18px!important}
+.app #m:has(#nc)>.card:first-child{grid-column:1/-1}
+.app #m:has(#nu) .fg{grid-template-columns:repeat(auto-fit,minmax(185px,1fr))!important}
+.app #m:has(.rbac-cell) .tw{overflow-x:auto!important}
+.app #m:has(.rbac-cell) table{min-width:830px!important}
+.app #m:has(.rbac-cell) .rbac-cell{min-width:140px!important;max-width:100%;background:#fcfafb!important}
+.app #m:has(.rbac-cell) .rbac-cell:hover{border-color:#d1adbf!important}
+@media(max-width:1200px){.gs-dashboard .gs-kpis{grid-template-columns:repeat(2,minmax(0,1fr))!important}.gs-dashboard .gs-columns{grid-template-columns:1fr!important}}
+@media(max-width:740px){.gs-dashboard .gs-hero{min-height:190px;padding:24px!important}.gs-dashboard .gs-kpis{gap:10px!important}.gs-dashboard .gs-kpi{min-height:125px;padding:16px;gap:9px;flex-direction:column}.gs-dashboard .gs-icon{width:36px;height:36px;min-width:36px;font-size:16px}.gs-dashboard .gs-appt{grid-template-columns:68px 34px minmax(0,1fr)!important;gap:8px}.gs-dashboard .gs-initial{width:34px;height:34px}.gs-dashboard .gs-status{grid-column:3;justify-self:start}.app #m:has(#nc){grid-template-columns:1fr!important}.app #m:has(#nc)>.card:first-child{grid-column:auto}}
+@media(max-width:480px){.gs-dashboard .gs-kpis{grid-template-columns:1fr!important}.gs-dashboard .gs-kpi{flex-direction:row}.gs-dashboard .gs-quick-grid{grid-template-columns:1fr!important}.gs-dashboard .gs-hero h2{font-size:34px!important}.gs-dashboard .gs-panel-head{flex-wrap:wrap}.gs-dashboard .gs-appt{grid-template-columns:60px 30px minmax(0,1fr)!important}}
+@media(prefers-reduced-motion:reduce){.gs-dashboard *, .gs-dashboard *:before,.gs-dashboard *:after{transition:none!important;animation:none!important}}
