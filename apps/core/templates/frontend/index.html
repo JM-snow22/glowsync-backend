@@ -100,13 +100,26 @@ matrix:"What each role can do",view:"View only",full:"View and edit",none:"No ac
 eC:"No upcoming appointments",eCl:"No clients found",eF:"No files yet",eU:"No team members",askCancel:"Cancel this appointment? The slot will be offered to the waiting list.",
 ADMIN_SAAS:"SaaS admin",ADMIN_NEGOCIO:"Business admin",RECEPCIONISTA:"Receptionist",ESTETICISTA:"Aesthetician",note:"The UI hides what does not apply, but the server decides (JWT + role permissions)."}};
 // ---- RBAC: secciones visibles por rol y dónde puede escribir ----
-const MENU={ADMIN_SAAS:["centros","dashboard","citas","clientas","fichas","usuarios","rbac"],ADMIN_NEGOCIO:["dashboard","citas","clientas","fichas","usuarios","rbac"],RECEPCIONISTA:["dashboard","citas","clientas","fichas","usuarios","rbac"],ESTETICISTA:["citas","clientas","fichas","rbac"]};
-const WRITE={centros:["ADMIN_SAAS"],usuarios:["ADMIN_SAAS","ADMIN_NEGOCIO","RECEPCIONISTA"],citas:["ADMIN_SAAS","ADMIN_NEGOCIO","RECEPCIONISTA"],clientas:["ADMIN_SAAS","ADMIN_NEGOCIO","RECEPCIONISTA"],fichas:["ADMIN_SAAS","ADMIN_NEGOCIO","RECEPCIONISTA","ESTETICISTA"],dashboard:[]};
+let MENU={ADMIN_SAAS:["centros","dashboard","citas","clientas","fichas","usuarios","rbac"],ADMIN_NEGOCIO:["dashboard","citas","clientas","fichas","usuarios","rbac"],RECEPCIONISTA:["dashboard","citas","clientas","fichas","usuarios","rbac"],ESTETICISTA:["citas","clientas","fichas","rbac"]};
+let WRITE={centros:["ADMIN_SAAS"],usuarios:["ADMIN_SAAS","ADMIN_NEGOCIO","RECEPCIONISTA"],citas:["ADMIN_SAAS","ADMIN_NEGOCIO","RECEPCIONISTA"],clientas:["ADMIN_SAAS","ADMIN_NEGOCIO","RECEPCIONISTA"],fichas:["ADMIN_SAAS","ADMIN_NEGOCIO","RECEPCIONISTA","ESTETICISTA"],dashboard:[]};
 const ICON={dashboard:"✨",citas:"📅",clientas:"💆‍♀️",fichas:"🧴",usuarios:"🤍",centros:"🌿",rbac:"🔐"};
 const TAGC={CONFIRMADA:"ok",COMPLETADA:"ok",ACTIVA:"ok",CANCELADA:"no",NO_ASISTIO:"no",PENDIENTE:"w"};
 let selectedCentro=sessionStorage.getItem("gs_centro")||"",lang=localStorage.getItem("lang")||"es",S=JSON.parse(sessionStorage.getItem("gs")||"null");
 const t=k=>(T[lang][k]||k),$=s=>document.querySelector(s),loc=()=>lang==="es"?"es-CO":"en-US";
 const esc=v=>String(v==null?"":v).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+let activeMatrix=null;
+async function loadPermissions(){
+  if(!S || (S.me.rol==="ADMIN_SAAS"&&!selectedCentro)){activeMatrix=null;return}
+  try{
+    const data=await api("/api/rbac/");activeMatrix=data.matriz;
+    const roles=["ADMIN_SAAS","ADMIN_NEGOCIO","RECEPCIONISTA","ESTETICISTA"];
+    const baseOrder=["centros","dashboard","citas","clientas","fichas","usuarios","rbac"];
+    for(const rol of roles){
+      MENU[rol]=baseOrder.filter(v=>v==="rbac"||(activeMatrix[v]&&activeMatrix[v][rol]>0));
+    }
+    WRITE={};for(const [v,rs] of Object.entries(activeMatrix))WRITE[v]=roles.filter(r=>rs[r]===2);
+  }catch(err){toast(err.message,0);throw err}
+}
 const can=v=>(WRITE[v]||[]).includes(S.me.rol),save=()=>sessionStorage.setItem("gs",JSON.stringify(S));
 const ini=n=>String(n||"?").split(/\s+/).slice(0,2).map(x=>x[0]).join("").toUpperCase(),money=n=>"$"+Number(n||0).toLocaleString(loc());
 const pill=(s,l)=>`<span class="pill ${TAGC[s]||"v"}">${esc(l||s)}</span>`;
@@ -161,7 +174,7 @@ function draw(m){
     $("#toggle-password").onclick=()=>{const p=$("#p"),b=$("#toggle-password"),show=p.type==="password";p.type=show?"text":"password";b.textContent=show?(lang==="es"?"Ocultar":"Hide"):(lang==="es"?"Mostrar":"Show");b.setAttribute("aria-label",lang==="es"?(show?"Ocultar contraseña":"Mostrar contraseña"):(show?"Hide password":"Show password"))};
     $("#f").onsubmit=async ev=>{ev.preventDefault();const btn=$("#login-submit");btn.disabled=true;btn.textContent=lang==="es"?"Ingresando…":"Signing in…";
       try{const d=await api("/api/auth/login/",{method:"POST",body:{email:$("#e").value,password:$("#p").value}});
-      clearResponseCache();S={access:d.access,refresh:d.refresh,me:d.usuario};lang=S.me.idioma||lang;localStorage.setItem("lang",lang);save();draw();go()}
+      clearResponseCache();S={access:d.access,refresh:d.refresh,me:d.usuario};lang=S.me.idioma||lang;localStorage.setItem("lang",lang);save();draw();loadPermissions().then(()=>draw()).catch(()=>{})}
       catch(e){const box=$("#login-error");if(box)box.innerHTML=`<div class="err">${esc(t("bad"))}</div>`;btn.disabled=false;btn.textContent=t("login")}};return}
   const me=S.me;
   $("#app").innerHTML=`<div class="app"><aside class="side"><div class="logo"><i>✦</i> GlowSync</div><nav>${MENU[me.rol].map(v=>`<a href="#/${v}"><span>${ICON[v]}</span>${t(v)}</a>`).join("")}</nav>
@@ -169,7 +182,7 @@ function draw(m){
   <div class="me"><div class="av">${esc(ini(me.nombre))}</div><div><b>${esc(me.nombre)}</b><small>${t(me.rol)}</small></div></div><div class="ctl">${langSel()}<button class="sm" id="out">${t("logout")}</button></div></aside>
   <section class="body"><div class="top"><h1 id="ttl"></h1><span>${new Date().toLocaleDateString(loc(),{weekday:"long",day:"numeric",month:"long"})}</span></div><main id="m"></main></section></div>`;
   $("#lg").onchange=e=>setLang(e.target.value);$("#out").onclick=()=>logout();if(me.rol==="ADMIN_SAAS")loadCentros();go()}
-async function loadCentros(){const el=$("#tenant-select");if(!el)return;try{const data=await cachedGet("/api/centros/");const items=data.results||data;el.innerHTML=`<option value="">${lang==="es"?"Selecciona un negocio":"Select business"}</option>`+items.map(c=>`<option value="${c.id}">${esc(c.nombre)}</option>`).join("");if(!items.some(c=>String(c.id)===selectedCentro)){selectedCentro="";sessionStorage.removeItem("gs_centro")}el.value=selectedCentro;el.onchange=()=>{selectedCentro=el.value;sessionStorage.setItem("gs_centro",selectedCentro);clearResponseCache();go()}}catch(e){toast(e.message,0)}}
+async function loadCentros(){const el=$("#tenant-select");if(!el)return;try{const data=await cachedGet("/api/centros/");const items=data.results||data;el.innerHTML=`<option value="">${lang==="es"?"Selecciona un negocio":"Select business"}</option>`+items.map(c=>`<option value="${c.id}">${esc(c.nombre)}</option>`).join("");if(!items.some(c=>String(c.id)===selectedCentro)){selectedCentro="";sessionStorage.removeItem("gs_centro")}el.value=selectedCentro;el.onchange=()=>{selectedCentro=el.value;sessionStorage.setItem("gs_centro",selectedCentro);clearResponseCache();loadPermissions().then(()=>draw()).catch(()=>go())}}catch(e){toast(e.message,0)}}
 let navigationVersion=0;
 async function go(){
   const currentVersion=++navigationVersion;
@@ -208,11 +221,35 @@ const VIEWS={
   <div class="card"><h2>${t("centroUser")}</h2><form id="cu" class="fg"><div><label>${t("centro")}</label><select name="centro">${d.results.map(c=>`<option value="${c.id}">${esc(c.nombre)}</option>`).join("")}</select></div>
   <div><label>${t("name")}</label><input name="nombre" required></div><div><label>${t("email")}</label><input name="email" type="email" required></div><div><label>${t("pass")}</label><input name="password" type="password" minlength="8" required></div>
   <div><label>${t("rol")}</label><select name="rol"><option value="ADMIN_NEGOCIO">${t("ADMIN_NEGOCIO")}</option><option value="RECEPCIONISTA">${t("RECEPCIONISTA")}</option><option value="ESTETICISTA">${t("ESTETICISTA")}</option></select></div><div><button class="pri">${t("create")}</button></div></form></div>`},
- async rbac(){const R=["ADMIN_SAAS","ADMIN_NEGOCIO","RECEPCIONISTA","ESTETICISTA"],rows=["dashboard","citas","clientas","fichas","usuarios","centros"].map(v=>`<tr><td><b>${ICON[v]} ${t(v)}</b></td>${R.map(r=>`<td>${!MENU[r].includes(v)?`<span class="pill">✖ ${t("none")}</span>`:WRITE[v].includes(r)?`<span class="pill ok">✔ ${t("full")}</span>`:`<span class="pill v">👁 ${t("view")}</span>`}</td>`).join("")}</tr>`).join("");
-  return `<div class="card"><h2>${t("matrix")}</h2><div class="tw"><table><tr><th></th>${R.map(r=>`<th>${t(r)}</th>`).join("")}</tr>${rows}</table></div><p class="mut" style="font-size:13px;margin-top:14px">${t("note")}</p></div>`}};
+ async rbac(){
+  if(S.me.rol==="ADMIN_SAAS"&&!selectedCentro)return `<div class="card empty">${lang==="es"?"Selecciona primero un negocio en el menú lateral para editar sus permisos.":"Select a business first to edit permissions."}</div>`;
+  const data=await api("/api/rbac/");activeMatrix=data.matriz;
+  const R=["ADMIN_SAAS","ADMIN_NEGOCIO","RECEPCIONISTA","ESTETICISTA"];
+  const rows=["dashboard","citas","clientas","fichas","usuarios","centros"].map(v=>`<tr><td><b>${ICON[v]} ${t(v)}</b></td>${R.map(r=>{
+    const level=data.matriz[v][r], locked=r==="ADMIN_SAAS"||v==="centros";
+    if(!data.editable||locked)return `<td>${level===0?`<span class="pill">✖ ${t("none")}</span>`:level===1?`<span class="pill v">👁 ${t("view")}</span>`:`<span class="pill ok">✔ ${t("full")}</span>`}</td>`;
+    return `<td><select class="rbac-cell" data-module="${v}" data-role="${r}" aria-label="${t(v)} ${t(r)}"><option value="0" ${level===0?"selected":""}>✖ ${t("none")}</option><option value="1" ${level===1?"selected":""}>👁 ${t("view")}</option>${v!=="dashboard"?`<option value="2" ${level===2?"selected":""}>✔ ${t("full")}</option>`:""}</select></td>`;
+  }).join("")}</tr>`).join("");
+  const buttons=data.editable?`<div class="act"><button type="button" class="ghost" id="rbac-reset">${lang==="es"?"Restaurar predeterminados":"Reset defaults"}</button><button type="button" class="pri" id="rbac-save">${t("save")}</button></div>`:"";
+  return `<div class="card"><h2>${t("matrix")}</h2><div class="tw"><table><tr><th></th>${R.map(r=>`<th>${t(r)}</th>`).join("")}</tr>${rows}</table></div>${buttons}<p class="mut" style="font-size:13px;margin-top:14px">${t("note")}</p></div>`
+}};
 function modal(title,body,onsub){const o=document.createElement("div");o.className="ov";o.innerHTML=`<form class="mod" id="mf"><h2>${title}</h2>${body}<div class="act"><button type="button" class="ghost" id="mc">${t("cancel")}</button><button class="pri">${t("save")}</button></div></form>`;document.body.appendChild(o);
   o.querySelector("#mc").onclick=()=>o.remove();o.querySelector("#mf").onsubmit=async e=>{e.preventDefault();try{await onsub(Object.fromEntries(new FormData(e.target)));o.remove()}catch(x){toast(x.message,0)}}}
 function bind(){
+  const rbacSave=$("#rbac-save"),rbacReset=$("#rbac-reset");
+  if(rbacSave)rbacSave.onclick=async()=>{
+    rbacSave.disabled=true;
+    try{
+      const next=JSON.parse(JSON.stringify(activeMatrix));
+      document.querySelectorAll(".rbac-cell").forEach(el=>{next[el.dataset.module][el.dataset.role]=Number(el.value)});
+      await api("/api/rbac/",{method:"PUT",body:{matriz:next}});
+      await loadPermissions();toast(t("saved"));draw();
+    }catch(e){toast(e.message,0);rbacSave.disabled=false}
+  };
+  if(rbacReset)rbacReset.onclick=async()=>{
+    if(!confirm(lang==="es"?"¿Restaurar los permisos predeterminados de este negocio?":"Reset permissions for this business?"))return;
+    try{await api("/api/rbac/",{method:"DELETE"});await loadPermissions();toast(t("saved"));draw()}catch(e){toast(e.message,0)}
+  };
   const q=$("#q");if(q)q.onchange=()=>{window._q=q.value;go()};
   document.querySelectorAll("[data-a]").forEach(b=>b.onclick=async()=>{const[id,a]=b.dataset.a.split(":");if(a==="cancelar"&&window.confirm&&!confirm(t("askCancel")))return;try{await api(`/api/citas/${id}/${a}/`,{method:"POST"});toast(t("saved"));go()}catch(e){toast(e.message,0)}});
   document.querySelectorAll("[data-f]").forEach(b=>b.onclick=()=>{const f=window._F[b.dataset.f];
@@ -220,5 +257,5 @@ function bind(){
     async d=>{await api(`/api/fichas/${f.id}/`,{method:"PATCH",body:d});toast(t("saved"));go()})});
   const post=(id,url,fix)=>{const f=$(id);if(f)f.onsubmit=async ev=>{ev.preventDefault();try{let d=Object.fromEntries(new FormData(f)),u=url;if(fix){u=url.replace("{c}",d.centro);delete d.centro}await api(u,{method:"POST",body:d});toast(t("saved"));f.reset();setTimeout(go,600)}catch(e){toast(e.message,0)}}};
   post("#nu","/api/usuarios/");post("#nc","/api/centros/");post("#cu","/api/centros/{c}/usuarios/",1)}
-if(S){api("/api/auth/me/").then(me=>{S.me=me;save();draw()}).catch(()=>logout())}else draw();
+if(S){api("/api/auth/me/").then(me=>{S.me=me;save();return loadPermissions().catch(()=>{})}).then(()=>draw()).catch(()=>logout())}else draw();
 </script></body></html>

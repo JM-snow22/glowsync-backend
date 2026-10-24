@@ -44,6 +44,7 @@ class CentroPermission(BasePermission):
         u = request.user
         if not u.is_authenticated:
             return False
+        from .rbac import VIEW_MODULE, nivel_permiso
         if u.rol == Usuario.Rol.ADMIN_SAAS:
             centro_actual(request)
             return True
@@ -52,11 +53,14 @@ class CentroPermission(BasePermission):
         if not u.centro.suscripcion_activa:
             self.message = _("La suscripción del centro está vencida o suspendida.")
             return False
-        if (
-            request.method not in SAFE_METHODS
-            and u.rol == Usuario.Rol.ESTETICISTA
-            and not getattr(view, "esteticista_puede_escribir", False)
-        ):
+        modulo = VIEW_MODULE.get(view.__class__.__name__)
+        if modulo:
+            nivel = nivel_permiso(u.centro_id, u.rol, modulo)
+            requiere = 1 if request.method in SAFE_METHODS else 2
+            return nivel >= requiere
+        # Para endpoints no presentes en la matriz se conserva el comportamiento anterior.
+        if (request.method not in SAFE_METHODS and u.rol == Usuario.Rol.ESTETICISTA
+                and not getattr(view, "esteticista_puede_escribir", False)):
             self.message = _("Tu rol solo permite consultar.")
             return False
         return True
@@ -64,4 +68,9 @@ class CentroPermission(BasePermission):
 
 class SoloRecepcionista(BasePermission):
     def has_permission(self, request, view):
-        return request.user.is_authenticated and request.user.rol in (Usuario.Rol.RECEPCIONISTA, Usuario.Rol.ADMIN_NEGOCIO, Usuario.Rol.ADMIN_SAAS)
+        if not request.user.is_authenticated:
+            return False
+        if request.user.rol == Usuario.Rol.ADMIN_SAAS:
+            return True
+        from .rbac import nivel_permiso
+        return nivel_permiso(request.user.centro_id, request.user.rol, "usuarios") >= (1 if request.method in SAFE_METHODS else 2)
