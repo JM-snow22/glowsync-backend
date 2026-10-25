@@ -6,3 +6,4 @@ staticfiles/
 db.sqlite3
 
 venv/
+respaldo_ui/
