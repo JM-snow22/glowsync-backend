@@ -1,0 +1,50 @@
+/* GlowSync — ajustes para celular. Se carga AL FINAL (después de dashboard-polish.css). */
+html{-webkit-text-size-adjust:100%}
+html,body{max-width:100%;overflow-x:hidden}
+img,svg,video{max-width:100%;height:auto}
+@media (max-width:768px){
+  .app{min-height:100vh;min-height:100dvh}
+  /* Evita el zoom automático de iPhone al tocar un campo, y botones fáciles de tocar */
+  input,select,textarea{font-size:16px!important;min-height:46px}
+  button,.sm,.pri,.ghost,.gs-link{min-height:42px}
+  /* Cabecera: logo arriba, herramientas debajo, menú con desplazamiento horizontal */
+  .app .side{position:static!important;padding:0!important;padding-top:env(safe-area-inset-top)!important}
+  .app .gs-header-main{display:flex!important;flex-direction:column;align-items:stretch!important;gap:10px!important;padding:12px 14px!important}
+  .app .gs-header-tools{display:flex!important;flex-wrap:wrap;gap:8px!important;width:100%;margin:0!important}
+  .app .gs-header-tools .tenant-chooser,.app .gs-header-tools .ctl{flex:1 1 100%;width:100%}
+  .app .gs-header-tools .me{display:none!important}
+  .app .ctl{display:flex;gap:8px}.app .ctl select{flex:1;min-width:0}.app .ctl .sm{flex:none}
+  .app .gs-nav-shell{overflow-x:auto;-webkit-overflow-scrolling:touch;scroll-snap-type:x proximity;padding:0 8px!important}
+  .app .side nav{display:flex!important;flex-wrap:nowrap!important;flex-direction:row!important;gap:2px!important;width:max-content;min-width:100%}
+  .app .side nav a{flex:none;height:46px!important;padding:0 14px!important;font-size:14px!important;scroll-snap-align:start}
+  /* Contenido */
+  .app .body{padding:14px 12px calc(28px + env(safe-area-inset-bottom))!important}
+  .app .top{flex-direction:column;align-items:flex-start;gap:2px;margin-bottom:14px!important}
+  .app .top h1{font-size:26px!important}
+  .app .card{padding:16px!important;border-radius:18px!important;margin-bottom:14px!important}
+  .app .card h2{font-size:18px!important}
+  .app .grid{grid-template-columns:1fr!important}
+  .app .fg{grid-template-columns:1fr!important}.app .fg .pri{width:100%}
+  .app .search{max-width:100%!important;width:100%}
+  .app .row{flex-wrap:wrap;gap:10px!important}.app .row .grow{flex:1 1 55%;min-width:0}.app .hr{min-width:auto}
+  .app .acts{width:100%;display:flex;gap:8px}.app .acts .sm{flex:1}
+  .app .tw{overflow-x:auto;-webkit-overflow-scrolling:touch}.app .tw table{min-width:560px}
+  /* Dashboard */
+  .app .gs-dashboard .gs-hero{min-height:170px!important;padding:20px!important;border-radius:20px!important}
+  .app .gs-dashboard .gs-hero h2,.app .gs-dashboard .gs-hero b{font-size:clamp(28px,9vw,40px)!important;word-break:break-word}
+  .app .gs-kpis{grid-template-columns:1fr 1fr!important;gap:10px!important}.app .gs-kpi{padding:14px!important}
+  .app .gs-columns{grid-template-columns:1fr!important;gap:14px!important}
+  .app .gs-quick-grid{grid-template-columns:1fr 1fr!important}
+  .app .gs-panel{padding:16px!important}.app .gs-appt{flex-wrap:wrap;gap:8px}
+  /* Pantalla de entrada */
+  .auth .fside{padding:20px 16px!important}.auth .fc{max-width:100%!important;padding:0!important}
+  .password-field input{padding-right:52px}.password-toggle{min-width:44px;min-height:44px}
+  /* Ventanas emergentes como hoja desde abajo, y avisos a todo el ancho */
+  .ov{align-items:end!important;padding:0!important}
+  .mod{max-width:100%!important;width:100%;border-radius:22px 22px 0 0!important;padding:22px 18px calc(22px + env(safe-area-inset-bottom))!important;max-height:92vh;max-height:92dvh;overflow:auto}
+  .toast{left:12px!important;right:12px!important;bottom:calc(12px + env(safe-area-inset-bottom))!important;max-width:none!important;text-align:center;border-radius:16px!important}
+}
+@media (max-width:380px){
+  .app .gs-kpis,.app .gs-quick-grid{grid-template-columns:1fr!important}
+  .app .top h1{font-size:23px!important}
+}
