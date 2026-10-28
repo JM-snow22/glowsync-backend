@@ -1,50 +1,59 @@
-/* GlowSync — ajustes para celular. Se carga AL FINAL (después de dashboard-polish.css). */
-html{-webkit-text-size-adjust:100%}
-html,body{max-width:100%;overflow-x:hidden}
-img,svg,video{max-width:100%;height:auto}
+@import url("https://fonts.googleapis.com/css2?family=Fraunces:wght@500;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap");
+/* GlowSync — tipografía global + ajustes para celular. Debe cargarse AL FINAL. */
+:root{--serif:"Fraunces",Georgia,serif;--sans:"Plus Jakarta Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+html{-webkit-text-size-adjust:100%}html,body{max-width:100%;overflow-x:hidden}img,svg,video{max-width:100%;height:auto}
+/* Tipografía: texto en Plus Jakarta Sans; títulos y cifras grandes en Fraunces */
+html body,html body button,html body select,html body input,html body textarea,html body .app .pri,html body .app button.pri,html body .app .sm,html body .app .ghost{font-family:var(--sans)!important}
+html body .app .body .top h1,html body .app .side .logo,html body .app .hi b,html body .app .kpi b,html body .hero h2,html body .fc h2{font-family:var(--serif)!important;font-weight:700;letter-spacing:-.01em}
+html body .app .card h2,html body .app .card h3{font-family:var(--sans)!important;font-weight:700}
 @media (max-width:768px){
-  .app{min-height:100vh;min-height:100dvh}
-  /* Evita el zoom automático de iPhone al tocar un campo, y botones fáciles de tocar */
-  input,select,textarea{font-size:16px!important;min-height:46px}
-  button,.sm,.pri,.ghost,.gs-link{min-height:42px}
-  /* Cabecera: logo arriba, herramientas debajo, menú con desplazamiento horizontal */
-  .app .side{position:static!important;padding:0!important;padding-top:env(safe-area-inset-top)!important}
-  .app .gs-header-main{display:flex!important;flex-direction:column;align-items:stretch!important;gap:10px!important;padding:12px 14px!important}
-  .app .gs-header-tools{display:flex!important;flex-wrap:wrap;gap:8px!important;width:100%;margin:0!important}
-  .app .gs-header-tools .tenant-chooser,.app .gs-header-tools .ctl{flex:1 1 100%;width:100%}
-  .app .gs-header-tools .me{display:none!important}
-  .app .ctl{display:flex;gap:8px}.app .ctl select{flex:1;min-width:0}.app .ctl .sm{flex:none}
-  .app .gs-nav-shell{overflow-x:auto;-webkit-overflow-scrolling:touch;scroll-snap-type:x proximity;padding:0 8px!important}
-  .app .side nav{display:flex!important;flex-wrap:nowrap!important;flex-direction:row!important;gap:2px!important;width:max-content;min-width:100%}
-  .app .side nav a{flex:none;height:46px!important;padding:0 14px!important;font-size:14px!important;scroll-snap-align:start}
+  html body{font-size:15.5px;line-height:1.5}
+  html body input,html body select,html body textarea{font-size:16px!important;min-height:46px}
+  html body button,html body .sm,html body .pri,html body .ghost,html body .gs-link{min-height:44px}
+  html body .app{min-height:100vh;min-height:100dvh;padding-bottom:calc(86px + env(safe-area-inset-bottom))}
+  /* Cabecera compacta: logo a la izquierda, idioma y salir a la derecha */
+  html body .app .side{position:static!important;padding:0!important;padding-top:env(safe-area-inset-top)!important}
+  html body .app .gs-header-main{display:flex!important;flex-direction:row!important;flex-wrap:wrap;align-items:center!important;justify-content:space-between;gap:8px!important;padding:12px 14px!important}
+  html body .app .gs-brand-caption{display:none!important}
+  html body .app .gs-header-tools{display:flex!important;flex-wrap:wrap;align-items:center;gap:8px!important;margin:0!important;flex:none}
+  html body .app .gs-header-tools:has(.tenant-chooser){width:100%}
+  html body .app .gs-header-tools .tenant-chooser{flex:1 1 100%;order:3;width:100%}
+  html body .app .gs-header-tools .me{display:none!important}
+  html body .app .ctl{display:flex;gap:8px}html body .app .ctl select{width:104px;min-width:0}html body .app .ctl .sm{flex:none}
+  /* Menú inferior fijo, como una app */
+  html body .app .gs-nav-shell{position:fixed!important;left:0;right:0;bottom:0;top:auto!important;z-index:60;background:rgba(255,255,255,.98)!important;border-top:1px solid #efe4ea!important;box-shadow:0 -6px 24px rgba(58,36,52,.10);padding:6px 6px calc(6px + env(safe-area-inset-bottom))!important;overflow:visible!important}
+  html body .app .side nav{display:flex!important;flex-direction:row!important;flex-wrap:nowrap!important;justify-content:space-around;gap:0!important;width:100%!important;min-width:0!important;overflow-x:auto}
+  html body .app .side nav a{flex:1 1 0;min-width:54px;flex-direction:column;justify-content:center;align-items:center;gap:3px!important;height:auto!important;padding:7px 2px!important;font-size:10.5px!important;line-height:1.15;text-align:center;border:0!important;border-radius:14px!important}
+  html body .app .side nav a.on{background:#f6e9f0!important;color:#6b3f5e!important;font-weight:700}
+  html body .app .gs-nav-icon,html body .app .gs-nav-icon svg{width:22px!important;height:22px!important}
   /* Contenido */
-  .app .body{padding:14px 12px calc(28px + env(safe-area-inset-bottom))!important}
-  .app .top{flex-direction:column;align-items:flex-start;gap:2px;margin-bottom:14px!important}
-  .app .top h1{font-size:26px!important}
-  .app .card{padding:16px!important;border-radius:18px!important;margin-bottom:14px!important}
-  .app .card h2{font-size:18px!important}
-  .app .grid{grid-template-columns:1fr!important}
-  .app .fg{grid-template-columns:1fr!important}.app .fg .pri{width:100%}
-  .app .search{max-width:100%!important;width:100%}
-  .app .row{flex-wrap:wrap;gap:10px!important}.app .row .grow{flex:1 1 55%;min-width:0}.app .hr{min-width:auto}
-  .app .acts{width:100%;display:flex;gap:8px}.app .acts .sm{flex:1}
-  .app .tw{overflow-x:auto;-webkit-overflow-scrolling:touch}.app .tw table{min-width:560px}
+  html body .app .body{padding:14px 12px 20px!important}
+  html body .app .top{flex-direction:column;align-items:flex-start;gap:2px;margin-bottom:14px!important}
+  html body .app .top h1{font-size:28px!important}
+  html body .app .card{padding:16px!important;border-radius:18px!important;margin-bottom:14px!important}
+  html body .app .card h2{font-size:18px!important}
+  html body .app .grid,html body .app .fg{grid-template-columns:1fr!important}html body .app .fg .pri{width:100%}
+  html body .app .search{max-width:100%!important;width:100%}
+  html body .app .row{flex-wrap:wrap;gap:10px!important}html body .app .row .grow{flex:1 1 55%;min-width:0}html body .app .hr{min-width:auto}
+  html body .app .acts{width:100%;display:flex;gap:8px}html body .app .acts .sm{flex:1}
+  html body .app .tw{overflow-x:auto;-webkit-overflow-scrolling:touch}html body .app .tw table{min-width:560px}
   /* Dashboard */
-  .app .gs-dashboard .gs-hero{min-height:170px!important;padding:20px!important;border-radius:20px!important}
-  .app .gs-dashboard .gs-hero h2,.app .gs-dashboard .gs-hero b{font-size:clamp(28px,9vw,40px)!important;word-break:break-word}
-  .app .gs-kpis{grid-template-columns:1fr 1fr!important;gap:10px!important}.app .gs-kpi{padding:14px!important}
-  .app .gs-columns{grid-template-columns:1fr!important;gap:14px!important}
-  .app .gs-quick-grid{grid-template-columns:1fr 1fr!important}
-  .app .gs-panel{padding:16px!important}.app .gs-appt{flex-wrap:wrap;gap:8px}
-  /* Pantalla de entrada */
-  .auth .fside{padding:20px 16px!important}.auth .fc{max-width:100%!important;padding:0!important}
-  .password-field input{padding-right:52px}.password-toggle{min-width:44px;min-height:44px}
-  /* Ventanas emergentes como hoja desde abajo, y avisos a todo el ancho */
-  .ov{align-items:end!important;padding:0!important}
-  .mod{max-width:100%!important;width:100%;border-radius:22px 22px 0 0!important;padding:22px 18px calc(22px + env(safe-area-inset-bottom))!important;max-height:92vh;max-height:92dvh;overflow:auto}
-  .toast{left:12px!important;right:12px!important;bottom:calc(12px + env(safe-area-inset-bottom))!important;max-width:none!important;text-align:center;border-radius:16px!important}
+  html body .app .gs-dashboard .gs-hero{min-height:170px!important;padding:20px!important;border-radius:20px!important}
+  html body .app .gs-dashboard .gs-hero h2,html body .app .gs-dashboard .gs-hero b{font-size:clamp(28px,9vw,40px)!important;word-break:break-word}
+  html body .app .gs-kpis{grid-template-columns:1fr 1fr!important;gap:10px!important}html body .app .gs-kpi{padding:14px!important}
+  html body .app .gs-columns{grid-template-columns:1fr!important;gap:14px!important}
+  html body .app .gs-quick-grid{grid-template-columns:1fr 1fr!important}
+  html body .app .gs-panel{padding:16px!important}html body .app .gs-appt{flex-wrap:wrap;gap:8px}
+  /* Entrada */
+  html body .auth .fside{padding:20px 16px!important}html body .auth .fc{max-width:100%!important;padding:0!important}
+  html body .password-field input{padding-right:52px}html body .password-toggle{min-width:44px;min-height:44px}
+  /* Ventanas emergentes desde abajo y avisos sobre el menú */
+  html body .ov{align-items:end!important;padding:0!important;z-index:100!important}
+  html body .mod{max-width:100%!important;width:100%;border-radius:22px 22px 0 0!important;padding:22px 18px calc(22px + env(safe-area-inset-bottom))!important;max-height:92vh;max-height:92dvh;overflow:auto}
+  html body .toast{left:12px!important;right:12px!important;bottom:calc(92px + env(safe-area-inset-bottom))!important;max-width:none!important;text-align:center;border-radius:16px!important;z-index:110}
 }
 @media (max-width:380px){
-  .app .gs-kpis,.app .gs-quick-grid{grid-template-columns:1fr!important}
-  .app .top h1{font-size:23px!important}
+  html body .app .gs-kpis,html body .app .gs-quick-grid{grid-template-columns:1fr!important}
+  html body .app .top h1{font-size:24px!important}
+  html body .app .side nav a{font-size:9.5px!important;min-width:48px}
 }
