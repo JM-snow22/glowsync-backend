@@ -1,0 +1,112 @@
+/* GlowSync | Barra lateral plegable + pulido general. Se carga AL FINAL. */
+:root{
+  --gl-plum:#2b1a28;--gl-plum-2:#3b2436;--gl-rose:#c7809f;--gl-rose-soft:#f4e3eb;--gl-blush:#fbf3f6;
+  --gl-ink:#2d2230;--gl-muted:#857382;--gl-line:#ece2e7;--gl-canvas:#f7f3f4;--gl-sb:264px;--gl-sb-mini:76px;
+  --gl-ease:cubic-bezier(.2,.7,.2,1)
+}
+html body{background:var(--gl-canvas)!important}
+
+/* ---------- Estructura ---------- */
+html body .app.gs-layout{display:block!important;min-height:100vh;background:var(--gl-canvas)!important}
+html body .app.gs-layout .gs-main{margin-left:var(--gl-sb);min-height:100vh;transition:margin-left .28s var(--gl-ease);min-width:0}
+html body .app.gs-layout.gs-collapsed .gs-main{margin-left:var(--gl-sb-mini)}
+
+/* ---------- Barra lateral ---------- */
+.gs-sidebar{position:fixed;inset:0 auto 0 0;width:var(--gl-sb);z-index:40;display:flex;flex-direction:column;
+  background:radial-gradient(120% 60% at 0 0,#4a2c44 0,transparent 60%),linear-gradient(180deg,var(--gl-plum-2),var(--gl-plum));
+  color:#ecdde5;padding:20px 14px 16px;transition:width .28s var(--gl-ease),transform .28s var(--gl-ease);overflow:hidden}
+.gs-sb-head{display:flex;align-items:center;gap:10px;padding:2px 6px 22px;min-height:52px}
+.gs-sidebar .logo{display:flex!important;align-items:center;gap:11px;color:#fff!important;font-family:var(--serif,Georgia,serif)!important;
+  font-size:23px!important;font-weight:600!important;letter-spacing:-.6px!important;padding:0!important;white-space:nowrap}
+.gs-sidebar .logo .gs-logo-mark{width:36px;height:36px;box-shadow:0 0 0 1px rgba(255,255,255,.12),0 8px 18px rgba(0,0,0,.28)}
+.gs-sb-caption{font-size:11.5px;color:#b9a1ae;margin-top:2px;font-family:var(--sans,Inter,sans-serif);letter-spacing:0;font-weight:500}
+
+.gs-sidebar nav{display:flex;flex-direction:column;gap:2px;flex:1;overflow-y:auto;overflow-x:hidden;scrollbar-width:none;padding:0!important;margin:0!important;background:none!important}
+.gs-sidebar nav::-webkit-scrollbar{display:none}
+.gs-group{font-size:11.5px;font-weight:600;color:#a58e9b;padding:16px 12px 7px;white-space:nowrap;letter-spacing:.2px}
+.gs-group:first-child{padding-top:4px}
+.gs-sidebar nav a{position:relative;display:flex!important;align-items:center;gap:13px;height:44px;padding:0 12px!important;border-radius:12px!important;
+  color:#dccbd4!important;text-decoration:none!important;font:500 14px var(--sans,Inter,sans-serif)!important;white-space:nowrap;
+  background:transparent!important;border:0!important;box-shadow:none!important;transition:background .16s,color .16s}
+.gs-sidebar nav a:hover{background:rgba(255,255,255,.06)!important;color:#fff!important}
+.gs-sidebar nav a.on{background:rgba(255,255,255,.1)!important;color:#fff!important;font-weight:600!important}
+.gs-sidebar nav a.on::before{content:"";position:absolute;left:-14px;top:10px;bottom:10px;width:4px;border-radius:0 4px 4px 0;background:var(--gl-rose)}
+.gs-sidebar nav a:focus-visible{outline:2px solid #f0bfd2;outline-offset:2px}
+.gs-sidebar .gs-nav-icon{display:inline-flex;width:20px;height:20px;flex:none;opacity:.9}
+.gs-sidebar .gs-nav-icon svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.gs-sidebar nav a.on .gs-nav-icon{color:#f3bfd3}
+.gs-label{transition:opacity .2s}
+
+.gs-sb-foot{display:flex;align-items:center;gap:11px;padding:12px 8px 2px;margin-top:12px;border-top:1px solid rgba(255,255,255,.08);white-space:nowrap}
+.gs-sb-foot .av{width:36px;height:36px;flex:none;border-radius:12px;display:grid;place-items:center;background:#f3d6e2;color:var(--gl-plum);font:700 12px var(--sans,Inter,sans-serif)}
+.gs-sb-foot b{display:block;font-size:13px;color:#fff;font-weight:600;overflow:hidden;text-overflow:ellipsis;max-width:160px}
+.gs-sb-foot small{display:block;font-size:11.5px;color:#b9a1ae}
+
+/* Plegada: solo íconos */
+.gs-collapsed .gs-sidebar{width:var(--gl-sb-mini)}
+.gs-collapsed .gs-sidebar .logo span,.gs-collapsed .gs-sb-caption,.gs-collapsed .gs-label,.gs-collapsed .gs-sb-foot .gs-who{opacity:0;pointer-events:none;width:0;overflow:hidden}
+.gs-collapsed .gs-group{height:1px;padding:0;margin:12px 10px;background:rgba(255,255,255,.1);font-size:0}
+.gs-collapsed .gs-group:first-child{margin-top:0}
+.gs-collapsed .gs-sidebar nav a{justify-content:center;padding:0!important;gap:0}
+.gs-collapsed .gs-sb-head{justify-content:center;padding-left:0;padding-right:0}
+.gs-collapsed .gs-sb-foot{justify-content:center;padding-left:0;padding-right:0}
+
+/* ---------- Barra superior ---------- */
+.gs-topbar{position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:14px;padding:12px clamp(16px,2.6vw,40px);
+  background:rgba(247,243,244,.86);backdrop-filter:saturate(1.4) blur(10px);-webkit-backdrop-filter:saturate(1.4) blur(10px);border-bottom:1px solid var(--gl-line)}
+.gs-burger{width:40px;height:40px;flex:none;display:grid;place-items:center;border-radius:12px;border:1px solid var(--gl-line);background:#fff;color:var(--gl-plum);cursor:pointer;transition:background .15s,border-color .15s}
+.gs-burger:hover{background:var(--gl-blush);border-color:#e3cfd9}
+.gs-burger:focus-visible{outline:2px solid var(--gl-rose);outline-offset:2px}
+.gs-burger svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round}
+.gs-topbar .tenant-chooser{display:flex;align-items:center;gap:10px;padding:0!important;background:none!important;min-width:0}
+.gs-topbar .tenant-chooser label{margin:0!important;font-size:12px!important;color:var(--gl-muted)!important;font-weight:600!important;letter-spacing:0!important;text-transform:none!important;white-space:nowrap}
+.gs-topbar select,.gs-topbar .sm{min-height:40px!important;border-radius:12px!important;border:1px solid var(--gl-line)!important;background:#fff!important;color:var(--gl-ink)!important;
+  font:500 13px var(--sans,Inter,sans-serif)!important;padding:8px 12px!important;box-shadow:none!important}
+.gs-topbar .tenant-chooser select{min-width:220px;max-width:320px;padding-right:34px!important}
+.gs-top-tools{margin-left:auto;display:flex;align-items:center;gap:8px}
+.gs-topbar .sm:hover{background:var(--gl-blush)!important}
+
+/* ---------- Contenido ---------- */
+html body .app.gs-layout .gs-main>.body{max-width:1440px!important;margin:0 auto!important;padding:28px clamp(16px,2.6vw,40px) 64px!important;background:transparent!important;width:auto!important}
+html body .app.gs-layout .body .top{display:flex!important;align-items:flex-end!important;justify-content:space-between;gap:14px;margin:0 0 24px!important;padding:0!important;background:none!important;box-shadow:none!important}
+html body .app.gs-layout .body .top h1{font-family:var(--serif,Georgia,serif)!important;font-size:clamp(28px,3vw,38px)!important;font-weight:600!important;letter-spacing:-1px!important;color:var(--gl-ink)!important;line-height:1.1}
+html body .app.gs-layout .body .top span{background:none!important;border:0!important;padding:0!important;color:var(--gl-muted)!important;font-size:13.5px!important;text-transform:capitalize}
+
+html body .app.gs-layout .card{border:1px solid var(--gl-line)!important;border-radius:20px!important;box-shadow:0 1px 2px rgba(43,26,40,.04),0 10px 30px rgba(43,26,40,.04)!important}
+html body .app.gs-layout .card h2{font-family:var(--serif,Georgia,serif)!important;font-weight:600!important;font-size:21px!important;letter-spacing:-.4px!important;color:var(--gl-ink)!important}
+html body .app.gs-layout table th{font-size:11.5px!important;font-weight:600!important;color:var(--gl-muted)!important;background:#fcf9fa!important}
+html body .app.gs-layout table tr:not(:first-child):hover td{background:#fdf8fa}
+html body .app.gs-layout table td,html body .app.gs-layout table th{padding:12px 14px!important;border-bottom:1px solid #f3ecef!important;vertical-align:middle}
+html body .app.gs-layout .pri{background:var(--gl-plum)!important;color:#fff!important;border-radius:12px!important;transition:background .15s,transform .15s}
+html body .app.gs-layout .pri:hover{background:#4a2c44!important}
+html body .app.gs-layout .sm{border-radius:10px!important;transition:background .15s}
+html body .app.gs-layout .sm:hover{background:var(--gl-rose-soft)!important}
+html body .app.gs-layout input:focus-visible,html body .app.gs-layout select:focus-visible,html body .app.gs-layout textarea:focus-visible,html body .app.gs-layout button:focus-visible{outline:2px solid var(--gl-rose)!important;outline-offset:2px}
+.ov .mod{border-radius:22px!important;box-shadow:0 30px 80px rgba(43,26,40,.25)!important}
+.ov .mod h2{font-family:var(--serif,Georgia,serif)!important;font-weight:600!important;letter-spacing:-.5px}
+.toast{border-radius:14px!important;background:var(--gl-plum)!important}
+
+/* ---------- Celular y tablet: barra lateral deslizable ---------- */
+.gs-backdrop{display:none}
+@media (max-width:900px){
+  html body .app.gs-layout .gs-main,html body .app.gs-layout.gs-collapsed .gs-main{margin-left:0}
+  .gs-sidebar,.gs-collapsed .gs-sidebar{width:min(84vw,var(--gl-sb));transform:translateX(-102%);box-shadow:none}
+  .gs-open .gs-sidebar{transform:none;box-shadow:20px 0 60px rgba(0,0,0,.25)}
+  .gs-collapsed .gs-sidebar .logo span,.gs-collapsed .gs-sb-caption,.gs-collapsed .gs-label,.gs-collapsed .gs-sb-foot .gs-who{opacity:1;width:auto;pointer-events:auto}
+  .gs-collapsed .gs-group{height:auto;margin:0;background:none;font-size:11.5px;padding:16px 12px 7px}
+  .gs-collapsed .gs-sidebar nav a{justify-content:flex-start;padding:0 12px!important;gap:13px}
+  .gs-open .gs-backdrop{display:block;position:fixed;inset:0;z-index:35;background:rgba(30,18,28,.45)}
+  .gs-topbar{gap:10px;flex-wrap:wrap}
+  .gs-topbar .tenant-chooser label{display:none!important}
+  .gs-topbar .tenant-chooser select{min-width:0;max-width:52vw}
+}
+@media (prefers-reduced-motion:reduce){.gs-sidebar,.gs-main,.gs-label{transition:none!important}}
+html body .app.gs-layout .body>.top::before{content:none!important;display:none!important}
+html body .app.gs-layout .body .top span{text-transform:none!important}
+html body .app.gs-layout .body .top span::first-letter{text-transform:uppercase}
+@media (max-width:900px){
+  html body .app.gs-layout .body .top{flex-direction:column!important;align-items:flex-start!important;gap:4px;margin-bottom:18px!important}
+  html body .app.gs-layout .body .top h1{text-align:left!important;width:auto!important}
+  html body .app.gs-layout .gs-kpi strong{font-size:clamp(19px,5.6vw,30px)!important;word-break:normal!important;overflow-wrap:normal!important;white-space:nowrap}
+  html body .app.gs-layout .gs-main>.body{padding:18px 14px 48px!important}
+}

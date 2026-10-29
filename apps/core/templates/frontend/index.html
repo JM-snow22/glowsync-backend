@@ -4,7 +4,7 @@
 <title>GlowSync</title><link rel="icon" type="image/svg+xml" href="{% static 'img/glowsync-logo.svg' %}"><meta name="theme-color" content="#b9708f">
 <link rel="stylesheet" href="{% static 'css/base.css' %}">
 <link rel="stylesheet" href="{% static 'css/modules.css' %}">
-<link rel="stylesheet" href="{% static 'css/navigation.css' %}"><link rel="stylesheet" href="{% static 'css/dashboard-polish.css' %}"><link rel="stylesheet" href="{% static 'css/mobile.css' %}">
+<link rel="stylesheet" href="{% static 'css/navigation.css' %}"><link rel="stylesheet" href="{% static 'css/dashboard-polish.css' %}"><link rel="stylesheet" href="{% static 'css/mobile.css' %}"><link rel="stylesheet" href="{% static 'css/layout.css' %}">
 <style>.logo{display:flex!important;align-items:center;gap:10px}.gs-logo-mark{width:34px;height:34px;flex:none;border-radius:11px;box-shadow:0 6px 16px rgba(66,42,61,.18)}.hero .logo .gs-logo-mark{width:40px;height:40px;box-shadow:0 8px 22px rgba(0,0,0,.25)}@media(max-width:600px){.gs-logo-mark{width:28px;height:28px}}</style>
 </head>
 <body><div id="app"></div>
@@ -118,12 +118,29 @@ function draw(m){
       clearResponseCache();S={access:d.access,refresh:d.refresh,me:d.usuario};lang=S.me.idioma||lang;localStorage.setItem("lang",lang);save();loadPermissions().catch(()=>{}).then(()=>draw())}
       catch(e){const box=$("#login-error");if(box)box.innerHTML=`<div class="err">${esc(t("bad"))}</div>`;btn.disabled=false;btn.textContent=t("login")}};return}
   const me=S.me;
-  $("#app").innerHTML=`<div class="app"><header class="side" role="banner">
-    <div class="gs-header-main"><div class="gs-brand"><div class="logo">${GS_LOGO}<span>GlowSync</span></div><div class="gs-brand-caption">${lang==="es"?"Gestión de belleza":"Beauty management"}</div></div>
-    <div class="gs-header-tools">${me.rol==="ADMIN_SAAS"?`<div class="tenant-chooser"><label for="tenant-select">${lang==="es"?"NEGOCIO ACTIVO":"ACTIVE BUSINESS"}</label><select id="tenant-select"><option value="">${lang==="es"?"Selecciona un negocio":"Select business"}</option></select></div>`:""}
-    <div class="me"><div class="av">${esc(ini(me.nombre))}</div><div><b>${esc(me.nombre)}</b><small>${t(me.rol)}</small></div></div><div class="ctl">${langSel()}<button class="sm" id="out">${t("logout")}</button></div></div></div>
-    <div class="gs-nav-shell"><nav aria-label="${lang==="es"?"Navegación principal":"Main navigation"}">${MENU[me.rol].map(v=>`<a href="#/${v}"><span class="gs-nav-icon" aria-hidden="true">${GS_NAV_ICONS[v]||""}</span>${t(v)}</a>`).join("")}</nav></div></header>
-    <section class="body"><div class="top"><h1 id="ttl"></h1><span>${new Date().toLocaleDateString(loc(),{weekday:"long",day:"numeric",month:"long"})}</span></div><main id="m"></main></section></div>`;
+  const es=lang==="es",GROUPS=[[es?"Operación":"Operations",["dashboard","citas","clientas","fichas"]],[es?"Administración":"Administration",["usuarios","rbac","centros"]]];
+  const navHtml=GROUPS.map(([g,vs])=>{const items=vs.filter(v=>MENU[me.rol].includes(v));return items.length?`<div class="gs-group">${g}</div>`+items.map(v=>`<a href="#/${v}" title="${t(v)}"><span class="gs-nav-icon" aria-hidden="true">${GS_NAV_ICONS[v]||""}</span><span class="gs-label">${t(v)}</span></a>`).join(""):""}).join("");
+  const collapsed=localStorage.getItem("gs_sb")==="1";
+  $("#app").innerHTML=`<div class="app gs-layout${collapsed?" gs-collapsed":""}">
+    <aside class="gs-sidebar" id="gs-sidebar" aria-label="${es?"Navegación principal":"Main navigation"}">
+      <div class="gs-sb-head"><div><div class="logo">${GS_LOGO}<span>GlowSync</span></div></div></div>
+      <nav>${navHtml}</nav>
+      <div class="gs-sb-foot"><div class="av">${esc(ini(me.nombre))}</div><div class="gs-who"><b>${esc(me.nombre)}</b><small>${t(me.rol)}</small></div></div>
+    </aside>
+    <div class="gs-backdrop" id="gs-backdrop"></div>
+    <div class="gs-main">
+      <header class="gs-topbar">
+        <button type="button" class="gs-burger" id="gs-toggle" aria-controls="gs-sidebar" aria-label="${es?"Abrir o cerrar menú":"Toggle menu"}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h10"/></svg></button>
+        ${me.rol==="ADMIN_SAAS"?`<div class="tenant-chooser"><label for="tenant-select">${es?"Negocio activo":"Active business"}</label><select id="tenant-select"><option value="">${es?"Selecciona un negocio":"Select business"}</option></select></div>`:""}
+        <div class="gs-top-tools">${langSel()}<button class="sm" id="out">${t("logout")}</button></div>
+      </header>
+      <section class="body"><div class="top"><h1 id="ttl"></h1><span>${new Date().toLocaleDateString(loc(),{weekday:"long",day:"numeric",month:"long"})}</span></div><main id="m"></main></section>
+    </div></div>`;
+  const shell=$(".app.gs-layout"),mobile=()=>matchMedia("(max-width:900px)").matches;
+  $("#gs-toggle").onclick=()=>{if(mobile()){shell.classList.toggle("gs-open")}else{const c=shell.classList.toggle("gs-collapsed");localStorage.setItem("gs_sb",c?"1":"0")}};
+  $("#gs-backdrop").onclick=()=>shell.classList.remove("gs-open");
+  document.querySelectorAll("#gs-sidebar nav a").forEach(a=>a.addEventListener("click",()=>shell.classList.remove("gs-open")));
+  if(!window._gsEsc){window._gsEsc=1;document.addEventListener("keydown",e=>{if(e.key==="Escape")$(".app.gs-layout")?.classList.remove("gs-open")})}
   $("#lg").onchange=e=>setLang(e.target.value);$("#out").onclick=()=>logout();if(me.rol==="ADMIN_SAAS")loadCentros();go()}
 async function loadCentros(){const el=$("#tenant-select");if(!el)return;try{const data=await cachedGet("/api/centros/");const items=data.results||data;el.innerHTML=`<option value="">${lang==="es"?"Selecciona un negocio":"Select business"}</option>`+items.map(c=>`<option value="${c.id}">${esc(c.nombre)}</option>`).join("");const prev=selectedCentro;if(!items.some(c=>String(c.id)===selectedCentro)){selectedCentro=items.length?String(items[0].id):"";if(selectedCentro)sessionStorage.setItem("gs_centro",selectedCentro);else sessionStorage.removeItem("gs_centro")}el.value=selectedCentro;if(selectedCentro!==prev){clearResponseCache();loadPermissions().then(()=>draw()).catch(()=>go());return}el.onchange=()=>{selectedCentro=el.value;sessionStorage.setItem("gs_centro",selectedCentro);clearResponseCache();loadPermissions().then(()=>draw()).catch(()=>go())}}catch(e){toast(e.message,0)}}
 let navigationVersion=0;
@@ -132,7 +149,7 @@ async function go(){
   if(!S)return;const v=(location.hash||"").slice(2)||MENU[S.me.rol][0],m=$("#m");if(!m)return draw();
   document.querySelectorAll("nav a").forEach(a=>a.classList.toggle("on",a.getAttribute("href")==="#/"+v));$("#ttl").textContent=t(v)||"";
   if(!MENU[S.me.rol].includes(v)){m.innerHTML=`<div class="card"><div class="err">${t("denied")}</div></div>`;return}
-  if(S.me.rol==="ADMIN_SAAS"&&v!=="centros"&&v!=="rbac"&&!selectedCentro){m.innerHTML=`<div class="card empty">${lang==="es"?"Selecciona un negocio arriba para gestionar sus datos.":"Choose a location in the sidebar to manage its data."}</div>`;return}
+  if(S.me.rol==="ADMIN_SAAS"&&v!=="centros"&&v!=="rbac"&&!selectedCentro){m.innerHTML=`<div class="card empty">${lang==="es"?"Selecciona un negocio en la barra superior para gestionar sus datos.":"Choose a location in the sidebar to manage its data."}</div>`;return}
   const version=currentVersion;
   m.innerHTML='<div class="sk"></div><div class="sk"></div>';
   try{const html=await VIEWS[v]();if(version!==navigationVersion)return;m.innerHTML=html}catch(e){if(version!==navigationVersion)return;m.innerHTML=`<div class="card"><div class="err">${esc(e.message)}</div></div>`}bind()}
@@ -225,7 +242,7 @@ const VIEWS={
   <div><label>${t("name")}</label><input name="nombre" required></div><div><label>${t("email")}</label><input name="email" type="email" required></div><div><label>${t("pass")}</label><input name="password" type="password" minlength="8" required></div>
   <div><label>${t("rol")}</label><select name="rol"><option value="ADMIN_NEGOCIO">${t("ADMIN_NEGOCIO")}</option><option value="RECEPCIONISTA">${t("RECEPCIONISTA")}</option><option value="ESTETICISTA">${t("ESTETICISTA")}</option></select></div><div><button class="pri">${t("create")}</button></div></form></div>`},
  async rbac(){
-  if(S.me.rol==="ADMIN_SAAS"&&!selectedCentro)return `<div class="card empty">${lang==="es"?"Selecciona primero un negocio arriba para editar sus permisos.":"Select a business first to edit permissions."}</div>`;
+  if(S.me.rol==="ADMIN_SAAS"&&!selectedCentro)return `<div class="card empty">${lang==="es"?"Selecciona primero un negocio en la barra superior para editar sus permisos.":"Select a business first to edit permissions."}</div>`;
   const data=await api("/api/rbac/");activeMatrix=data.matriz;
   const R=["ADMIN_SAAS","ADMIN_NEGOCIO","RECEPCIONISTA","ESTETICISTA"];
   const rows=["dashboard","citas","clientas","fichas","usuarios","centros"].map(v=>`<tr><td><b>${ICON[v]} ${t(v)}</b></td>${R.map(r=>{
