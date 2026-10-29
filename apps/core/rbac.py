@@ -5,14 +5,16 @@
 - ADMIN_SAAS edita la matriz de cualquier negocio; ADMIN_NEGOCIO edita la de su negocio,
   solo para Recepcionista y Esteticista.
 """
-from .models import PermisoRol, Usuario
+from .models import PermisoRol, PermisoUsuario, Usuario
 
 R = Usuario.Rol
 MODULOS = ("dashboard", "citas", "clientas", "fichas", "usuarios", "centros")
 ROLES = tuple(R.values)
 # Orden del menú; "rbac" (Permisos) no es un módulo de datos, siempre es visible.
 MENU_ORDEN = ("centros", "dashboard", "citas", "clientas", "fichas", "usuarios", "rbac")
-SOLO_LECTURA = {"dashboard"}  # módulos sin operaciones de escritura
+SOLO_LECTURA = {"dashboard"}
+# Módulos que se pueden personalizar por rol o por persona ("centros" nunca se delega).
+MODULOS_DELEGABLES = ("dashboard", "citas", "clientas", "fichas", "usuarios")  # módulos sin operaciones de escritura
 
 # 0 = sin acceso, 1 = solo lectura, 2 = lectura y escritura
 PREDETERMINADOS = {
@@ -47,12 +49,18 @@ def es_protegida(modulo, rol):
     return rol == R.ADMIN_SAAS or modulo == "centros"
 
 
-def nivel_permiso(centro_id, rol, modulo):
-    """Consulta el permiso vigente en cada request; sin caché que deje permisos revocados activos."""
+def nivel_permiso(centro_id, rol, modulo, usuario_id=None):
+    """Consulta el permiso vigente en cada request; sin caché que deje permisos revocados activos.
+    Orden: permiso personal de la persona > permiso de su rol en el negocio > predeterminado."""
     if modulo not in MODULOS or rol not in ROLES:
         return 0
     if es_protegida(modulo, rol):
         return PREDETERMINADOS[modulo][rol]
+    if usuario_id:
+        personal = (PermisoUsuario.objects.filter(usuario_id=usuario_id, modulo=modulo)
+                    .values_list("nivel", flat=True).first())
+        if personal is not None:
+            return personal
     nivel = (PermisoRol.objects.filter(centro_id=centro_id, rol=rol, modulo=modulo)
              .values_list("nivel", flat=True).first())
     return PREDETERMINADOS[modulo][rol] if nivel is None else nivel
@@ -73,7 +81,30 @@ def permisos_usuario(user, centro_id):
     if not centro_id:
         return {m: 0 for m in MODULOS}
     m_actual = matriz(centro_id)
-    return {m: m_actual[m][user.rol] for m in MODULOS}
+    result = {m: m_actual[m][user.rol] for m in MODULOS}
+    for p in PermisoUsuario.objects.filter(usuario_id=user.id).values("modulo", "nivel"):
+        if p["modulo"] in MODULOS_DELEGABLES:
+            result[p["modulo"]] = p["nivel"]
+    return result
+
+
+def puede_gestionar_usuario(actor, objetivo):
+    """Quién puede personalizar los permisos de quién."""
+    if objetivo.rol == R.ADMIN_SAAS or actor.pk == objetivo.pk:
+        return False
+    if es_superadmin(actor):
+        return True
+    return (actor.rol == R.ADMIN_NEGOCIO and actor.centro_id == objetivo.centro_id
+            and objetivo.rol in (R.RECEPCIONISTA, R.ESTETICISTA))
+
+
+def detalle_permisos_usuario(objetivo):
+    """Por módulo: nivel de su rol, nivel personal (o None) y el efectivo."""
+    m_actual = matriz(objetivo.centro_id)
+    personales = dict(PermisoUsuario.objects.filter(usuario=objetivo).values_list("modulo", "nivel"))
+    return {m: {"rol": m_actual[m][objetivo.rol], "personal": personales.get(m),
+                "efectivo": personales.get(m, m_actual[m][objetivo.rol])}
+            for m in MODULOS_DELEGABLES}
 
 
 def menu_usuario(user, centro_id):

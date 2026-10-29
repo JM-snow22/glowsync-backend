@@ -2,8 +2,8 @@ from django.utils import translation
 from django.db import transaction
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import PermissionDenied
-from .models import PermisoRol
-from .rbac import MODULOS, ROLES, SOLO_LECTURA, es_protegida, es_superadmin, matriz, menu_usuario, permisos_usuario, roles_editables
+from .models import PermisoRol, PermisoUsuario
+from .rbac import MODULOS, ROLES, SOLO_LECTURA, MODULOS_DELEGABLES, detalle_permisos_usuario, es_protegida, es_superadmin, puede_gestionar_usuario, matriz, menu_usuario, permisos_usuario, roles_editables
 from django.utils.translation import gettext as _
 from drf_spectacular.utils import extend_schema
 from rest_framework import status, viewsets
@@ -98,6 +98,35 @@ class UsuarioViewSet(viewsets.ModelViewSet):
             from rest_framework.exceptions import PermissionDenied
             raise PermissionDenied("Solo el administrador SaaS puede eliminar administradores.")
         instance.delete()
+
+    @action(detail=True, methods=["get", "put"], url_path="permisos")
+    def permisos(self, request, pk=None):
+        """Permisos personalizados de una persona. PUT {"permisos": {"citas": 2, "usuarios": null}};
+        null vuelve a usar el permiso de su rol."""
+        objetivo = self.get_object()
+        editable = puede_gestionar_usuario(request.user, objetivo)
+        if request.method == "PUT":
+            if not editable:
+                raise PermissionDenied(_("No puedes modificar los permisos de esta persona."))
+            cambios = request.data.get("permisos")
+            if not isinstance(cambios, dict):
+                raise ValidationError({"permisos": "Formato inválido."})
+            for modulo, nivel in cambios.items():
+                if modulo not in MODULOS_DELEGABLES:
+                    raise ValidationError({"permisos": f"Módulo no personalizable: {modulo}."})
+                if nivel is not None and (type(nivel) is not int or nivel not in (0, 1, 2)):
+                    raise ValidationError({"permisos": f"Nivel inválido en {modulo}."})
+                if modulo in SOLO_LECTURA and nivel == 2:
+                    raise ValidationError({"permisos": "Resumen es un módulo de solo lectura."})
+            with transaction.atomic():
+                for modulo, nivel in cambios.items():
+                    if nivel is None:
+                        PermisoUsuario.objects.filter(usuario=objetivo, modulo=modulo).delete()
+                    else:
+                        PermisoUsuario.objects.update_or_create(
+                            usuario=objetivo, modulo=modulo, defaults={"nivel": nivel})
+        return Response({"usuario": objetivo.pk, "rol": objetivo.rol, "editable": editable,
+                         "modulos": detalle_permisos_usuario(objetivo)})
 
 
 class PermisosRolView(APIView):

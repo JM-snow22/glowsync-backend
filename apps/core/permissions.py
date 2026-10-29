@@ -55,7 +55,7 @@ class CentroPermission(BasePermission):
             return False
         modulo = VIEW_MODULE.get(view.__class__.__name__)
         if modulo:
-            nivel = nivel_permiso(u.centro_id, u.rol, modulo)
+            nivel = nivel_permiso(u.centro_id, u.rol, modulo, u.id)
             requiere = 1 if request.method in SAFE_METHODS else 2
             return nivel >= requiere
         # Para endpoints no presentes en la matriz se conserva el comportamiento anterior.
@@ -73,4 +73,4 @@ class SoloRecepcionista(BasePermission):
         if request.user.rol == Usuario.Rol.ADMIN_SAAS:
             return True
         from .rbac import nivel_permiso
-        return nivel_permiso(request.user.centro_id, request.user.rol, "usuarios") >= (1 if request.method in SAFE_METHODS else 2)
+        return nivel_permiso(request.user.centro_id, request.user.rol, "usuarios", request.user.id) >= (1 if request.method in SAFE_METHODS else 2)

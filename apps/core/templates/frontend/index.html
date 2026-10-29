@@ -48,18 +48,17 @@ let selectedCentro=sessionStorage.getItem("gs_centro")||"",lang=localStorage.get
 const t=k=>(T[lang][k]||k),$=s=>document.querySelector(s),loc=()=>lang==="es"?"es-CO":"en-US";
 const esc=v=>String(v==null?"":v).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 let activeMatrix=null;
+// Menú dinámico: el servidor calcula qué ve y qué modifica cada persona (rol + permisos personales).
 async function loadPermissions(){
-  if(!S || (S.me.rol==="ADMIN_SAAS"&&!selectedCentro)){activeMatrix=null;return}
+  if(!S)return;
   try{
-    const data=await api("/api/rbac/");activeMatrix=data.matriz;
-    const roles=["ADMIN_SAAS","ADMIN_NEGOCIO","RECEPCIONISTA","ESTETICISTA"];
-    const baseOrder=["centros","dashboard","citas","clientas","fichas","usuarios","rbac"];
-    for(const rol of roles){
-      MENU[rol]=baseOrder.filter(v=>v==="rbac"||(activeMatrix[v]&&activeMatrix[v][rol]>0));
-    }
-    WRITE={};for(const [v,rs] of Object.entries(activeMatrix))WRITE[v]=roles.filter(r=>rs[r]===2);
+    const me=await api("/api/auth/me/");S.me={...S.me,...me};save();
+    MENU[me.rol]=(me.menu||[]).map(x=>x.modulo);
+    WRITE={};for(const x of me.menu||[])WRITE[x.modulo]=x.escritura?[me.rol]:[];
   }catch(err){toast(err.message,0);throw err}
 }
+const isSuper=()=>S?.me?.rol==="ADMIN_SAAS";
+const LV=n=>n===0?`✖ ${t("none")}`:n===1?`👁 ${t("view")}`:`✔ ${t("full")}`;
 const can=v=>(WRITE[v]||[]).includes(S.me.rol),save=()=>sessionStorage.setItem("gs",JSON.stringify(S));
 const ini=n=>String(n||"?").split(/\s+/).slice(0,2).map(x=>x[0]).join("").toUpperCase(),money=n=>"$"+Number(n||0).toLocaleString(loc());
 const pill=(s,l)=>`<span class="pill ${TAGC[s]||"v"}">${esc(l||s)}</span>`;
@@ -114,7 +113,7 @@ function draw(m){
     $("#toggle-password").onclick=()=>{const p=$("#p"),b=$("#toggle-password"),show=p.type==="password";p.type=show?"text":"password";b.textContent=show?(lang==="es"?"Ocultar":"Hide"):(lang==="es"?"Mostrar":"Show");b.setAttribute("aria-label",lang==="es"?(show?"Ocultar contraseña":"Mostrar contraseña"):(show?"Hide password":"Show password"))};
     $("#f").onsubmit=async ev=>{ev.preventDefault();const btn=$("#login-submit");btn.disabled=true;btn.textContent=lang==="es"?"Ingresando…":"Signing in…";
       try{const d=await api("/api/auth/login/",{method:"POST",body:{email:$("#e").value,password:$("#p").value}});
-      clearResponseCache();S={access:d.access,refresh:d.refresh,me:d.usuario};lang=S.me.idioma||lang;localStorage.setItem("lang",lang);save();draw();loadPermissions().then(()=>draw()).catch(()=>{})}
+      clearResponseCache();S={access:d.access,refresh:d.refresh,me:d.usuario};lang=S.me.idioma||lang;localStorage.setItem("lang",lang);save();loadPermissions().catch(()=>{}).then(()=>draw())}
       catch(e){const box=$("#login-error");if(box)box.innerHTML=`<div class="err">${esc(t("bad"))}</div>`;btn.disabled=false;btn.textContent=t("login")}};return}
   const me=S.me;
   $("#app").innerHTML=`<div class="app"><header class="side" role="banner">
@@ -124,14 +123,14 @@ function draw(m){
     <div class="gs-nav-shell"><nav aria-label="${lang==="es"?"Navegación principal":"Main navigation"}">${MENU[me.rol].map(v=>`<a href="#/${v}"><span class="gs-nav-icon" aria-hidden="true">${GS_NAV_ICONS[v]||""}</span>${t(v)}</a>`).join("")}</nav></div></header>
     <section class="body"><div class="top"><h1 id="ttl"></h1><span>${new Date().toLocaleDateString(loc(),{weekday:"long",day:"numeric",month:"long"})}</span></div><main id="m"></main></section></div>`;
   $("#lg").onchange=e=>setLang(e.target.value);$("#out").onclick=()=>logout();if(me.rol==="ADMIN_SAAS")loadCentros();go()}
-async function loadCentros(){const el=$("#tenant-select");if(!el)return;try{const data=await cachedGet("/api/centros/");const items=data.results||data;el.innerHTML=`<option value="">${lang==="es"?"Selecciona un negocio":"Select business"}</option>`+items.map(c=>`<option value="${c.id}">${esc(c.nombre)}</option>`).join("");if(!items.some(c=>String(c.id)===selectedCentro)){selectedCentro="";sessionStorage.removeItem("gs_centro")}el.value=selectedCentro;el.onchange=()=>{selectedCentro=el.value;sessionStorage.setItem("gs_centro",selectedCentro);clearResponseCache();loadPermissions().then(()=>draw()).catch(()=>go())}}catch(e){toast(e.message,0)}}
+async function loadCentros(){const el=$("#tenant-select");if(!el)return;try{const data=await cachedGet("/api/centros/");const items=data.results||data;el.innerHTML=`<option value="">${lang==="es"?"Selecciona un negocio":"Select business"}</option>`+items.map(c=>`<option value="${c.id}">${esc(c.nombre)}</option>`).join("");const prev=selectedCentro;if(!items.some(c=>String(c.id)===selectedCentro)){selectedCentro=items.length?String(items[0].id):"";if(selectedCentro)sessionStorage.setItem("gs_centro",selectedCentro);else sessionStorage.removeItem("gs_centro")}el.value=selectedCentro;if(selectedCentro!==prev){clearResponseCache();loadPermissions().then(()=>draw()).catch(()=>go());return}el.onchange=()=>{selectedCentro=el.value;sessionStorage.setItem("gs_centro",selectedCentro);clearResponseCache();loadPermissions().then(()=>draw()).catch(()=>go())}}catch(e){toast(e.message,0)}}
 let navigationVersion=0;
 async function go(){
   const currentVersion=++navigationVersion;
   if(!S)return;const v=(location.hash||"").slice(2)||MENU[S.me.rol][0],m=$("#m");if(!m)return draw();
   document.querySelectorAll("nav a").forEach(a=>a.classList.toggle("on",a.getAttribute("href")==="#/"+v));$("#ttl").textContent=t(v)||"";
   if(!MENU[S.me.rol].includes(v)){m.innerHTML=`<div class="card"><div class="err">${t("denied")}</div></div>`;return}
-  if(S.me.rol==="ADMIN_SAAS"&&v!=="centros"&&v!=="rbac"&&!selectedCentro){m.innerHTML=`<div class="card empty">${lang==="es"?"Selecciona una sede en el menú lateral para gestionar sus datos.":"Choose a location in the sidebar to manage its data."}</div>`;return}
+  if(S.me.rol==="ADMIN_SAAS"&&v!=="centros"&&v!=="rbac"&&!selectedCentro){m.innerHTML=`<div class="card empty">${lang==="es"?"Selecciona un negocio arriba para gestionar sus datos.":"Choose a location in the sidebar to manage its data."}</div>`;return}
   const version=currentVersion;
   m.innerHTML='<div class="sk"></div><div class="sk"></div>';
   try{const html=await VIEWS[v]();if(version!==navigationVersion)return;m.innerHTML=html}catch(e){if(version!==navigationVersion)return;m.innerHTML=`<div class="card"><div class="err">${esc(e.message)}</div></div>`}bind()}
@@ -205,27 +204,49 @@ const VIEWS={
  async fichas(){const d=await cachedGet("/api/fichas/");window._F={};d.results.forEach(f=>window._F[f.id]=f);
   return `<div class="card">${d.results.length?cnt(d)+`<div class="grid">${d.results.map(f=>`<div class="tile"><div class="h"><div class="av">#${f.clienta}</div><div><b>${t("skin")}: ${esc(f.tipo_cutis||"—")}</b><small>${esc(f.observaciones||"")}</small></div></div>
    <div class="tags">${f.alergias?`<span class="pill no">⚠ ${esc(f.alergias)}</span>`:`<span class="pill ok">${t("noAl")}</span>`}</div>${can("fichas")?`<div><button class="sm" data-f="${f.id}">${t("edit")}</button></div>`:""}</div>`).join("")}</div>`:empty("📋",t("eF"))}</div>`},
- async usuarios(){const d=await cachedGet("/api/usuarios/");return `<div class="card"><h2>${t("usuarios")}</h2>${d.results.length?`<div class="tw"><table><tr><th>${t("name")}</th><th>${t("email")}</th><th>${t("rol")}</th><th>${t("active")}</th></tr>${d.results.map(u=>`<tr><td><b>${esc(u.nombre)}</b></td><td>${esc(u.email)}</td><td>${pill("",t(u.rol))}</td><td>${u.is_active?"✔":"✖"}</td></tr>`).join("")}</table></div>`:empty("👥",t("eU"))}</div>
+ async usuarios(){const d=await cachedGet("/api/usuarios/");return `<div class="card"><h2>${t("usuarios")}</h2>${d.results.length?`<div class="tw"><table><tr><th>${t("name")}</th><th>${t("email")}</th><th>${t("rol")}</th><th>${t("active")}</th>${can("usuarios")?"<th></th>":""}</tr>${d.results.map(u=>{window._U=window._U||{};window._U[u.id]=u;const gest=isSuper()||(S.me.rol==="ADMIN_NEGOCIO"&&["RECEPCIONISTA","ESTETICISTA"].includes(u.rol));return `<tr><td><b>${esc(u.nombre)}</b></td><td>${esc(u.email)}</td><td>${pill("",t(u.rol))}</td><td>${u.is_active?"✔":"✖"}</td>${can("usuarios")?`<td style="white-space:nowrap"><button class="sm" data-u="${u.id}">${t("edit")}</button> ${gest&&u.id!==S.me.id?`<button class="sm" data-up="${u.id}">🔐 ${t("rbac")}</button> `:""}<button class="sm d" data-ud="${u.id}">${lang==="es"?"Eliminar":"Delete"}</button></td>`:""}</tr>`}).join("")}</table></div>`:empty("👥",t("eU"))}</div>
   <div class="card"><h2>${t("newUser")}</h2><form id="nu" class="fg"><div><label>${t("name")}</label><input name="nombre" required></div><div><label>${t("email")}</label><input name="email" type="email" required></div>
-  <div><label>${t("rol")}</label><select name="rol"><option value="ESTETICISTA">${t("ESTETICISTA")}</option><option value="RECEPCIONISTA">${t("RECEPCIONISTA")}</option></select></div><div><label>${t("pass")}</label><input name="password" type="password" minlength="8" required></div><div><button class="pri">${t("create")}</button></div></form></div>`},
- async centros(){const d=await cachedGet("/api/centros/");return `<div class="card"><h2>${t("centros")}</h2><div class="tw"><table><tr><th>ID</th><th>${t("name")}</th><th>${t("plan")}</th><th>${t("state")}</th><th>${t("expires")}</th></tr>${d.results.map(c=>`<tr><td>${c.id}</td><td><b>${esc(c.nombre)}</b></td><td>${pill("",c.plan)}</td><td>${pill(c.estado_suscripcion)}</td><td>${esc(c.fecha_vencimiento)}</td></tr>`).join("")}</table></div></div>
+  <div><label>${t("rol")}</label><select name="rol"><option value="ESTETICISTA">${t("ESTETICISTA")}</option><option value="RECEPCIONISTA">${t("RECEPCIONISTA")}</option>${isSuper()?`<option value="ADMIN_NEGOCIO">${t("ADMIN_NEGOCIO")}</option>`:""}</select></div><div><label>${t("pass")}</label><input name="password" type="password" minlength="8" required></div><div><button class="pri">${t("create")}</button></div></form></div>`},
+ async centros(){const d=await cachedGet("/api/centros/");return `<div class="card"><h2>${t("centros")}</h2><div class="tw"><table><tr><th>ID</th><th>${t("name")}</th><th>${t("plan")}</th><th>${t("state")}</th><th>${t("expires")}</th><th></th></tr>${d.results.map(c=>{window._C=window._C||{};window._C[c.id]=c;return `<tr><td>${c.id}</td><td><b>${esc(c.nombre)}</b></td><td>${pill("",c.plan)}</td><td>${pill(c.estado_suscripcion)}</td><td>${esc(c.fecha_vencimiento)}</td><td style="white-space:nowrap"><button class="sm" data-c="${c.id}">${t("edit")}</button> <button class="sm d" data-cd="${c.id}">${lang==="es"?"Eliminar":"Delete"}</button></td></tr>`}).join("")}</table></div></div>
   <div class="card"><h2>${t("newCentro")}</h2><form id="nc" class="fg"><div><label>${t("name")}</label><input name="nombre" required></div><div><label>${t("city")}</label><input name="ciudad"></div>
   <div><label>${t("plan")}</label><select name="plan"><option>BASICO</option><option>PRO</option><option>PREMIUM</option></select></div><div><label>${t("expires")}</label><input name="fecha_vencimiento" type="date" required></div><div><button class="pri">${t("create")}</button></div></form></div>
   <div class="card"><h2>${t("centroUser")}</h2><form id="cu" class="fg"><div><label>${t("centro")}</label><select name="centro">${d.results.map(c=>`<option value="${c.id}">${esc(c.nombre)}</option>`).join("")}</select></div>
   <div><label>${t("name")}</label><input name="nombre" required></div><div><label>${t("email")}</label><input name="email" type="email" required></div><div><label>${t("pass")}</label><input name="password" type="password" minlength="8" required></div>
   <div><label>${t("rol")}</label><select name="rol"><option value="ADMIN_NEGOCIO">${t("ADMIN_NEGOCIO")}</option><option value="RECEPCIONISTA">${t("RECEPCIONISTA")}</option><option value="ESTETICISTA">${t("ESTETICISTA")}</option></select></div><div><button class="pri">${t("create")}</button></div></form></div>`},
  async rbac(){
-  if(S.me.rol==="ADMIN_SAAS"&&!selectedCentro)return `<div class="card empty">${lang==="es"?"Selecciona primero un negocio en el menú lateral para editar sus permisos.":"Select a business first to edit permissions."}</div>`;
+  if(S.me.rol==="ADMIN_SAAS"&&!selectedCentro)return `<div class="card empty">${lang==="es"?"Selecciona primero un negocio arriba para editar sus permisos.":"Select a business first to edit permissions."}</div>`;
   const data=await api("/api/rbac/");activeMatrix=data.matriz;
   const R=["ADMIN_SAAS","ADMIN_NEGOCIO","RECEPCIONISTA","ESTETICISTA"];
   const rows=["dashboard","citas","clientas","fichas","usuarios","centros"].map(v=>`<tr><td><b>${ICON[v]} ${t(v)}</b></td>${R.map(r=>{
-    const level=data.matriz[v][r], locked=r==="ADMIN_SAAS"||v==="centros";
+    const level=data.matriz[v][r], locked=r==="ADMIN_SAAS"||v==="centros"||!(data.roles_editables||[]).includes(r);
     if(!data.editable||locked)return `<td>${level===0?`<span class="pill">✖ ${t("none")}</span>`:level===1?`<span class="pill v">👁 ${t("view")}</span>`:`<span class="pill ok">✔ ${t("full")}</span>`}</td>`;
     return `<td><select class="rbac-cell" data-module="${v}" data-role="${r}" aria-label="${t(v)} ${t(r)}"><option value="0" ${level===0?"selected":""}>✖ ${t("none")}</option><option value="1" ${level===1?"selected":""}>👁 ${t("view")}</option>${v!=="dashboard"?`<option value="2" ${level===2?"selected":""}>✔ ${t("full")}</option>`:""}</select></td>`;
   }).join("")}</tr>`).join("");
   const buttons=data.editable?`<div class="act"><button type="button" class="ghost" id="rbac-reset">${lang==="es"?"Restaurar predeterminados":"Reset defaults"}</button><button type="button" class="pri" id="rbac-save">${t("save")}</button></div>`:"";
-  return `<div class="card"><h2>${t("matrix")}</h2><div class="tw"><table><tr><th></th>${R.map(r=>`<th>${t(r)}</th>`).join("")}</tr>${rows}</table></div>${buttons}<p class="mut" style="font-size:13px;margin-top:14px">${t("note")}</p></div>`
+  return `<div class="card"><h2>${t("matrix")}</h2><div class="tw"><table><tr><th></th>${R.map(r=>`<th>${t(r)}</th>`).join("")}</tr>${rows}</table></div>${buttons}<p class="mut" style="font-size:13px;margin-top:14px">${t("note")}</p></div>${await personasCard()}`
 }};
+async function personasCard(){
+  if(!data_canManagePeople())return "";
+  let d;try{d=await api("/api/usuarios/")}catch(e){return ""}
+  const lista=d.results.filter(u=>u.id!==S.me.id&&(isSuper()||["RECEPCIONISTA","ESTETICISTA"].includes(u.rol)));
+  window._U=window._U||{};lista.forEach(u=>window._U[u.id]=u);
+  const es=lang==="es";
+  return `<div class="card"><h2>${es?"Permisos por persona":"Permissions per person"}</h2>
+  <p class="mut" style="font-size:13px;margin-bottom:14px">${es?"Dale a una persona permisos distintos a los de su rol. Lo personalizado manda sobre el rol.":"Give someone permissions different from their role. Custom settings override the role."}</p>
+  ${lista.length?`<div class="tw"><table><tr><th>${t("name")}</th><th>${t("rol")}</th><th></th></tr>${lista.map(u=>`<tr><td><b>${esc(u.nombre)}</b><br><small class="mut">${esc(u.email)}</small></td><td>${pill("",t(u.rol))}</td><td><button class="sm" data-up="${u.id}">🔐 ${es?"Personalizar":"Customize"}</button></td></tr>`).join("")}</table></div>`:empty("👥",t("eU"))}</div>`}
+function data_canManagePeople(){return MENU[S.me.rol].includes("usuarios")&&(isSuper()||S.me.rol==="ADMIN_NEGOCIO")}
+async function abrirPermisosPersona(id){
+  const u=(window._U||{})[id]||{nombre:"#"+id},es=lang==="es";
+  let d;try{d=await api(`/api/usuarios/${id}/permisos/`)}catch(e){toast(e.message,0);return}
+  const mods=["dashboard","citas","clientas","fichas","usuarios"];
+  const body=`<p class="mut" style="font-size:13px;margin-bottom:10px">${t(d.rol)}</p>`+mods.map(m=>{const x=d.modulos[m],cur=x.personal==null?"":String(x.personal);
+    const opts=[["",(es?"Según su rol: ":"Role default: ")+LV(x.rol)],["0",LV(0)],["1",LV(1)]].concat(m!=="dashboard"?[["2",LV(2)]]:[]);
+    return `<label>${ICON[m]} ${t(m)}</label><select name="${m}" ${d.editable?"":"disabled"}>${opts.map(([v,l])=>`<option value="${v}"${v===cur?" selected":""}>${esc(l)}</option>`).join("")}</select>`}).join("")+
+    `<p class="mut" style="font-size:12px;margin-top:10px">${es?"Negocios es exclusivo del Admin SaaS.":"Businesses is reserved for the SaaS admin."}</p>`;
+  modal((es?"Permisos de ":"Permissions for ")+esc(u.nombre),body,async f=>{
+    const permisos={};for(const m of mods)permisos[m]=f[m]===""||f[m]==null?null:Number(f[m]);
+    await api(`/api/usuarios/${id}/permisos/`,{method:"PUT",body:{permisos}});toast(t("saved"));go()});
+}
 function modal(title,body,onsub){const o=document.createElement("div");o.className="ov";o.innerHTML=`<form class="mod" id="mf"><h2>${title}</h2>${body}<div class="act"><button type="button" class="ghost" id="mc">${t("cancel")}</button><button class="pri">${t("save")}</button></div></form>`;document.body.appendChild(o);
   o.querySelector("#mc").onclick=()=>o.remove();o.querySelector("#mf").onsubmit=async e=>{e.preventDefault();try{await onsub(Object.fromEntries(new FormData(e.target)));o.remove()}catch(x){toast(x.message,0)}}}
 function bind(){
@@ -248,7 +269,28 @@ function bind(){
   document.querySelectorAll("[data-f]").forEach(b=>b.onclick=()=>{const f=window._F[b.dataset.f];
     modal(t("fichas")+" #"+f.clienta,`<label>${t("skin")}</label><input name="tipo_cutis" value="${esc(f.tipo_cutis)}"><label>${t("allergy")}</label><input name="alergias" value="${esc(f.alergias)}"><label>${t("obs")}</label><textarea name="observaciones" rows="3">${esc(f.observaciones)}</textarea>`,
     async d=>{await api(`/api/fichas/${f.id}/`,{method:"PATCH",body:d});toast(t("saved"));go()})});
+  const es=lang==="es",sel=(n,opts,cur)=>`<select name="${n}">${opts.map(([v,l])=>`<option value="${v}"${String(v)===String(cur)?" selected":""}>${esc(l)}</option>`).join("")}</select>`;
+  document.querySelectorAll("[data-up]").forEach(b=>b.onclick=()=>abrirPermisosPersona(b.dataset.up));
+  document.querySelectorAll("[data-u]").forEach(b=>b.onclick=()=>{const u=window._U[b.dataset.u];
+    const roles=[["RECEPCIONISTA",t("RECEPCIONISTA")],["ESTETICISTA",t("ESTETICISTA")]].concat(isSuper()||u.rol==="ADMIN_NEGOCIO"?[["ADMIN_NEGOCIO",t("ADMIN_NEGOCIO")]]:[]);
+    modal(t("edit")+": "+esc(u.nombre),`<label>${t("name")}</label><input name="nombre" value="${esc(u.nombre)}" required><label>${t("email")}</label><input name="email" type="email" value="${esc(u.email)}" required>
+    <label>${t("rol")}</label>${sel("rol",roles,u.rol)}
+    <label>${t("active")}</label>${sel("is_active",[["true",es?"Sí":"Yes"],["false","No"]],u.is_active)}
+    <label>${t("pass")} (${es?"vacío = no cambiar":"empty = keep"})</label><input name="password" type="password" minlength="8">`,
+    async d=>{d.is_active=d.is_active==="true";if(!d.password)delete d.password;if(d.rol===u.rol)delete d.rol;await api(`/api/usuarios/${u.id}/`,{method:"PATCH",body:d});toast(t("saved"));go()})});
+  document.querySelectorAll("[data-ud]").forEach(b=>b.onclick=async()=>{const u=window._U[b.dataset.ud];if(!confirm((es?"¿Eliminar a ":"Delete ")+u.nombre+"?"))return;
+    try{await api(`/api/usuarios/${u.id}/`,{method:"DELETE"});toast(t("saved"));go()}catch(e){toast(e.message,0)}});
+  document.querySelectorAll("[data-c]").forEach(b=>b.onclick=()=>{const c=window._C[b.dataset.c];
+    modal(t("edit")+": "+esc(c.nombre),`<label>${t("name")}</label><input name="nombre" value="${esc(c.nombre)}" required><label>NIT</label><input name="nit" value="${esc(c.nit)}">
+    <label>${t("city")}</label><input name="ciudad" value="${esc(c.ciudad)}"><label>WhatsApp</label><input name="telefono_whatsapp" value="${esc(c.telefono_whatsapp)}">
+    <label>${t("plan")}</label>${sel("plan",[["BASICO","BASICO"],["PRO","PRO"],["PREMIUM","PREMIUM"]],c.plan)}
+    <label>${t("state")}</label>${sel("estado_suscripcion",[["ACTIVA","ACTIVA"],["VENCIDA","VENCIDA"],["SUSPENDIDA","SUSPENDIDA"]],c.estado_suscripcion)}
+    <label>${t("expires")}</label><input name="fecha_vencimiento" type="date" value="${esc(c.fecha_vencimiento)}" required>`,
+    async d=>{await api(`/api/centros/${c.id}/`,{method:"PATCH",body:d});toast(t("saved"));loadCentros();go()})});
+  document.querySelectorAll("[data-cd]").forEach(b=>b.onclick=async()=>{const c=window._C[b.dataset.cd];
+    if(!confirm(es?`¿Eliminar el negocio "${c.nombre}"? Se borran TODOS sus datos (usuarios, citas, clientas).`:`Delete "${c.nombre}"? ALL its data will be removed.`))return;
+    try{await api(`/api/centros/${c.id}/`,{method:"DELETE"});if(String(c.id)===selectedCentro){selectedCentro="";sessionStorage.removeItem("gs_centro")}toast(t("saved"));loadCentros();go()}catch(e){toast(e.message,0)}});
   const post=(id,url,fix)=>{const f=$(id);if(f)f.onsubmit=async ev=>{ev.preventDefault();try{let d=Object.fromEntries(new FormData(f)),u=url;if(fix){u=url.replace("{c}",d.centro);delete d.centro}await api(u,{method:"POST",body:d});toast(t("saved"));f.reset();setTimeout(go,600)}catch(e){toast(e.message,0)}}};
   post("#nu","/api/usuarios/");post("#nc","/api/centros/");post("#cu","/api/centros/{c}/usuarios/",1)}
-if(S){api("/api/auth/me/").then(me=>{S.me=me;save();return loadPermissions().catch(()=>{})}).then(()=>draw()).catch(()=>logout())}else draw();
+if(S){loadPermissions().then(()=>draw()).catch(()=>logout())}else draw();
 </script></body></html>

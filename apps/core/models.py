@@ -125,3 +125,17 @@ class PermisoRol(models.Model):
             models.UniqueConstraint(fields=["centro", "rol", "modulo"], name="permiso_rol_unico"),
             models.CheckConstraint(condition=models.Q(nivel__in=[0, 1, 2]), name="permiso_rol_nivel_valido"),
         ]
+
+
+class PermisoUsuario(models.Model):
+    """Permiso personalizado de una persona. Si existe, reemplaza al de su rol para ese módulo."""
+    usuario = models.ForeignKey(Usuario, on_delete=models.CASCADE, related_name="permisos_personales")
+    modulo = models.CharField(max_length=20)
+    nivel = models.PositiveSmallIntegerField()
+
+    class Meta:
+        db_table = "permiso_usuario"
+        constraints = [
+            models.UniqueConstraint(fields=["usuario", "modulo"], name="permiso_usuario_unico"),
+            models.CheckConstraint(condition=models.Q(nivel__in=[0, 1, 2]), name="permiso_usuario_nivel_valido"),
+        ]

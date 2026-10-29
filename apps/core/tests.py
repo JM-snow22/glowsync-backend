@@ -246,3 +246,42 @@ class RBACMenuDinamicoTest(APITestCase):
         m["citas"]["ADMIN_SAAS"] = 0
         self.assertEqual(admin.put("/api/rbac/", {"matriz": m}, format="json").status_code, 400)
         self.assertEqual(admin.get("/api/citas/").status_code, 200)
+
+
+class PermisosPorPersonaTest(APITestCase):
+    def setUp(self):
+        self.a = crear_centro("Negocio Persona A")
+        self.admin = crear_usuario("root-pp@x.co", Usuario.Rol.ADMIN_SAAS)
+        self.jefe = crear_usuario("jefe-pp@x.co", Usuario.Rol.ADMIN_NEGOCIO, self.a)
+        self.est = crear_usuario("est-pp@x.co", Usuario.Rol.ESTETICISTA, self.a)
+        self.est2 = crear_usuario("est2-pp@x.co", Usuario.Rol.ESTETICISTA, self.a)
+
+    def url(self, u):
+        return f"/api/usuarios/{u.pk}/permisos/"
+
+    def test_superadmin_da_permisos_a_una_persona(self):
+        admin = cliente(self.admin, HTTP_X_CENTRO_ID=str(self.a.pk))
+        self.assertEqual(cliente(self.est).get("/api/usuarios/").status_code, 403)
+        r = admin.put(self.url(self.est), {"permisos": {"usuarios": 2, "dashboard": 1}}, format="json")
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(r.data["modulos"]["usuarios"]["efectivo"], 2)
+        self.assertEqual(cliente(self.est).get("/api/usuarios/").status_code, 200)
+        self.assertIn("usuarios", [x["modulo"] for x in cliente(self.est).get("/api/auth/me/").data["menu"]])
+        # Solo esa persona, no todo el rol
+        self.assertEqual(cliente(self.est2).get("/api/usuarios/").status_code, 403)
+        # null vuelve al permiso del rol
+        admin.put(self.url(self.est), {"permisos": {"usuarios": None}}, format="json")
+        self.assertEqual(cliente(self.est).get("/api/usuarios/").status_code, 403)
+
+    def test_quitar_acceso_a_una_persona(self):
+        admin = cliente(self.admin, HTTP_X_CENTRO_ID=str(self.a.pk))
+        admin.put(self.url(self.jefe), {"permisos": {"citas": 0}}, format="json")
+        self.assertEqual(cliente(self.jefe).get("/api/citas/").status_code, 403)
+
+    def test_limites(self):
+        admin = cliente(self.admin, HTTP_X_CENTRO_ID=str(self.a.pk))
+        self.assertEqual(admin.put(self.url(self.est), {"permisos": {"centros": 2}}, format="json").status_code, 400)
+        self.assertEqual(admin.put(self.url(self.est), {"permisos": {"dashboard": 2}}, format="json").status_code, 400)
+        jefe = cliente(self.jefe)
+        self.assertEqual(jefe.put(self.url(self.est), {"permisos": {"citas": 2}}, format="json").status_code, 200)
+        self.assertEqual(cliente(self.est).put(self.url(self.est2), {"permisos": {"citas": 2}}, format="json").status_code, 403)
