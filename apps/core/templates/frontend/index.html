@@ -1,10 +1,11 @@
 {% load static %}
 <!doctype html>
 <html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>GlowSync</title><meta name="theme-color" content="#b9708f">
+<title>GlowSync</title><link rel="icon" type="image/svg+xml" href="{% static 'img/glowsync-logo.svg' %}"><meta name="theme-color" content="#b9708f">
 <link rel="stylesheet" href="{% static 'css/base.css' %}">
 <link rel="stylesheet" href="{% static 'css/modules.css' %}">
 <link rel="stylesheet" href="{% static 'css/navigation.css' %}"><link rel="stylesheet" href="{% static 'css/dashboard-polish.css' %}"><link rel="stylesheet" href="{% static 'css/mobile.css' %}">
+<style>.logo{display:flex!important;align-items:center;gap:10px}.gs-logo-mark{width:34px;height:34px;flex:none;border-radius:11px;box-shadow:0 6px 16px rgba(66,42,61,.18)}.hero .logo .gs-logo-mark{width:40px;height:40px;box-shadow:0 8px 22px rgba(0,0,0,.25)}@media(max-width:600px){.gs-logo-mark{width:28px;height:28px}}</style>
 </head>
 <body><div id="app"></div>
 <script>
@@ -42,6 +43,7 @@ const GS_NAV_ICONS={
   "centros":`<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="8" width="18" height="13" rx="2"/><path d="m3 8 3-5h12l3 5M9 21v-8h6v8"/></svg>`,
   "rbac":`<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/><circle cx="12" cy="15" r="1"/></svg>`
 };
+const GS_LOGO=`<svg class="gs-logo-mark" viewBox="0 0 48 48" aria-hidden="true"><defs><linearGradient id="gsBg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#5a3552"/><stop offset="1" stop-color="#2f1f2d"/></linearGradient><linearGradient id="gsArc" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f6c9d9"/><stop offset="1" stop-color="#d98fae"/></linearGradient></defs><rect width="48" height="48" rx="14" fill="url(#gsBg)"/><path d="M31.1 15.6A11 11 0 1 0 35 24H25.5" fill="none" stroke="url(#gsArc)" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M37 6.5Q37.7 10.3 41.5 11Q37.7 11.7 37 15.5Q36.3 11.7 32.5 11Q36.3 10.3 37 6.5Z" fill="#ffe3ec"/></svg>`;
 const ICON={dashboard:"✨",citas:"📅",clientas:"💆‍♀️",fichas:"🧴",usuarios:"🤍",centros:"🌿",rbac:"🔐"};
 const TAGC={CONFIRMADA:"ok",COMPLETADA:"ok",ACTIVA:"ok",CANCELADA:"no",NO_ASISTIO:"no",PENDIENTE:"w"};
 let selectedCentro=sessionStorage.getItem("gs_centro")||"",lang=localStorage.getItem("lang")||"es",S=JSON.parse(sessionStorage.getItem("gs")||"null");
@@ -96,7 +98,7 @@ async function setLang(v){clearResponseCache();lang=v;localStorage.setItem("lang
 function draw(m){
   if(!S){
     $("#app").innerHTML=`<div class="auth"><section class="hero">
-      <div class="logo"><i>✦</i> GlowSync</div>
+      <div class="logo">${GS_LOGO}<span>GlowSync</span></div>
       <div><div class="eyebrow">Beauty · Wellness · Technology</div>
       <h2>${t("h1")}</h2><p>${t("h2")}</p>
       <ul><li>${t("b1")}</li><li>${t("b2")}</li><li>${t("b3")}</li></ul></div>
@@ -117,7 +119,7 @@ function draw(m){
       catch(e){const box=$("#login-error");if(box)box.innerHTML=`<div class="err">${esc(t("bad"))}</div>`;btn.disabled=false;btn.textContent=t("login")}};return}
   const me=S.me;
   $("#app").innerHTML=`<div class="app"><header class="side" role="banner">
-    <div class="gs-header-main"><div class="gs-brand"><div class="logo"><i>✦</i> GlowSync</div><div class="gs-brand-caption">${lang==="es"?"Gestión de belleza":"Beauty management"}</div></div>
+    <div class="gs-header-main"><div class="gs-brand"><div class="logo">${GS_LOGO}<span>GlowSync</span></div><div class="gs-brand-caption">${lang==="es"?"Gestión de belleza":"Beauty management"}</div></div>
     <div class="gs-header-tools">${me.rol==="ADMIN_SAAS"?`<div class="tenant-chooser"><label for="tenant-select">${lang==="es"?"NEGOCIO ACTIVO":"ACTIVE BUSINESS"}</label><select id="tenant-select"><option value="">${lang==="es"?"Selecciona un negocio":"Select business"}</option></select></div>`:""}
     <div class="me"><div class="av">${esc(ini(me.nombre))}</div><div><b>${esc(me.nombre)}</b><small>${t(me.rol)}</small></div></div><div class="ctl">${langSel()}<button class="sm" id="out">${t("logout")}</button></div></div></div>
     <div class="gs-nav-shell"><nav aria-label="${lang==="es"?"Navegación principal":"Main navigation"}">${MENU[me.rol].map(v=>`<a href="#/${v}"><span class="gs-nav-icon" aria-hidden="true">${GS_NAV_ICONS[v]||""}</span>${t(v)}</a>`).join("")}</nav></div></header>
@@ -204,10 +206,19 @@ const VIEWS={
  async fichas(){const d=await cachedGet("/api/fichas/");window._F={};d.results.forEach(f=>window._F[f.id]=f);
   return `<div class="card">${d.results.length?cnt(d)+`<div class="grid">${d.results.map(f=>`<div class="tile"><div class="h"><div class="av">#${f.clienta}</div><div><b>${t("skin")}: ${esc(f.tipo_cutis||"—")}</b><small>${esc(f.observaciones||"")}</small></div></div>
    <div class="tags">${f.alergias?`<span class="pill no">⚠ ${esc(f.alergias)}</span>`:`<span class="pill ok">${t("noAl")}</span>`}</div>${can("fichas")?`<div><button class="sm" data-f="${f.id}">${t("edit")}</button></div>`:""}</div>`).join("")}</div>`:empty("📋",t("eF"))}</div>`},
- async usuarios(){const d=await cachedGet("/api/usuarios/");return `<div class="card"><h2>${t("usuarios")}</h2>${d.results.length?`<div class="tw"><table><tr><th>${t("name")}</th><th>${t("email")}</th><th>${t("rol")}</th><th>${t("active")}</th>${can("usuarios")?"<th></th>":""}</tr>${d.results.map(u=>{window._U=window._U||{};window._U[u.id]=u;const gest=isSuper()||(S.me.rol==="ADMIN_NEGOCIO"&&["RECEPCIONISTA","ESTETICISTA"].includes(u.rol));return `<tr><td><b>${esc(u.nombre)}</b></td><td>${esc(u.email)}</td><td>${pill("",t(u.rol))}</td><td>${u.is_active?"✔":"✖"}</td>${can("usuarios")?`<td style="white-space:nowrap"><button class="sm" data-u="${u.id}">${t("edit")}</button> ${gest&&u.id!==S.me.id?`<button class="sm" data-up="${u.id}">🔐 ${t("rbac")}</button> `:""}<button class="sm d" data-ud="${u.id}">${lang==="es"?"Eliminar":"Delete"}</button></td>`:""}</tr>`}).join("")}</table></div>`:empty("👥",t("eU"))}</div>
+ async usuarios(){const d=await cachedGet("/api/usuarios/");return `<div class="card"><h2>${t("usuarios")}</h2>${d.results.length?`<div class="tw"><table><tr><th>${t("name")}</th><th>${t("email")}</th><th>${t("rol")}</th><th>${t("active")}</th>${can("usuarios")?"<th></th>":""}</tr>${d.results.map(u=>{window._U=window._U||{};window._U[u.id]=u;const gest=u.id!==S.me.id&&(isSuper()||(S.me.rol==="ADMIN_NEGOCIO"&&["RECEPCIONISTA","ESTETICISTA"].includes(u.rol)));return `<tr><td><b>${esc(u.nombre)}</b></td><td>${esc(u.email)}</td><td>${pill("",t(u.rol))}</td><td>${u.is_active?"✔":"✖"}</td>${can("usuarios")?`<td style="white-space:nowrap"><button class="sm" data-u="${u.id}">${t("edit")}</button> ${gest?`<button class="sm" data-up="${u.id}">🔐 ${t("rbac")}</button> `:""}<button class="sm d" data-ud="${u.id}">${lang==="es"?"Eliminar":"Delete"}</button></td>`:""}</tr>`}).join("")}</table></div>`:empty("👥",t("eU"))}</div>
   <div class="card"><h2>${t("newUser")}</h2><form id="nu" class="fg"><div><label>${t("name")}</label><input name="nombre" required></div><div><label>${t("email")}</label><input name="email" type="email" required></div>
   <div><label>${t("rol")}</label><select name="rol"><option value="ESTETICISTA">${t("ESTETICISTA")}</option><option value="RECEPCIONISTA">${t("RECEPCIONISTA")}</option>${isSuper()?`<option value="ADMIN_NEGOCIO">${t("ADMIN_NEGOCIO")}</option>`:""}</select></div><div><label>${t("pass")}</label><input name="password" type="password" minlength="8" required></div><div><button class="pri">${t("create")}</button></div></form></div>`},
- async centros(){const d=await cachedGet("/api/centros/");return `<div class="card"><h2>${t("centros")}</h2><div class="tw"><table><tr><th>ID</th><th>${t("name")}</th><th>${t("plan")}</th><th>${t("state")}</th><th>${t("expires")}</th><th></th></tr>${d.results.map(c=>{window._C=window._C||{};window._C[c.id]=c;return `<tr><td>${c.id}</td><td><b>${esc(c.nombre)}</b></td><td>${pill("",c.plan)}</td><td>${pill(c.estado_suscripcion)}</td><td>${esc(c.fecha_vencimiento)}</td><td style="white-space:nowrap"><button class="sm" data-c="${c.id}">${t("edit")}</button> <button class="sm d" data-cd="${c.id}">${lang==="es"?"Eliminar":"Delete"}</button></td></tr>`}).join("")}</table></div></div>
+ async centros(){const d=await cachedGet("/api/centros/");
+  if(!isSuper()){const es=lang==="es",c=d.results[0];if(!c)return `<div class="card">${empty("🌿",es?"Sin negocio asignado":"No business assigned")}</div>`;
+   window._C={[c.id]:c};
+   return `<div class="card"><h2>${esc(c.nombre)}</h2><div class="tw"><table>
+   <tr><th>NIT</th><td>${esc(c.nit||"—")}</td></tr><tr><th>${t("city")}</th><td>${esc(c.ciudad||"—")}</td></tr>
+   <tr><th>WhatsApp</th><td>${esc(c.telefono_whatsapp||"—")}</td></tr><tr><th>${t("plan")}</th><td>${pill("",c.plan)}</td></tr>
+   <tr><th>${t("state")}</th><td>${pill(c.estado_suscripcion)}</td></tr><tr><th>${t("expires")}</th><td>${esc(c.fecha_vencimiento)}</td></tr></table></div>
+   ${can("centros")?`<div class="act"><button class="pri" data-c="${c.id}">${t("edit")}</button></div>`:""}
+   <p class="mut" style="font-size:13px;margin-top:14px">${es?"El plan y la suscripción los gestiona GlowSync.":"Plan and subscription are managed by GlowSync."}</p></div>`}
+  return `<div class="card"><h2>${t("centros")}</h2><div class="tw"><table><tr><th>ID</th><th>${t("name")}</th><th>${t("plan")}</th><th>${t("state")}</th><th>${t("expires")}</th><th></th></tr>${d.results.map(c=>{window._C=window._C||{};window._C[c.id]=c;return `<tr><td>${c.id}</td><td><b>${esc(c.nombre)}</b></td><td>${pill("",c.plan)}</td><td>${pill(c.estado_suscripcion)}</td><td>${esc(c.fecha_vencimiento)}</td><td style="white-space:nowrap"><button class="sm" data-c="${c.id}">${t("edit")}</button> <button class="sm d" data-cd="${c.id}">${lang==="es"?"Eliminar":"Delete"}</button></td></tr>`}).join("")}</table></div></div>
   <div class="card"><h2>${t("newCentro")}</h2><form id="nc" class="fg"><div><label>${t("name")}</label><input name="nombre" required></div><div><label>${t("city")}</label><input name="ciudad"></div>
   <div><label>${t("plan")}</label><select name="plan"><option>BASICO</option><option>PRO</option><option>PREMIUM</option></select></div><div><label>${t("expires")}</label><input name="fecha_vencimiento" type="date" required></div><div><button class="pri">${t("create")}</button></div></form></div>
   <div class="card"><h2>${t("centroUser")}</h2><form id="cu" class="fg"><div><label>${t("centro")}</label><select name="centro">${d.results.map(c=>`<option value="${c.id}">${esc(c.nombre)}</option>`).join("")}</select></div>
@@ -218,31 +229,20 @@ const VIEWS={
   const data=await api("/api/rbac/");activeMatrix=data.matriz;
   const R=["ADMIN_SAAS","ADMIN_NEGOCIO","RECEPCIONISTA","ESTETICISTA"];
   const rows=["dashboard","citas","clientas","fichas","usuarios","centros"].map(v=>`<tr><td><b>${ICON[v]} ${t(v)}</b></td>${R.map(r=>{
-    const level=data.matriz[v][r], locked=r==="ADMIN_SAAS"||v==="centros"||!(data.roles_editables||[]).includes(r);
+    const level=data.matriz[v][r], locked=r==="ADMIN_SAAS"||!(data.roles_editables||[]).includes(r)||!(data.modulos_editables||[]).includes(v);
     if(!data.editable||locked)return `<td>${level===0?`<span class="pill">✖ ${t("none")}</span>`:level===1?`<span class="pill v">👁 ${t("view")}</span>`:`<span class="pill ok">✔ ${t("full")}</span>`}</td>`;
     return `<td><select class="rbac-cell" data-module="${v}" data-role="${r}" aria-label="${t(v)} ${t(r)}"><option value="0" ${level===0?"selected":""}>✖ ${t("none")}</option><option value="1" ${level===1?"selected":""}>👁 ${t("view")}</option>${v!=="dashboard"?`<option value="2" ${level===2?"selected":""}>✔ ${t("full")}</option>`:""}</select></td>`;
   }).join("")}</tr>`).join("");
   const buttons=data.editable?`<div class="act"><button type="button" class="ghost" id="rbac-reset">${lang==="es"?"Restaurar predeterminados":"Reset defaults"}</button><button type="button" class="pri" id="rbac-save">${t("save")}</button></div>`:"";
-  return `<div class="card"><h2>${t("matrix")}</h2><div class="tw"><table><tr><th></th>${R.map(r=>`<th>${t(r)}</th>`).join("")}</tr>${rows}</table></div>${buttons}<p class="mut" style="font-size:13px;margin-top:14px">${t("note")}</p></div>${await personasCard()}`
+  return `<div class="card"><h2>${t("matrix")}</h2><div class="tw"><table><tr><th></th>${R.map(r=>`<th>${t(r)}</th>`).join("")}</tr>${rows}</table></div>${buttons}<p class="mut" style="font-size:13px;margin-top:14px">${t("note")}</p></div>`
 }};
-async function personasCard(){
-  if(!data_canManagePeople())return "";
-  let d;try{d=await api("/api/usuarios/")}catch(e){return ""}
-  const lista=d.results.filter(u=>u.id!==S.me.id&&(isSuper()||["RECEPCIONISTA","ESTETICISTA"].includes(u.rol)));
-  window._U=window._U||{};lista.forEach(u=>window._U[u.id]=u);
-  const es=lang==="es";
-  return `<div class="card"><h2>${es?"Permisos por persona":"Permissions per person"}</h2>
-  <p class="mut" style="font-size:13px;margin-bottom:14px">${es?"Dale a una persona permisos distintos a los de su rol. Lo personalizado manda sobre el rol.":"Give someone permissions different from their role. Custom settings override the role."}</p>
-  ${lista.length?`<div class="tw"><table><tr><th>${t("name")}</th><th>${t("rol")}</th><th></th></tr>${lista.map(u=>`<tr><td><b>${esc(u.nombre)}</b><br><small class="mut">${esc(u.email)}</small></td><td>${pill("",t(u.rol))}</td><td><button class="sm" data-up="${u.id}">🔐 ${es?"Personalizar":"Customize"}</button></td></tr>`).join("")}</table></div>`:empty("👥",t("eU"))}</div>`}
-function data_canManagePeople(){return MENU[S.me.rol].includes("usuarios")&&(isSuper()||S.me.rol==="ADMIN_NEGOCIO")}
 async function abrirPermisosPersona(id){
   const u=(window._U||{})[id]||{nombre:"#"+id},es=lang==="es";
   let d;try{d=await api(`/api/usuarios/${id}/permisos/`)}catch(e){toast(e.message,0);return}
   const mods=["dashboard","citas","clientas","fichas","usuarios"];
-  const body=`<p class="mut" style="font-size:13px;margin-bottom:10px">${t(d.rol)}</p>`+mods.map(m=>{const x=d.modulos[m],cur=x.personal==null?"":String(x.personal);
+  const body=`<p class="mut" style="font-size:13px;margin-bottom:10px">${t(d.rol)} · ${es?"lo personalizado manda sobre su rol":"custom settings override the role"}</p>`+mods.map(m=>{const x=d.modulos[m],cur=x.personal==null?"":String(x.personal);
     const opts=[["",(es?"Según su rol: ":"Role default: ")+LV(x.rol)],["0",LV(0)],["1",LV(1)]].concat(m!=="dashboard"?[["2",LV(2)]]:[]);
-    return `<label>${ICON[m]} ${t(m)}</label><select name="${m}" ${d.editable?"":"disabled"}>${opts.map(([v,l])=>`<option value="${v}"${v===cur?" selected":""}>${esc(l)}</option>`).join("")}</select>`}).join("")+
-    `<p class="mut" style="font-size:12px;margin-top:10px">${es?"Negocios es exclusivo del Admin SaaS.":"Businesses is reserved for the SaaS admin."}</p>`;
+    return `<label>${ICON[m]} ${t(m)}</label><select name="${m}" ${d.editable?"":"disabled"}>${opts.map(([v,l])=>`<option value="${v}"${v===cur?" selected":""}>${esc(l)}</option>`).join("")}</select>`}).join("");
   modal((es?"Permisos de ":"Permissions for ")+esc(u.nombre),body,async f=>{
     const permisos={};for(const m of mods)permisos[m]=f[m]===""||f[m]==null?null:Number(f[m]);
     await api(`/api/usuarios/${id}/permisos/`,{method:"PUT",body:{permisos}});toast(t("saved"));go()});
@@ -283,10 +283,10 @@ function bind(){
   document.querySelectorAll("[data-c]").forEach(b=>b.onclick=()=>{const c=window._C[b.dataset.c];
     modal(t("edit")+": "+esc(c.nombre),`<label>${t("name")}</label><input name="nombre" value="${esc(c.nombre)}" required><label>NIT</label><input name="nit" value="${esc(c.nit)}">
     <label>${t("city")}</label><input name="ciudad" value="${esc(c.ciudad)}"><label>WhatsApp</label><input name="telefono_whatsapp" value="${esc(c.telefono_whatsapp)}">
-    <label>${t("plan")}</label>${sel("plan",[["BASICO","BASICO"],["PRO","PRO"],["PREMIUM","PREMIUM"]],c.plan)}
+    ${isSuper()?`<label>${t("plan")}</label>${sel("plan",[["BASICO","BASICO"],["PRO","PRO"],["PREMIUM","PREMIUM"]],c.plan)}
     <label>${t("state")}</label>${sel("estado_suscripcion",[["ACTIVA","ACTIVA"],["VENCIDA","VENCIDA"],["SUSPENDIDA","SUSPENDIDA"]],c.estado_suscripcion)}
-    <label>${t("expires")}</label><input name="fecha_vencimiento" type="date" value="${esc(c.fecha_vencimiento)}" required>`,
-    async d=>{await api(`/api/centros/${c.id}/`,{method:"PATCH",body:d});toast(t("saved"));loadCentros();go()})});
+    <label>${t("expires")}</label><input name="fecha_vencimiento" type="date" value="${esc(c.fecha_vencimiento)}" required>`:""}`,
+    async d=>{await api(`/api/centros/${c.id}/`,{method:"PATCH",body:d});toast(t("saved"));if(isSuper())loadCentros();go()})});
   document.querySelectorAll("[data-cd]").forEach(b=>b.onclick=async()=>{const c=window._C[b.dataset.cd];
     if(!confirm(es?`¿Eliminar el negocio "${c.nombre}"? Se borran TODOS sus datos (usuarios, citas, clientas).`:`Delete "${c.nombre}"? ALL its data will be removed.`))return;
     try{await api(`/api/centros/${c.id}/`,{method:"DELETE"});if(String(c.id)===selectedCentro){selectedCentro="";sessionStorage.removeItem("gs_centro")}toast(t("saved"));loadCentros();go()}catch(e){toast(e.message,0)}});

@@ -66,6 +66,26 @@ class CentroPermission(BasePermission):
         return True
 
 
+class NegociosPermission(BasePermission):
+    """ADMIN_SAAS: todo. Otros roles: según el módulo "centros" de la matriz, solo sobre su negocio
+    (ver = 1, editar datos básicos = 2). Crear, eliminar y crear accesos queda para el ADMIN_SAAS."""
+
+    message = _("No tienes acceso a este recurso.")
+
+    def has_permission(self, request, view):
+        u = request.user
+        if not u.is_authenticated:
+            return False
+        if u.rol == Usuario.Rol.ADMIN_SAAS:
+            return True
+        if not u.centro_id or not u.centro.suscripcion_activa:
+            return False
+        if getattr(view, "action", None) in ("create", "destroy", "crear_usuario"):
+            return False
+        from .rbac import nivel_permiso
+        return nivel_permiso(u.centro_id, u.rol, "centros", u.id) >= (1 if request.method in SAFE_METHODS else 2)
+
+
 class SoloRecepcionista(BasePermission):
     def has_permission(self, request, view):
         if not request.user.is_authenticated:

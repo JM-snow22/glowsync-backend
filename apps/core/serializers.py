@@ -46,6 +46,15 @@ class CentroSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
+class CentroNegocioSerializer(serializers.ModelSerializer):
+    """Lo que un negocio puede ver/editar de sí mismo: la suscripción es de solo lectura."""
+
+    class Meta:
+        model = Centro
+        fields = "__all__"
+        read_only_fields = ["plan", "estado_suscripcion", "fecha_vencimiento", "creado_en"]
+
+
 class UsuarioSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, min_length=8)
 

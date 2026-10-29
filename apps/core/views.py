@@ -3,7 +3,7 @@ from django.db import transaction
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import PermissionDenied
 from .models import PermisoRol, PermisoUsuario
-from .rbac import MODULOS, ROLES, SOLO_LECTURA, MODULOS_DELEGABLES, detalle_permisos_usuario, es_protegida, es_superadmin, puede_gestionar_usuario, matriz, menu_usuario, permisos_usuario, roles_editables
+from .rbac import MODULOS, ROLES, SOLO_LECTURA, MODULOS_DELEGABLES, detalle_permisos_usuario, es_protegida, es_superadmin, modulos_editables, puede_gestionar_usuario, matriz, menu_usuario, permisos_usuario, roles_editables
 from django.utils.translation import gettext as _
 from drf_spectacular.utils import extend_schema
 from rest_framework import status, viewsets
@@ -15,8 +15,8 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.views import TokenObtainPairView
 
 from .models import Centro, Idioma, Usuario
-from .permissions import CentroPermission, IsAdminSaas, SoloRecepcionista, centro_actual
-from .serializers import CentroSerializer, IdiomaSerializer, LoginSerializer, MeSerializer, UsuarioSerializer
+from .permissions import CentroPermission, IsAdminSaas, NegociosPermission, SoloRecepcionista, centro_actual
+from .serializers import CentroNegocioSerializer, CentroSerializer, IdiomaSerializer, LoginSerializer, MeSerializer, UsuarioSerializer
 
 
 class LoginView(TokenObtainPairView):
@@ -55,11 +55,23 @@ class MeView(APIView):
 
 
 class CentroViewSet(viewsets.ModelViewSet):
-    """Gestión de los clientes del SaaS (solo ADMIN_SAAS)."""
+    """ADMIN_SAAS gestiona todos los negocios. Los demás roles, si la matriz les da "Negocios",
+    solo ven / editan los datos básicos de su propio negocio."""
 
     queryset = Centro.objects.all().order_by("id")
     serializer_class = CentroSerializer
-    permission_classes = [IsAdminSaas]
+    permission_classes = [NegociosPermission]
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        if getattr(self, "swagger_fake_view", False) or es_superadmin(self.request.user):
+            return qs
+        return qs.filter(pk=self.request.user.centro_id)
+
+    def get_serializer_class(self):
+        if self.action == "crear_usuario":
+            return UsuarioSerializer
+        return CentroSerializer if es_superadmin(self.request.user) else CentroNegocioSerializer
 
     @action(detail=True, methods=["post"], url_path="usuarios", serializer_class=UsuarioSerializer)
     def crear_usuario(self, request, pk=None):
@@ -152,12 +164,14 @@ class PermisosRolView(APIView):
         centro = self._centro(request)
         editables = roles_editables(request.user)
         return Response({"centro_id": centro.pk, "matriz": matriz(centro.pk),
-                         "editable": bool(editables), "roles_editables": editables})
+                         "editable": bool(editables), "roles_editables": editables,
+                         "modulos_editables": list(modulos_editables(request.user)) if editables else []})
 
     def put(self, request):
         editables = self._editables(request)
         centro = self._centro(request)
         actual = matriz(centro.pk)
+        filas = modulos_editables(request.user)
         payload = request.data.get("matriz")
         if not isinstance(payload, dict) or set(payload) != set(MODULOS):
             raise ValidationError({"matriz": "Debes enviar todos los módulos."})
@@ -169,14 +183,14 @@ class PermisosRolView(APIView):
                     raise ValidationError({"matriz": f"Nivel inválido en {modulo}/{rol}."})
                 if es_protegida(modulo, rol) and nivel != actual[modulo][rol]:
                     raise ValidationError({"matriz": "Los permisos del administrador SaaS y Negocios son protegidos."})
-                if rol not in editables and nivel != actual[modulo][rol]:
+                if (rol not in editables or modulo not in filas) and nivel != actual[modulo][rol]:
                     raise PermissionDenied(_("No puedes modificar los permisos de ese rol."))
                 if modulo in SOLO_LECTURA and nivel == 2:
                     raise ValidationError({"matriz": "Resumen es un módulo de solo lectura."})
         with transaction.atomic():
             for modulo, roles in payload.items():
                 for rol, nivel in roles.items():
-                    if rol in editables and not es_protegida(modulo, rol):
+                    if rol in editables and modulo in filas and not es_protegida(modulo, rol):
                         PermisoRol.objects.update_or_create(
                             centro=centro, rol=rol, modulo=modulo, defaults={"nivel": nivel})
         return self.get(request)
@@ -184,5 +198,6 @@ class PermisosRolView(APIView):
     def delete(self, request):
         editables = self._editables(request)
         centro = self._centro(request)
-        PermisoRol.objects.filter(centro=centro, rol__in=editables).delete()
+        PermisoRol.objects.filter(centro=centro, rol__in=editables,
+                                  modulo__in=modulos_editables(request.user)).delete()
         return self.get(request)

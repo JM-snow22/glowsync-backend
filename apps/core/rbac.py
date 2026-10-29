@@ -1,7 +1,8 @@
 """Matriz RBAC por negocio. Fuente única de verdad para la API y para el menú dinámico.
 
 - ADMIN_SAAS es superadmin: acceso total fijo, no depende de la matriz ni se puede recortar.
-- El módulo "centros" (Negocios) es exclusivo del ADMIN_SAAS y no se delega.
+- "centros" (Negocios) lo delega solo el ADMIN_SAAS. Para los demás roles significa ver / editar
+  los datos de SU propio negocio (nunca otros negocios, ni plan, suscripción o vencimiento).
 - ADMIN_SAAS edita la matriz de cualquier negocio; ADMIN_NEGOCIO edita la de su negocio,
   solo para Recepcionista y Esteticista.
 """
@@ -46,7 +47,12 @@ def roles_editables(user):
 
 
 def es_protegida(modulo, rol):
-    return rol == R.ADMIN_SAAS or modulo == "centros"
+    return rol == R.ADMIN_SAAS
+
+
+def modulos_editables(user):
+    """Filas de la matriz que este usuario puede tocar."""
+    return MODULOS if es_superadmin(user) else tuple(m for m in MODULOS if m != "centros")
 
 
 def nivel_permiso(centro_id, rol, modulo, usuario_id=None):

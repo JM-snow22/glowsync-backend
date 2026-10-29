@@ -191,9 +191,9 @@ class MatrizRBACEditableTest(APITestCase):
     def test_protected_saas_and_reset(self):
         admin = cliente(self.admin, HTTP_X_CENTRO_ID=str(self.a.pk))
         matrix = admin.get("/api/rbac/").data["matriz"]
-        matrix["centros"]["RECEPCIONISTA"] = 2
+        matrix["citas"]["ADMIN_SAAS"] = 0
         self.assertEqual(admin.put("/api/rbac/", {"matriz": matrix}, format="json").status_code, 400)
-        matrix["centros"]["RECEPCIONISTA"] = 0
+        matrix["citas"]["ADMIN_SAAS"] = 2
         matrix["usuarios"]["RECEPCIONISTA"] = 0
         self.assertEqual(admin.put("/api/rbac/", {"matriz": matrix}, format="json").status_code, 200)
         self.assertEqual(admin.delete("/api/rbac/").status_code, 200)
@@ -285,3 +285,47 @@ class PermisosPorPersonaTest(APITestCase):
         jefe = cliente(self.jefe)
         self.assertEqual(jefe.put(self.url(self.est), {"permisos": {"citas": 2}}, format="json").status_code, 200)
         self.assertEqual(cliente(self.est).put(self.url(self.est2), {"permisos": {"citas": 2}}, format="json").status_code, 403)
+
+
+
+class NegociosDelegadoTest(APITestCase):
+    def setUp(self):
+        self.a = crear_centro("Negocio Deleg A")
+        self.b = crear_centro("Negocio Deleg B")
+        self.admin = crear_usuario("root-neg@x.co", Usuario.Rol.ADMIN_SAAS)
+        self.jefe = crear_usuario("jefe-neg@x.co", Usuario.Rol.ADMIN_NEGOCIO, self.a)
+        self.rec = crear_usuario("rec-neg@x.co", Usuario.Rol.RECEPCIONISTA, self.a)
+
+    def dar(self, rol, nivel):
+        admin = cliente(self.admin, HTTP_X_CENTRO_ID=str(self.a.pk))
+        m = admin.get("/api/rbac/").data["matriz"]
+        m["centros"][rol] = nivel
+        self.assertEqual(admin.put("/api/rbac/", {"matriz": m}, format="json").status_code, 200)
+
+    def test_superadmin_da_negocios_a_cualquier_rol(self):
+        self.assertEqual(cliente(self.rec).get("/api/centros/").status_code, 403)
+        self.dar("RECEPCIONISTA", 2)
+        rec = cliente(self.rec)
+        self.assertIn("centros", [x["modulo"] for x in rec.get("/api/auth/me/").data["menu"]])
+        d = rec.get("/api/centros/").data
+        self.assertEqual([c["id"] for c in d["results"]], [self.a.pk])  # solo su negocio
+        self.assertEqual(rec.get(f"/api/centros/{self.b.pk}/").status_code, 404)
+        r = rec.patch(f"/api/centros/{self.a.pk}/", {"ciudad": "Riohacha", "fecha_vencimiento": "2099-01-01"}, format="json")
+        self.assertEqual(r.status_code, 200)
+        self.a.refresh_from_db()
+        self.assertEqual(self.a.ciudad, "Riohacha")
+        self.assertNotEqual(str(self.a.fecha_vencimiento), "2099-01-01")  # la suscripción no se toca
+        self.assertEqual(rec.post("/api/centros/", {"nombre": "X", "fecha_vencimiento": "2030-01-01"}, format="json").status_code, 403)
+        self.assertEqual(rec.delete(f"/api/centros/{self.a.pk}/").status_code, 403)
+
+    def test_solo_ver_no_edita(self):
+        self.dar("ADMIN_NEGOCIO", 1)
+        jefe = cliente(self.jefe)
+        self.assertEqual(jefe.get("/api/centros/").status_code, 200)
+        self.assertEqual(jefe.patch(f"/api/centros/{self.a.pk}/", {"ciudad": "X"}, format="json").status_code, 403)
+
+    def test_admin_negocio_no_se_da_negocios(self):
+        jefe = cliente(self.jefe)
+        m = jefe.get("/api/rbac/").data["matriz"]
+        m["centros"]["RECEPCIONISTA"] = 2
+        self.assertEqual(jefe.put("/api/rbac/", {"matriz": m}, format="json").status_code, 403)
