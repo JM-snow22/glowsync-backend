@@ -91,6 +91,9 @@ class MeSerializer(serializers.Serializer):
     idioma = serializers.CharField()
     centro_id = serializers.IntegerField(allow_null=True)
     centro = serializers.CharField(allow_null=True)
+    es_superadmin = serializers.BooleanField()
+    permisos = serializers.DictField(child=serializers.IntegerField())
+    menu = serializers.ListField(child=serializers.DictField())
 
 
 class IdiomaSerializer(serializers.Serializer):

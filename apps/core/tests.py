@@ -198,3 +198,51 @@ class MatrizRBACEditableTest(APITestCase):
         self.assertEqual(admin.put("/api/rbac/", {"matriz": matrix}, format="json").status_code, 200)
         self.assertEqual(admin.delete("/api/rbac/").status_code, 200)
         self.assertEqual(cliente(self.rec_a).get("/api/usuarios/").status_code, 200)
+
+
+class RBACMenuDinamicoTest(APITestCase):
+    def setUp(self):
+        self.a = crear_centro("Negocio Menu A")
+        self.admin = crear_usuario("root-menu@x.co", Usuario.Rol.ADMIN_SAAS)
+        self.jefe = crear_usuario("jefe-menu@x.co", Usuario.Rol.ADMIN_NEGOCIO, self.a)
+        self.rec = crear_usuario("rec-menu@x.co", Usuario.Rol.RECEPCIONISTA, self.a)
+        self.est = crear_usuario("est-menu@x.co", Usuario.Rol.ESTETICISTA, self.a)
+
+    def menu(self, user, **extra):
+        return [x["modulo"] for x in cliente(user, **extra).get("/api/auth/me/").data["menu"]]
+
+    def test_superadmin_ve_todo_el_menu(self):
+        me = cliente(self.admin).get("/api/auth/me/").data
+        self.assertTrue(me["es_superadmin"])
+        self.assertEqual([x["modulo"] for x in me["menu"]],
+                         ["centros", "dashboard", "citas", "clientas", "fichas", "usuarios", "rbac"])
+        self.assertTrue(all(x["escritura"] for x in me["menu"] if x["modulo"] != "dashboard"))
+
+    def test_menu_refleja_la_matriz_al_instante(self):
+        self.assertIn("usuarios", self.menu(self.rec))
+        self.assertNotIn("dashboard", self.menu(self.est))
+        admin = cliente(self.admin, HTTP_X_CENTRO_ID=str(self.a.pk))
+        m = admin.get("/api/rbac/").data["matriz"]
+        m["usuarios"]["RECEPCIONISTA"] = 0
+        m["dashboard"]["ESTETICISTA"] = 1
+        self.assertEqual(admin.put("/api/rbac/", {"matriz": m}, format="json").status_code, 200)
+        self.assertNotIn("usuarios", self.menu(self.rec))
+        self.assertIn("dashboard", self.menu(self.est))
+        self.assertNotIn("centros", self.menu(self.rec))
+
+    def test_admin_negocio_edita_solo_su_equipo(self):
+        jefe = cliente(self.jefe)
+        data = jefe.get("/api/rbac/").data
+        self.assertEqual(data["roles_editables"], ["RECEPCIONISTA", "ESTETICISTA"])
+        m = data["matriz"]
+        m["citas"]["ESTETICISTA"] = 2
+        self.assertEqual(jefe.put("/api/rbac/", {"matriz": m}, format="json").status_code, 200)
+        m["usuarios"]["ADMIN_NEGOCIO"] = 0
+        self.assertEqual(jefe.put("/api/rbac/", {"matriz": m}, format="json").status_code, 403)
+
+    def test_superadmin_no_pierde_acceso(self):
+        admin = cliente(self.admin, HTTP_X_CENTRO_ID=str(self.a.pk))
+        m = admin.get("/api/rbac/").data["matriz"]
+        m["citas"]["ADMIN_SAAS"] = 0
+        self.assertEqual(admin.put("/api/rbac/", {"matriz": m}, format="json").status_code, 400)
+        self.assertEqual(admin.get("/api/citas/").status_code, 200)

@@ -1,11 +1,19 @@
-"""Matriz RBAC por negocio. La API y el frontend comparten estos valores por defecto.
+"""Matriz RBAC por negocio. Fuente única de verdad para la API y para el menú dinámico.
 
-La autoridad global ADMIN_SAAS y la gestión de negocios no se delegan.
+- ADMIN_SAAS es superadmin: acceso total fijo, no depende de la matriz ni se puede recortar.
+- El módulo "centros" (Negocios) es exclusivo del ADMIN_SAAS y no se delega.
+- ADMIN_SAAS edita la matriz de cualquier negocio; ADMIN_NEGOCIO edita la de su negocio,
+  solo para Recepcionista y Esteticista.
 """
 from .models import PermisoRol, Usuario
 
+R = Usuario.Rol
 MODULOS = ("dashboard", "citas", "clientas", "fichas", "usuarios", "centros")
-ROLES = tuple(Usuario.Rol.values)
+ROLES = tuple(R.values)
+# Orden del menú; "rbac" (Permisos) no es un módulo de datos, siempre es visible.
+MENU_ORDEN = ("centros", "dashboard", "citas", "clientas", "fichas", "usuarios", "rbac")
+SOLO_LECTURA = {"dashboard"}  # módulos sin operaciones de escritura
+
 # 0 = sin acceso, 1 = solo lectura, 2 = lectura y escritura
 PREDETERMINADOS = {
     "dashboard": {"ADMIN_SAAS": 1, "ADMIN_NEGOCIO": 1, "RECEPCIONISTA": 1, "ESTETICISTA": 0},
@@ -22,11 +30,28 @@ VIEW_MODULE = {
 }
 
 
+def es_superadmin(user):
+    return bool(user and user.is_authenticated and user.rol == R.ADMIN_SAAS)
+
+
+def roles_editables(user):
+    """Columnas de la matriz que este usuario puede modificar."""
+    if es_superadmin(user):
+        return [R.ADMIN_NEGOCIO, R.RECEPCIONISTA, R.ESTETICISTA]
+    if user.is_authenticated and user.rol == R.ADMIN_NEGOCIO:
+        return [R.RECEPCIONISTA, R.ESTETICISTA]
+    return []
+
+
+def es_protegida(modulo, rol):
+    return rol == R.ADMIN_SAAS or modulo == "centros"
+
+
 def nivel_permiso(centro_id, rol, modulo):
     """Consulta el permiso vigente en cada request; sin caché que deje permisos revocados activos."""
     if modulo not in MODULOS or rol not in ROLES:
         return 0
-    if rol == Usuario.Rol.ADMIN_SAAS or modulo == "centros":
+    if es_protegida(modulo, rol):
         return PREDETERMINADOS[modulo][rol]
     nivel = (PermisoRol.objects.filter(centro_id=centro_id, rol=rol, modulo=modulo)
              .values_list("nivel", flat=True).first())
@@ -36,6 +61,29 @@ def nivel_permiso(centro_id, rol, modulo):
 def matriz(centro_id):
     result = {m: dict(roles) for m, roles in PREDETERMINADOS.items()}
     for p in PermisoRol.objects.filter(centro_id=centro_id).values("rol", "modulo", "nivel"):
-        if p["rol"] != Usuario.Rol.ADMIN_SAAS and p["modulo"] != "centros" and p["modulo"] in result and p["rol"] in result[p["modulo"]]:
+        if not es_protegida(p["modulo"], p["rol"]) and p["modulo"] in result and p["rol"] in result[p["modulo"]]:
             result[p["modulo"]][p["rol"]] = p["nivel"]
     return result
+
+
+def permisos_usuario(user, centro_id):
+    """{modulo: nivel} efectivo para el usuario en el negocio indicado."""
+    if es_superadmin(user):
+        return {m: PREDETERMINADOS[m][R.ADMIN_SAAS] for m in MODULOS}
+    if not centro_id:
+        return {m: 0 for m in MODULOS}
+    m_actual = matriz(centro_id)
+    return {m: m_actual[m][user.rol] for m in MODULOS}
+
+
+def menu_usuario(user, centro_id):
+    """Menú dinámico calculado en el servidor a partir de la matriz vigente."""
+    permisos = permisos_usuario(user, centro_id)
+    editables = roles_editables(user)
+    items = []
+    for modulo in MENU_ORDEN:
+        if modulo == "rbac":
+            items.append({"modulo": "rbac", "escritura": bool(editables)})
+        elif permisos[modulo] > 0:
+            items.append({"modulo": modulo, "escritura": permisos[modulo] == 2})
+    return items
