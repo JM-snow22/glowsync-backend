@@ -1,4 +1,3 @@
-/* GlowSync - Personalizaciones y estilos modulares (orden original conservado) */
 /* GlowSync · acceso editorial */
 .auth{grid-template-columns:minmax(0,1.05fr) minmax(400px,.95fr);background:#fffaf8}
 .hero{isolation:isolate;background:linear-gradient(180deg,rgba(39,19,35,.12),rgba(45,19,39,.86)),url('/static/img/login-beauty-hero.png') center/cover no-repeat,#6c4259;padding:clamp(28px,5vw,76px)}
@@ -23,92 +22,6 @@
 @media(max-width:480px){.hero{min-height:230px}.hero h2{font-size:30px}.fc{padding:24px 20px}}
 @media(prefers-reduced-motion:reduce){.auth *{animation:none!important;transition:none!important}}
 .tenant-chooser{padding:8px 10px;background:#ffffff12;border-radius:16px}.tenant-chooser label{color:#f2dce6;margin:0 0 7px}.tenant-chooser select{background:#fff;color:#4a273b;border:0;font-size:13px;padding:11px} 
-/* GlowSync | Panel Rosa Editorial | sobreescribe SOLO la aplicación autenticada.
-   Mantiene la identidad rosa/malva/ciruela de GlowSync; no toca login, JWT ni RBAC. */
-.app {
-  --v:#b9708f;--r:#d9889b;--g:#d4a373;--ink:#3a2a31;
-  --mut:#8b7780;--bg:#fbf6f3;--line:#f0e4de;
-  --grad:linear-gradient(135deg,#d9889b,#b9708f 55%,#9b5a8c);
-  --sh:0 8px 28px rgba(91,48,70,.055);
-  grid-template-columns:244px minmax(0,1fr);
-  background:#faf6f4;
-}
-.app .side {
-  background:linear-gradient(170deg,#4b293d 0%,#382436 60%,#30202e 100%);
-  padding:30px 16px 19px;gap:21px;color:#f6e9ef;
-  box-shadow:none;border-right:1px solid #5e4052;
-}
-.app .side .logo {font-family:var(--serif);font-size:29px;letter-spacing:-.9px;font-weight:600;padding:2px 11px 16px}
-.app .side .logo i{color:#f1b6bd}
-.app .side nav {gap:6px}
-.app .side nav a {border-radius:13px;padding:12px 15px;gap:14px;font-size:14px;color:#f0dfe8;box-shadow:none;transition:background .18s ease}
-.app .side nav a.on {background:rgba(235,159,181,.23);color:#fff;box-shadow:none;position:relative}
-.app .side nav a.on:before {content:"";position:absolute;left:-16px;top:10px;bottom:10px;width:3px;border-radius:0 3px 3px 0;background:#e8a2b5}
-.app .side nav a:hover {background:rgba(255,255,255,.10)}
-.app .side .me {background:rgba(255,255,255,.055);border:1px solid rgba(255,255,255,.12);border-radius:16px}
-.app .side .av {background:#bd849d;box-shadow:none}
-.app .side .ctl select{border-radius:14px}
-.app .side .tenant-chooser{background:rgba(255,255,255,.07)}
-.app .body {padding:32px clamp(20px,3.2vw,52px) 54px;background:#faf6f4;}
-.app .top {margin-bottom:20px}
-.app .top h1 {font-size:clamp(27px,3vw,38px);font-weight:500}
-.app .card {border:1px solid #eddfdc;border-radius:18px;background:rgba(255,255,255,.95);box-shadow:var(--sh);padding:23px;margin-bottom:19px}
-.app .card h2{font-size:21px;font-weight:500}
-.app .tile{border-radius:16px;background:#fff;border-color:#eadfdd}
-.app .pri {background:#b9708f;box-shadow:none;border-radius:999px;font-weight:600}
-.app .pri:hover{background:#a75e7e;box-shadow:none}
-.app .ghost{box-shadow:none}
-.app .pill {font-weight:600}
-.app .sm{font-weight:600}
-.app input:focus,.app select:focus,.app textarea:focus {border-color:#bc8199;box-shadow:0 0 0 3px #d9889b20}
-.app:has(.gs-dashboard) .body>.top {display:none}
-/* Dash específico */
-.gs-dashboard{max-width:1510px;margin:0 auto}
-.gs-hero{min-height:238px;border-radius:21px;position:relative;overflow:hidden;display:flex;align-items:flex-end;padding:36px 38px;margin-bottom:18px;background:#ecd6d4 url('/static/img/glowsync-spa-dashboard.webp') center 49%/cover no-repeat;border:1px solid #e6d6d3}
-.gs-hero:before{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(253,247,245,.98) 0%,rgba(253,247,245,.93) 34%,rgba(253,247,245,.45) 62%,rgba(253,247,245,.06) 100%)}
-.gs-hero>*{position:relative;z-index:1}
-.gs-hero-copy{max-width:590px}
-.gs-kicker{font-size:11px;letter-spacing:2.8px;font-weight:650;color:#9d637d;text-transform:uppercase;margin-bottom:10px}
-.gs-hero h2{font-family:var(--serif);font-size:clamp(38px,4vw,59px);line-height:1.07;letter-spacing:-1.9px;font-weight:500;color:#402839;margin-bottom:13px}
-.gs-hero p{font-size:15px;line-height:1.6;max-width:480px;color:#755e69}
-.gs-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin:0 0 17px}
-.gs-kpi{background:rgba(255,255,255,.97);border:1px solid #ede0dd;border-radius:17px;min-height:135px;padding:23px 21px;display:flex;gap:14px;align-items:flex-start;box-shadow:0 7px 23px rgba(93,52,78,.035)}
-.gs-icon{width:40px;height:40px;border-radius:13px;flex:none;display:grid;place-items:center;background:#f8e8ed;color:#9d5176;font-size:19px;font-family:system-ui}
-.gs-kpi small{display:block;color:#927c86;font-size:12px;margin:1px 0 9px}
-.gs-kpi strong{display:block;font-family:var(--serif);font-weight:500;font-size:clamp(24px,2.2vw,33px);line-height:1.1;color:#39222e;overflow-wrap:anywhere}
-.gs-kpi em{display:block;font-style:normal;color:#9b8790;font-size:11px;margin-top:9px}
-.gs-columns{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(330px,.84fr);gap:16px;align-items:start}
-.gs-panel{background:rgba(255,255,255,.97);border:1px solid #eee1de;border-radius:18px;padding:24px;box-shadow:0 8px 30px rgba(93,52,78,.035);margin-bottom:16px;min-width:0}
-.gs-panel-head{display:flex;justify-content:space-between;align-items:center;gap:14px;margin-bottom:15px}
-.gs-panel-head h3{font-family:var(--serif);font-weight:500;font-size:24px;color:#402839}
-.gs-link{display:inline-flex;align-items:center;text-decoration:none;color:#a35b7a;font-size:13px;font-weight:600;white-space:nowrap}
-.gs-link:hover{text-decoration:underline}
-.gs-appt{display:grid;grid-template-columns:58px 42px minmax(0,1fr) auto;align-items:center;gap:12px;padding:15px 2px;border-bottom:1px solid #f1e7e4}
-.gs-appt:last-child{border-bottom:0}
-.gs-time{font-family:var(--serif);font-size:16px;color:#785968}
-.gs-initial{display:grid;place-items:center;background:#f6e5ea;color:#91516d;font-family:var(--serif);font-size:15px;border-radius:50%;height:42px;width:42px}
-.gs-person b{display:block;font-weight:600;color:#45343c;font-size:14px;margin-bottom:3px}
-.gs-person small{font-size:12px;color:#96828a}
-.gs-status{padding:6px 10px;white-space:nowrap;font-size:11px;border-radius:999px;background:#f3eeee;color:#88757c}
-.gs-status.ok{background:#e6f2e9;color:#46795a}.gs-status.pending{background:#fcf0df;color:#a37a37}.gs-status.bad{background:#fce5ea;color:#aa5668}
-.gs-insight{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;padding:8px 0 9px}
-.gs-insight strong{font-family:var(--serif);font-size:38px;color:#452a39;font-weight:500;display:block;line-height:1.1}
-.gs-insight p{color:#89747c;font-size:12px;max-width:285px;line-height:1.6;margin-top:9px}
-.gs-bars{height:90px;min-width:118px;display:flex;align-items:end;gap:8px;padding:8px 0}
-.gs-bars span{display:block;flex:1;background:linear-gradient(180deg,#ce8da5,#edc2cd);border-radius:6px 6px 2px 2px}
-.gs-caption{font-size:11px;color:#9a8590;margin-top:8px}
-.gs-quick-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
-.gs-quick{padding:14px 13px;display:flex;gap:10px;align-items:center;background:#fcf7f8;border:1px solid #f1e5e7;border-radius:12px;color:#624457;text-decoration:none;font-size:13px;transition:.18s}
-.gs-quick:hover{background:#f9eaf0;transform:translateY(-1px)}
-.gs-quick .gs-icon{width:32px;height:32px;font-size:16px;border-radius:9px;background:#f3e3e9}
-.gs-note{font-size:12px;color:#97828a;line-height:1.6;margin-top:12px}
-.gs-footnote{padding:2px 5px;color:#a08b94;font-size:11px}
-@media(max-width:1240px){.gs-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.gs-columns{grid-template-columns:1fr}}
-@media(max-width:900px){.app{grid-template-columns:1fr}.app .side{position:static;height:auto;flex-direction:row;flex-wrap:wrap;padding:11px 14px;gap:10px}.app .side nav{flex:1 1 100%;order:3;flex-direction:row;overflow-x:auto}.app .side nav a:before{display:none}.app .body{padding:20px 15px 40px}.gs-hero{min-height:200px;padding:28px}}
-@media(max-width:580px){.gs-kpis{grid-template-columns:1fr 1fr;gap:9px}.gs-kpi{padding:14px;min-height:110px;gap:7px;flex-direction:column}.gs-icon{width:32px;height:32px;font-size:16px}.gs-kpi strong{font-size:24px}.gs-hero{min-height:190px;background-position:59% center}.gs-hero:before{background:linear-gradient(90deg,rgba(253,247,245,.98),rgba(253,247,245,.77) 80%)}.gs-hero h2{font-size:34px}.gs-panel{padding:17px}.gs-appt{grid-template-columns:48px 34px minmax(0,1fr);gap:8px}.gs-initial{width:34px;height:34px}.gs-status{grid-column:3;justify-self:start}.gs-quick-grid{grid-template-columns:1fr 1fr}.gs-panel-head h3{font-size:21px}}
-@media(prefers-reduced-motion:reduce){.gs-dashboard *{transition:none!important}}
-
-
 /* === GLOWSYNC REDISENIO INTEGRAL START === */
 /* GlowSync | Rediseño integral de toda la SPA | rosa, malva, ciruela y crema.
    Estilos de presentación: no cambia API, endpoints, permisos ni validación. */
@@ -230,3 +143,47 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
 @media(max-width:580px){.app .side .me{display:none}.app .side .tenant-chooser{flex:1 1 100%;max-width:none}.app .side .ctl{margin-left:auto}.app .body{padding:17px 12px 35px;background-size:100% 205px,100% 205px}.app .body>.top{min-height:116px;align-items:flex-start;flex-direction:column;justify-content:end;padding:30px 4px 9px;gap:9px}.app .body>.top h1{font-size:34px;margin:0}.app .body>.top:before{top:7px;left:4px}.app .body>.top span{padding:6px 11px;font-size:11px}.app .card{padding:16px;border-radius:16px}.app #m:has(#nc):has(#cu) .fg{grid-template-columns:1fr}.app #m:has(#nc):has(#cu) .fg>div:last-child{grid-column:auto}.app .grid{grid-template-columns:1fr}.app .row{flex-wrap:wrap}.app .acts{width:100%;justify-content:flex-start;padding-left:74px}.app .fg{grid-template-columns:1fr}.app .mod{padding:19px}.app .card h2{font-size:23px}}
 @media(prefers-reduced-motion:reduce){.app *, .auth *{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
 /* === GLOWSYNC REDISENIO INTEGRAL END === */
+
+/* ============================================================
+   GLOWSYNC • PROFESSIONAL UI V3 — MÓDULOS EXISTENTES
+   Conserva datos reales, rutas, botones y RBAC.
+   ============================================================ */
+/* Resumen: conservar su panel renovado, quitar foto de cabecera global */
+.app:has(.gs-dashboard) .body>.top{display:none}
+.app .gs-dashboard{max-width:1430px;margin:0 auto}
+.app .gs-hero{border-radius:19px;overflow:hidden;border:1px solid #e9dce4;box-shadow:none}
+.app .gs-kpi,.app .gs-panel{border:1px solid var(--gs-border);border-radius:18px;background:#fff;box-shadow:0 1px 3px #3424340a,0 5px 15px #34243407}
+.app .gs-quick{border-radius:11px}
+/* Negocios: tabla completa arriba + formularios en dos columnas */
+.app #m:has(#nc):has(#cu){display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;align-items:stretch}
+.app #m:has(#nc):has(#cu)>.card{margin-bottom:0;min-width:0}
+.app #m:has(#nc):has(#cu)>.card:first-child{grid-column:1/-1}
+.app #m:has(#nc):has(#cu) .fg{grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;align-items:end}
+.app #m:has(#nc):has(#cu) .fg>div:last-child{grid-column:1/-1}
+.app #m:has(#nc):has(#cu) .fg>div:last-child button{min-width:150px}
+/* Equipo: tabla limpia y formulario separado */
+.app #m:has(#nu)>.card:last-child{background:#fff}
+.app #m:has(#nu) #nu{grid-template-columns:repeat(auto-fit,minmax(175px,1fr));align-items:end}
+/* Citas: mostrar agenda como lista de trabajo */
+.app #m .row{border-radius:9px;transition:background .15s}
+.app #m .row:hover{background:#fcf8fa}
+.app #m .row .grow{flex:1;min-width:140px}
+/* Clientas / Fichas: tarjetas consistentes y legibles */
+.app #m:has(#q) .grid,.app #m:has([data-f]) .grid{gap:16px}
+.app #m:has(#q) .tile,.app #m:has([data-f]) .tile{min-height:138px}
+.app #m:has(#q) .tile .h,.app #m:has([data-f]) .tile .h{align-items:flex-start}
+.app #m:has(#q) .tile .av,.app #m:has([data-f]) .tile .av{width:44px;height:44px}
+/* RBAC: matriz con encabezado compacto y columna pegajosa */
+.app #m:has(.rbac-cell)>.card{padding:25px}
+.app #m:has(.rbac-cell) .tw{border:1px solid var(--gs-border);border-radius:13px}
+.app #m:has(.rbac-cell) table{min-width:895px}
+.app #m:has(.rbac-cell) th,.app #m:has(.rbac-cell) td{padding:16px 14px}
+.app #m:has(.rbac-cell) th:first-child,.app #m:has(.rbac-cell) td:first-child{position:sticky;left:0;z-index:2;min-width:175px;border-right:1px solid var(--gs-border);background:#fff}
+.app #m:has(.rbac-cell) th:first-child{background:#faf8f9}
+.app #m:has(.rbac-cell) .rbac-cell{min-width:160px;width:100%;min-height:40px;border-radius:10px;font-size:12px;background:#fbf9fa;padding:8px 10px}
+.app #m:has(.rbac-cell) .act{border-top:1px solid var(--gs-border);padding-top:18px;margin-top:22px}
+.app #m:has(.rbac-cell) p.mut{font-size:12px;line-height:1.6}
+/* Estado de la navegación, sin sombras decorativas */
+.app .side nav a.on::after{display:none!important}
+@media(max-width:1080px){.app #m:has(#nc):has(#cu){grid-template-columns:1fr}.app #m:has(#nc):has(#cu)>.card:first-child{grid-column:auto}}
+@media(max-width:600px){.app #m:has(#nc):has(#cu) .fg{grid-template-columns:1fr}.app #m:has(#nc):has(#cu) .fg>div:last-child{grid-column:auto}.app #m:has(.rbac-cell)>.card{padding:15px}}
