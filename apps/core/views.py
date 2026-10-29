@@ -3,7 +3,7 @@ from django.db import transaction
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import PermissionDenied
 from .models import PermisoRol
-from .rbac import MODULOS, ROLES, PREDETERMINADOS, matriz
+from .rbac import MODULOS, ROLES, SOLO_LECTURA, es_protegida, es_superadmin, matriz, menu_usuario, permisos_usuario, roles_editables
 from django.utils.translation import gettext as _
 from drf_spectacular.utils import extend_schema
 from rest_framework import status, viewsets
@@ -31,9 +31,16 @@ class MeView(APIView):
     @extend_schema(responses=MeSerializer)
     def get(self, request):
         u = request.user
+        centro_id = u.centro_id
+        if es_superadmin(u):
+            raw = request.headers.get("X-Centro-ID")
+            centro_id = int(raw) if raw and raw.isdigit() else None
         return Response(
             {"id": u.id, "nombre": u.nombre, "email": u.email, "rol": u.rol, "idioma": u.idioma,
-             "centro_id": u.centro_id, "centro": u.centro.nombre if u.centro_id else None}
+             "centro_id": u.centro_id, "centro": u.centro.nombre if u.centro_id else None,
+             "es_superadmin": es_superadmin(u),
+             "permisos": permisos_usuario(u, centro_id),
+             "menu": menu_usuario(u, centro_id)}
         )
 
     @extend_schema(request=IdiomaSerializer, responses=MeSerializer)
@@ -94,26 +101,34 @@ class UsuarioViewSet(viewsets.ModelViewSet):
 
 
 class PermisosRolView(APIView):
-    """Consulta por rol/negocio; edición y restauración reservadas al ADMIN_SAAS."""
+    """GET: matriz del negocio. PUT/DELETE: ADMIN_SAAS edita todo salvo filas protegidas;
+    ADMIN_NEGOCIO solo las columnas de Recepcionista y Esteticista de su negocio."""
 
     permission_classes = [IsAuthenticated]
 
     def _centro(self, request):
-        if request.user.rol == Usuario.Rol.ADMIN_SAAS:
+        if es_superadmin(request.user):
             return centro_actual(request)
         if not request.user.centro_id or not request.user.centro.suscripcion_activa:
-            raise PermissionDenied("No tienes un negocio activo asignado.")
+            raise PermissionDenied(_("No tienes un negocio activo asignado."))
         return request.user.centro
+
+    def _editables(self, request):
+        editables = roles_editables(request.user)
+        if not editables:
+            raise PermissionDenied(_("Tu rol no puede editar los permisos."))
+        return editables
 
     def get(self, request):
         centro = self._centro(request)
+        editables = roles_editables(request.user)
         return Response({"centro_id": centro.pk, "matriz": matriz(centro.pk),
-                         "editable": request.user.rol == Usuario.Rol.ADMIN_SAAS})
+                         "editable": bool(editables), "roles_editables": editables})
 
     def put(self, request):
-        if request.user.rol != Usuario.Rol.ADMIN_SAAS:
-            raise PermissionDenied("Solo el administrador SaaS puede editar los permisos.")
+        editables = self._editables(request)
         centro = self._centro(request)
+        actual = matriz(centro.pk)
         payload = request.data.get("matriz")
         if not isinstance(payload, dict) or set(payload) != set(MODULOS):
             raise ValidationError({"matriz": "Debes enviar todos los módulos."})
@@ -123,25 +138,22 @@ class PermisosRolView(APIView):
             for rol, nivel in roles.items():
                 if type(nivel) is not int or nivel not in (0, 1, 2):
                     raise ValidationError({"matriz": f"Nivel inválido en {modulo}/{rol}."})
-                if (rol == Usuario.Rol.ADMIN_SAAS or modulo == "centros") and nivel != PREDETERMINADOS[modulo][rol]:
+                if es_protegida(modulo, rol) and nivel != actual[modulo][rol]:
                     raise ValidationError({"matriz": "Los permisos del administrador SaaS y Negocios son protegidos."})
-                if modulo == "dashboard" and nivel == 2:
+                if rol not in editables and nivel != actual[modulo][rol]:
+                    raise PermissionDenied(_("No puedes modificar los permisos de ese rol."))
+                if modulo in SOLO_LECTURA and nivel == 2:
                     raise ValidationError({"matriz": "Resumen es un módulo de solo lectura."})
         with transaction.atomic():
             for modulo, roles in payload.items():
-                if modulo == "centros":
-                    continue
                 for rol, nivel in roles.items():
-                    if rol == Usuario.Rol.ADMIN_SAAS:
-                        continue
-                    PermisoRol.objects.update_or_create(
-                        centro=centro, rol=rol, modulo=modulo, defaults={"nivel": nivel}
-                    )
+                    if rol in editables and not es_protegida(modulo, rol):
+                        PermisoRol.objects.update_or_create(
+                            centro=centro, rol=rol, modulo=modulo, defaults={"nivel": nivel})
         return self.get(request)
 
     def delete(self, request):
-        if request.user.rol != Usuario.Rol.ADMIN_SAAS:
-            raise PermissionDenied("Solo el administrador SaaS puede restaurar los permisos.")
+        editables = self._editables(request)
         centro = self._centro(request)
-        PermisoRol.objects.filter(centro=centro).delete()
+        PermisoRol.objects.filter(centro=centro, rol__in=editables).delete()
         return self.get(request)
