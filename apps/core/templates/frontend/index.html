@@ -120,7 +120,7 @@ function draw(m){
   const me=S.me;
   const es=lang==="es",GROUPS=[[es?"Operación":"Operations",["dashboard","citas","clientas","fichas"]],[es?"Administración":"Administration",["usuarios","rbac","centros"]]];
   const navHtml=GROUPS.map(([g,vs])=>{const items=vs.filter(v=>MENU[me.rol].includes(v));return items.length?`<div class="gs-group">${g}</div>`+items.map(v=>`<a href="#/${v}" title="${t(v)}"><span class="gs-nav-icon" aria-hidden="true">${GS_NAV_ICONS[v]||""}</span><span class="gs-label">${t(v)}</span></a>`).join(""):""}).join("");
-  const collapsed=localStorage.getItem("gs_sb")==="1";
+  const collapsed=localStorage.getItem("gs_sb")!=="0"; // plegada por defecto; se abre con el cursor
   $("#app").innerHTML=`<div class="app gs-layout${collapsed?" gs-collapsed":""}">
     <aside class="gs-sidebar" id="gs-sidebar" aria-label="${es?"Navegación principal":"Main navigation"}">
       <div class="gs-sb-head"><div><div class="logo">${GS_LOGO}<span>GlowSync</span></div></div></div>

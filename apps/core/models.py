@@ -48,6 +48,39 @@ class Centro(models.Model):
         )
 
 
+class Recurso(models.Model):
+    """Recurso protegido (tabla RECURSO). Es un permiso concreto con formato «modulo.accion»:
+    citas.ver, citas.editar, usuarios.ver… «editar» incluye «ver»."""
+
+    nombre = models.CharField(max_length=45, unique=True)
+
+    class Meta:
+        db_table = "recurso"
+        ordering = ["nombre"]
+
+    def __str__(self):
+        return self.nombre
+
+
+class Rol(models.Model):
+    """Rol (tabla ROL). Se relaciona N:M con recursos (ROL_HAS_RECURSO) y con usuarios (USUARIO_HAS_ROL).
+    Los cuatro roles de `Usuario.Rol` son roles de sistema: no se renombran ni se eliminan."""
+
+    nombre = models.CharField(max_length=45, unique=True)
+    recursos = models.ManyToManyField(Recurso, db_table="rol_has_recurso", related_name="roles", blank=True)
+
+    class Meta:
+        db_table = "rol"
+        ordering = ["id"]
+
+    def __str__(self):
+        return self.nombre
+
+    @property
+    def es_de_sistema(self):
+        return self.nombre in Usuario.Rol.values
+
+
 class TenantModel(models.Model):
     """Base para toda tabla que pertenece a un centro (multitenant). Se usa desde el paso 4."""
 
@@ -91,6 +124,8 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
     creado_en = models.DateTimeField(auto_now_add=True)
+    # USUARIO_HAS_ROL: todos los roles del usuario. `rol` es el principal y siempre está incluido.
+    roles = models.ManyToManyField("Rol", db_table="usuario_has_rol", related_name="usuarios", blank=True)
 
     objects = UsuarioManager()
     USERNAME_FIELD = "email"
@@ -111,6 +146,31 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self):
         return f"{self.nombre} ({self.rol})"
+
+    @classmethod
+    def from_db(cls, db, field_names, values):
+        instancia = super().from_db(db, field_names, values)
+        instancia._rol_previo = instancia.__dict__.get("rol")
+        return instancia
+
+    def save(self, *args, **kwargs):
+        update_fields = kwargs.get("update_fields")
+        super().save(*args, **kwargs)
+        if update_fields is None or "rol" in update_fields:
+            self._sincronizar_rol_principal()
+
+    def _sincronizar_rol_principal(self):
+        """Mantiene USUARIO_HAS_ROL coherente con `rol`: añade el principal y, si cambió,
+        retira el anterior para que un cambio de rol nunca deje permisos viejos activos."""
+        # `Rol` es el modelo del módulo (no `Usuario.Rol`, que solo son las opciones del campo).
+        from .rbac import asegurar_rol_sistema
+        principal = asegurar_rol_sistema(self.rol)
+        previo = getattr(self, "_rol_previo", None)
+        if previo and previo != self.rol:
+            self.roles.remove(*Rol.objects.filter(nombre=previo))
+        self.roles.add(principal)
+        self._rol_previo = self.rol
+
 
 class PermisoRol(models.Model):
     """Permiso por negocio, módulo y rol. 0=ninguno, 1=lectura, 2=escritura."""

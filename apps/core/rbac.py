@@ -6,7 +6,7 @@
 - ADMIN_SAAS edita la matriz de cualquier negocio; ADMIN_NEGOCIO edita la de su negocio,
   solo para Recepcionista y Esteticista.
 """
-from .models import PermisoRol, PermisoUsuario, Usuario
+from .models import PermisoRol, PermisoUsuario, Recurso, Rol, Usuario
 
 R = Usuario.Rol
 MODULOS = ("dashboard", "citas", "clientas", "fichas", "usuarios", "centros")
@@ -31,6 +31,46 @@ VIEW_MODULE = {
     "ResumenView": "dashboard", "CitaViewSet": "citas", "ClientaViewSet": "clientas",
     "FichaViewSet": "fichas", "UsuarioViewSet": "usuarios",
 }
+
+
+# ---- RBAC relacional: usuario ─< usuario_has_rol >─ rol ─< rol_has_recurso >─ recurso
+# Recurso = «modulo.accion» (citas.ver, citas.editar). «editar» implica «ver».
+ACCION_NIVEL = {"ver": 1, "editar": 2}
+
+
+def recursos_por_nivel(modulo, nivel):
+    acciones = ("ver",) if modulo in SOLO_LECTURA else ("ver", "editar")
+    return [f"{modulo}.{a}" for a in acciones][:nivel]
+
+
+def niveles_base():
+    """{rol: {modulo: nivel}} leído de rol_has_recurso (una consulta)."""
+    niveles = {}
+    for rol, recurso in Rol.recursos.through.objects.values_list("rol__nombre", "recurso__nombre"):
+        modulo, _, accion = recurso.partition(".")
+        if modulo in MODULOS and accion in ACCION_NIVEL:
+            d = niveles.setdefault(rol, {})
+            d[modulo] = max(d.get(modulo, 0), ACCION_NIVEL[accion])
+    return niveles
+
+
+def roles_de(user_id, rol_principal):
+    """Roles del usuario (principal + usuario_has_rol). Nadie es superadmin por una fila de la tabla."""
+    nombres = set(Usuario.roles.through.objects.filter(usuario_id=user_id)
+                  .values_list("rol__nombre", flat=True)) if user_id else set()
+    nombres.add(rol_principal)
+    if rol_principal != R.ADMIN_SAAS:
+        nombres.discard(R.ADMIN_SAAS)
+    return (nombres & set(ROLES)) or {rol_principal}
+
+
+def asegurar_rol_sistema(nombre):
+    """Devuelve el Rol; si es de sistema y se acaba de crear, recibe sus recursos de fábrica."""
+    rol, creado = Rol.objects.get_or_create(nombre=nombre)
+    if creado and nombre in ROLES:
+        rol.recursos.set([Recurso.objects.get_or_create(nombre=n)[0] for m in MODULOS
+                          for n in recursos_por_nivel(m, PREDETERMINADOS[m][nombre])])
+    return rol
 
 
 def es_superadmin(user):
@@ -67,13 +107,15 @@ def nivel_permiso(centro_id, rol, modulo, usuario_id=None):
                     .values_list("nivel", flat=True).first())
         if personal is not None:
             return personal
-    nivel = (PermisoRol.objects.filter(centro_id=centro_id, rol=rol, modulo=modulo)
-             .values_list("nivel", flat=True).first())
-    return PREDETERMINADOS[modulo][rol] if nivel is None else nivel
+    m_actual = matriz(centro_id)
+    return max(m_actual[modulo][r] for r in roles_de(usuario_id, rol))
 
 
 def matriz(centro_id):
-    result = {m: dict(roles) for m, roles in PREDETERMINADOS.items()}
+    base = niveles_base()
+    result = {m: {r: (PREDETERMINADOS[m][r] if es_protegida(m, r) else
+                      min(base.get(r, {}).get(m, 0), 1 if m in SOLO_LECTURA else 2))
+                  for r in ROLES} for m in MODULOS}
     for p in PermisoRol.objects.filter(centro_id=centro_id).values("rol", "modulo", "nivel"):
         if not es_protegida(p["modulo"], p["rol"]) and p["modulo"] in result and p["rol"] in result[p["modulo"]]:
             result[p["modulo"]][p["rol"]] = p["nivel"]
@@ -87,7 +129,8 @@ def permisos_usuario(user, centro_id):
     if not centro_id:
         return {m: 0 for m in MODULOS}
     m_actual = matriz(centro_id)
-    result = {m: m_actual[m][user.rol] for m in MODULOS}
+    roles = roles_de(user.id, user.rol)
+    result = {m: max(m_actual[m][r] for r in roles) for m in MODULOS}
     for p in PermisoUsuario.objects.filter(usuario_id=user.id).values("modulo", "nivel"):
         if p["modulo"] in MODULOS_DELEGABLES:
             result[p["modulo"]] = p["nivel"]
