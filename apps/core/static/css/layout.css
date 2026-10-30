@@ -119,3 +119,23 @@ html body .app.gs-layout .body .top span::first-letter{text-transform:uppercase}
 .gs-collapsed .gs-sidebar:is(:hover,:has(:focus-visible)) nav a{justify-content:flex-start;padding:0 12px!important;gap:13px}
 .gs-collapsed .gs-sidebar:is(:hover,:has(:focus-visible)) .gs-sb-head,.gs-collapsed .gs-sidebar:is(:hover,:has(:focus-visible)) .gs-sb-foot{justify-content:flex-start;padding-left:6px;padding-right:6px}
 }
+
+/* ---------- Pulido visual ---------- */
+html body .app .card{border:1px solid var(--gl-line)!important;border-radius:18px!important;box-shadow:0 1px 2px rgba(43,26,40,.04),0 10px 30px rgba(43,26,40,.05)!important;transition:box-shadow .2s var(--gl-ease),transform .2s var(--gl-ease)}
+html body .app .card:hover{box-shadow:0 2px 4px rgba(43,26,40,.05),0 16px 40px rgba(43,26,40,.08)!important}
+html body .app .card h2{letter-spacing:-.3px;color:var(--gl-ink)}
+html body .app table tr:not(:first-child){transition:background .15s}
+html body .app table tr:not(:first-child):hover td{background:var(--gl-blush)}
+html body .app th{font-size:11.5px;letter-spacing:.7px;text-transform:uppercase;color:var(--gl-muted)}
+html body .app button{transition:transform .12s var(--gl-ease),box-shadow .15s,background .15s,filter .15s}
+html body .app button:hover{transform:translateY(-1px)}
+html body .app button:active{transform:translateY(0) scale(.98)}
+html body .app button.pri{background:linear-gradient(135deg,var(--gl-rose),#a8607f)!important;color:#fff!important;border:0!important;box-shadow:0 6px 16px rgba(199,128,159,.35)}
+html body .app button.pri:hover{filter:brightness(1.05);box-shadow:0 10px 22px rgba(199,128,159,.42)}
+html body .app button.sm.d{color:#b3404a!important;border-color:#f1d2d5!important;background:#fff6f6!important}
+html body .app input:focus,html body .app select:focus,html body .app textarea:focus{outline:none!important;border-color:var(--gl-rose)!important;box-shadow:0 0 0 3px rgba(199,128,159,.22)!important}
+.gs-sidebar nav a{transition:background .18s,color .18s,transform .18s var(--gl-ease)}
+.gs-sidebar nav a:hover{transform:translateX(2px)}
+.gs-admins{background:linear-gradient(180deg,#fff,var(--gl-blush))!important;border-left:4px solid var(--gl-rose)!important}
+.gs-admins-sub{margin:-4px 0 12px;font-size:13px}
+@media (prefers-reduced-motion:reduce){html body .app *{transition:none!important;transform:none!important}}
