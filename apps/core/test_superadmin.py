@@ -53,3 +53,18 @@ class SuperadminTest(APITestCase):
         self.assertEqual(self.c.delete(f"/api/superadmins/{self.saas.pk}/").status_code, 403)  # a sí mismo no
         self.assertEqual(self.c.delete(f"/api/superadmins/{otro.pk}/").status_code, 204)
         self.assertEqual(self.c.delete(f"/api/superadmins/{self.saas.pk}/").status_code, 403)
+
+    def test_quitar_superadmin(self):
+        otro = crear_usuario("otro@x.co", R.ADMIN_SAAS)
+        url = f"/api/superadmins/{otro.pk}/degradar/"
+        self.assertEqual(self.c.post(url, {"centro": self.a.pk, "rol": "ADMIN_SAAS"}, format="json").status_code, 400)
+        self.assertEqual(self.c.post(url, {"centro": 99999, "rol": "RECEPCIONISTA"}, format="json").status_code, 400)
+        r = self.c.post(url, {"centro": self.a.pk, "rol": "RECEPCIONISTA"}, format="json")
+        self.assertEqual(r.status_code, 200, r.content)
+        otro.refresh_from_db()
+        self.assertEqual((otro.rol, otro.centro_id, otro.is_superuser), (R.RECEPCIONISTA, self.a.pk, False))
+        self.assertEqual(set(otro.roles.values_list("nombre", flat=True)), {"RECEPCIONISTA"})
+        self.assertFalse(cliente(otro).get("/api/auth/me/").data["es_superadmin"])
+        # a sí mismo no, y un no-superadmin tampoco puede
+        self.assertEqual(self.c.post(f"/api/superadmins/{self.saas.pk}/degradar/", {"centro": self.a.pk, "rol": "RECEPCIONISTA"}, format="json").status_code, 403)
+        self.assertEqual(cliente(self.jefe).post(url, {"centro": self.a.pk, "rol": "ESTETICISTA"}, format="json").status_code, 403)

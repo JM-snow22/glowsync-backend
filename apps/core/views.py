@@ -220,9 +220,28 @@ class SuperadminViewSet(viewsets.ModelViewSet):
         ser.save()
         return Response(ser.data, status=status.HTTP_201_CREATED)
 
-    def perform_destroy(self, instance):
+    def _proteger(self, instance, accion):
         if instance.pk == self.request.user.pk:
-            raise PermissionDenied(_("No puedes eliminar tu propia cuenta de superadmin."))
-        if Usuario.objects.filter(rol=Usuario.Rol.ADMIN_SAAS, is_active=True).count() <= 1:
+            raise PermissionDenied(_("No puedes %(accion)s tu propia cuenta de superadmin.") % {"accion": accion})
+        if Usuario.objects.filter(rol=Usuario.Rol.ADMIN_SAAS, is_active=True).exclude(pk=instance.pk).count() < 1:
             raise ValidationError({"detail": _("Debe quedar al menos un superadmin.")})
+
+    def perform_destroy(self, instance):
+        self._proteger(instance, _("eliminar"))
         instance.delete()
+
+    @action(detail=True, methods=["post"])
+    def degradar(self, request, pk=None):
+        """Quita el rol de superadmin. Body: {"centro": id, "rol": "ADMIN_NEGOCIO"|"RECEPCIONISTA"|"ESTETICISTA"}."""
+        u = self.get_object()
+        self._proteger(u, _("quitarle el rol a"))
+        rol = request.data.get("rol")
+        if rol not in (Usuario.Rol.ADMIN_NEGOCIO, Usuario.Rol.RECEPCIONISTA, Usuario.Rol.ESTETICISTA):
+            raise ValidationError({"rol": _("Rol no válido.")})
+        try:
+            centro = Centro.objects.get(pk=int(request.data.get("centro")))
+        except (Centro.DoesNotExist, TypeError, ValueError):
+            raise ValidationError({"centro": _("Selecciona un negocio válido.")})
+        u.rol, u.centro, u.is_staff, u.is_superuser = rol, centro, False, False
+        u.save()
+        return Response(UsuarioSerializer(u, context={"request": request}).data)
