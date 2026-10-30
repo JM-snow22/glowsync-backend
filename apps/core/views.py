@@ -201,3 +201,28 @@ class PermisosRolView(APIView):
         PermisoRol.objects.filter(centro=centro, rol__in=editables,
                                   modulo__in=modulos_editables(request.user)).delete()
         return self.get(request)
+
+
+class SuperadminViewSet(viewsets.ModelViewSet):
+    """Superadministradores del SaaS (solo ADMIN_SAAS). Crear: POST con los datos del usuario.
+    Ascender a alguien existente: PATCH /api/usuarios/{id}/ con {"rol": "ADMIN_SAAS"}."""
+
+    serializer_class = UsuarioSerializer
+    permission_classes = [IsAdminSaas]
+    http_method_names = ["get", "post", "delete"]
+
+    def get_queryset(self):
+        return Usuario.objects.filter(rol=Usuario.Rol.ADMIN_SAAS).order_by("id")
+
+    def create(self, request, *args, **kwargs):
+        ser = UsuarioSerializer(data={**request.data, "rol": Usuario.Rol.ADMIN_SAAS}, context={"request": request})
+        ser.is_valid(raise_exception=True)
+        ser.save()
+        return Response(ser.data, status=status.HTTP_201_CREATED)
+
+    def perform_destroy(self, instance):
+        if instance.pk == self.request.user.pk:
+            raise PermissionDenied(_("No puedes eliminar tu propia cuenta de superadmin."))
+        if Usuario.objects.filter(rol=Usuario.Rol.ADMIN_SAAS, is_active=True).count() <= 1:
+            raise ValidationError({"detail": _("Debe quedar al menos un superadmin.")})
+        instance.delete()

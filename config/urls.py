@@ -8,7 +8,7 @@ from django.views.generic import TemplateView
 
 from apps.agenda.views import (BloqueoViewSet, CabinaViewSet, CitaViewSet, DisponibilidadViewSet,ProfesionalViewSet, ServicioViewSet)
 from apps.clientas.views import ClientaViewSet, FichaViewSet
-from apps.core.views import CentroViewSet, LoginView, MeView, UsuarioViewSet, PermisosRolView
+from apps.core.views import CentroViewSet, LoginView, MeView, UsuarioViewSet, PermisosRolView, SuperadminViewSet
 from apps.dashboard.views import ResumenView
 from apps.pagos.views import PagoViewSet, PagoWebhook
 from apps.reasignacion.views import ListaEsperaViewSet, OfertaViewSet
@@ -22,6 +22,7 @@ def health(request):
 
 router = DefaultRouter()
 router.register("centros", CentroViewSet, basename="centro")
+router.register("superadmins", SuperadminViewSet, basename="superadmin")
 router.register("usuarios", UsuarioViewSet, basename="usuario")
 router.register("cabinas", CabinaViewSet, basename="cabina")
 router.register("servicios", ServicioViewSet, basename="servicio")

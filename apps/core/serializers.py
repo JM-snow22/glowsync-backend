@@ -3,7 +3,7 @@ from django.utils.translation import gettext as _
 from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
-from .models import Centro, Idioma, Usuario
+from .models import Centro, Idioma, PermisoUsuario, Usuario
 from .permissions import centro_actual
 
 
@@ -63,9 +63,12 @@ class UsuarioSerializer(serializers.ModelSerializer):
         fields = ["id", "email", "nombre", "rol", "idioma", "is_active", "password"]
 
     def validate_rol(self, value):
-        if value == Usuario.Rol.ADMIN_SAAS:
-            raise serializers.ValidationError(_("Rol no permitido."))
         request = self.context.get("request")
+        if value == Usuario.Rol.ADMIN_SAAS:
+            # Solo un superadmin puede crear otro superadmin o ascender a alguien.
+            if not (request and request.user.is_authenticated and request.user.rol == Usuario.Rol.ADMIN_SAAS):
+                raise serializers.ValidationError(_("Rol no permitido."))
+            return value
         if request and request.user.is_authenticated and request.user.rol != Usuario.Rol.ADMIN_SAAS and value == Usuario.Rol.ADMIN_NEGOCIO and request.user.rol != Usuario.Rol.ADMIN_NEGOCIO:
             raise serializers.ValidationError(_("No puedes crear administradores."))
         if request and request.user.is_authenticated and request.user.rol == Usuario.Rol.ADMIN_NEGOCIO and value == Usuario.Rol.ADMIN_NEGOCIO:
@@ -78,6 +81,8 @@ class UsuarioSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         password = validated_data.pop("password")
+        if validated_data.get("rol") == Usuario.Rol.ADMIN_SAAS:
+            validated_data.update(centro=None, is_staff=True, is_superuser=True)
         return Usuario.objects.create_user(password=password, **validated_data)
 
     def update(self, instance, validated_data):
@@ -86,6 +91,11 @@ class UsuarioSerializer(serializers.ModelSerializer):
             setattr(instance, k, v)
         if password:
             instance.set_password(password)
+        if instance.rol == Usuario.Rol.ADMIN_SAAS:
+            # Un superadmin no pertenece a ningún negocio (restricción usuario_rol_centro).
+            instance.centro = None
+            instance.is_staff = instance.is_superuser = True
+            PermisoUsuario.objects.filter(usuario=instance).delete()
         instance.save()
         return instance
 
