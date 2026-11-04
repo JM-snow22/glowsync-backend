@@ -199,3 +199,17 @@ class PermisoUsuario(models.Model):
             models.UniqueConstraint(fields=["usuario", "modulo"], name="permiso_usuario_unico"),
             models.CheckConstraint(condition=models.Q(nivel__in=[0, 1, 2]), name="permiso_usuario_nivel_valido"),
         ]
+
+
+class EtiquetaModulo(models.Model):
+    """Nombre personalizado de una sección del menú (Resumen, Fichas...). Vacío = nombre de fábrica."""
+
+    clave = models.CharField(max_length=30, unique=True)
+    es = models.CharField(max_length=40, blank=True)
+    en = models.CharField(max_length=40, blank=True)
+
+    class Meta:
+        db_table = "etiqueta_modulo"
+
+    def __str__(self):
+        return f"{self.clave}: {self.es or '-'} / {self.en or '-'}"

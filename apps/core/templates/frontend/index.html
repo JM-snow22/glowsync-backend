@@ -47,14 +47,14 @@ const GS_LOGO=`<svg class="gs-logo-mark" viewBox="0 0 48 48" aria-hidden="true">
 const ICON={dashboard:"✨",citas:"📅",clientas:"💆‍♀️",fichas:"🧴",usuarios:"🤍",centros:"🌿",rbac:"🔐"};
 const TAGC={CONFIRMADA:"ok",COMPLETADA:"ok",ACTIVA:"ok",CANCELADA:"no",NO_ASISTIO:"no",PENDIENTE:"w"};
 let selectedCentro=sessionStorage.getItem("gs_centro")||"",lang=localStorage.getItem("lang")||"es",S=JSON.parse(sessionStorage.getItem("gs")||"null");
-const t=k=>(T[lang][k]||k),$=s=>document.querySelector(s),loc=()=>lang==="es"?"es-CO":"en-US";
+const t=k=>{const o=window.LBL&&window.LBL[k];return (o&&o[lang])||T[lang][k]||k},$=s=>document.querySelector(s),loc=()=>lang==="es"?"es-CO":"en-US";
 const esc=v=>String(v==null?"":v).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 let activeMatrix=null;
 // Menú dinámico: el servidor calcula qué ve y qué modifica cada persona (rol + permisos personales).
 async function loadPermissions(){
   if(!S)return;
   try{
-    const me=await api("/api/auth/me/");S.me={...S.me,...me};save();
+    const me=await api("/api/auth/me/");S.me={...S.me,...me};window.LBL=me.etiquetas||{};save();
     MENU[me.rol]=(me.menu||[]).map(x=>x.modulo);
     WRITE={};for(const x of me.menu||[])WRITE[x.modulo]=x.escritura?[me.rol]:[];
   }catch(err){toast(err.message,0);throw err}
@@ -117,7 +117,7 @@ function draw(m){
       try{const d=await api("/api/auth/login/",{method:"POST",body:{email:$("#e").value,password:$("#p").value}});
       clearResponseCache();S={access:d.access,refresh:d.refresh,me:d.usuario};lang=S.me.idioma||lang;localStorage.setItem("lang",lang);save();loadPermissions().catch(()=>{}).then(()=>draw())}
       catch(e){const box=$("#login-error");if(box)box.innerHTML=`<div class="err">${esc(t("bad"))}</div>`;btn.disabled=false;btn.textContent=t("login")}};return}
-  const me=S.me;
+  const me=S.me;window.LBL=me.etiquetas||window.LBL||{};
   const es=lang==="es",GROUPS=[[es?"Operación":"Operations",["dashboard","citas","clientas","fichas"]],[es?"Administración":"Administration",["usuarios","rbac","centros"]]];
   const navHtml=GROUPS.map(([g,vs])=>{const items=vs.filter(v=>MENU[me.rol].includes(v));return items.length?`<div class="gs-group">${g}</div>`+items.map(v=>`<a href="#/${v}" title="${t(v)}"><span class="gs-nav-icon" aria-hidden="true">${GS_NAV_ICONS[v]||""}</span><span class="gs-label">${t(v)}</span></a>`).join(""):""}).join("");
   const collapsed=localStorage.getItem("gs_sb")!=="0"; // plegada por defecto; se abre con el cursor
@@ -237,7 +237,7 @@ const VIEWS={
    <p class="mut" style="font-size:13px;margin-top:14px">${es?"El plan y la suscripción los gestiona GlowSync.":"Plan and subscription are managed by GlowSync."}</p></div>`}
   return `<div class="card"><h2>${t("centros")}</h2><div class="tw"><table><tr><th>ID</th><th>${t("name")}</th><th>${t("plan")}</th><th>${t("state")}</th><th>${t("expires")}</th><th></th></tr>${d.results.map(c=>{window._C=window._C||{};window._C[c.id]=c;return `<tr><td>${c.id}</td><td><b>${esc(c.nombre)}</b></td><td>${pill("",c.plan)}</td><td>${pill(c.estado_suscripcion)}</td><td>${esc(c.fecha_vencimiento)}</td><td style="white-space:nowrap"><button class="sm" data-c="${c.id}">${t("edit")}</button> <button class="sm d" data-cd="${c.id}">${lang==="es"?"Eliminar":"Delete"}</button></td></tr>`}).join("")}</table></div></div>
   <div class="card"><h2>${t("newCentro")}</h2><form id="nc" class="fg"><div><label>${t("name")}</label><input name="nombre" required></div><div><label>${t("city")}</label><input name="ciudad"></div>
-  <div><label>${t("plan")}</label><select name="plan"><option>BASICO</option><option>PRO</option><option>PREMIUM</option></select></div><div><label>${t("expires")}</label><input name="fecha_vencimiento" type="date" required></div><div><button class="pri">${t("create")}</button></div></form></div>
+  <div><label>${t("plan")}</label><select name="plan"><option>BASICO</option><option>PRO</option><option>PREMIUM</option></select></div><div><label>${t("expires")}</label><input name="fecha_vencimiento" type="date" required></div><div><button class="pri">${t("create")}</button></div></form></div>${etiquetasCard()}
   <div class="card"><h2>${t("centroUser")}</h2><form id="cu" class="fg"><div><label>${t("centro")}</label><select name="centro">${d.results.map(c=>`<option value="${c.id}">${esc(c.nombre)}</option>`).join("")}</select></div>
   <div><label>${t("name")}</label><input name="nombre" required></div><div><label>${t("email")}</label><input name="email" type="email" required></div><div><label>${t("pass")}</label><input name="password" type="password" minlength="8" required></div>
   <div><label>${t("rol")}</label><select name="rol"><option value="ADMIN_NEGOCIO">${t("ADMIN_NEGOCIO")}</option><option value="RECEPCIONISTA">${t("RECEPCIONISTA")}</option><option value="ESTETICISTA">${t("ESTETICISTA")}</option></select></div><div><button class="pri">${t("create")}</button></div></form></div>`},
@@ -266,7 +266,12 @@ async function abrirPermisosPersona(id){
 }
 async function superadminsCard(){const es=lang==="es";let d;try{d=await api("/api/superadmins/")}catch(e){return ""}const L=d.results||d;window._SA={};
  return `<div class="card gs-admins"><h2>🛡️ ${es?"Administradores generales":"Platform admins"}</h2><p class="mut gs-admins-sub">${es?"Tienen acceso total a todos los negocios.":"Full access to every business."}</p><div class="tw"><table><tr><th>${t("name")}</th><th>${t("email")}</th><th></th></tr>${L.map(u=>{window._SA[u.id]=u;const yo=u.id===S.me.id;return `<tr><td><b>${esc(u.nombre)}</b>${yo?` <small class="mut">(${es?"tú":"you"})</small>`:""}</td><td>${esc(u.email)}</td><td style="white-space:nowrap">${yo?"":`<button class="sm" data-sd="${u.id}">${es?"Quitar acceso general":"Remove admin access"}</button> <button class="sm d" data-sx="${u.id}">${es?"Eliminar":"Delete"}</button>`}</td></tr>`}).join("")}</table></div></div>`}
-function bindSuperadmins(){const es=lang==="es",sel=(n,opts)=>`<select name="${n}" required>${opts.map(([v,l])=>`<option value="${v}">${esc(l)}</option>`).join("")}</select>`;
+function etiquetasCard(){const es=lang==="es",K=["dashboard","citas","clientas","fichas","usuarios","centros","rbac"],L=window.LBL||{};
+ return `<div class="card gs-admins"><h2>✏️ ${es?"Nombres del menú":"Menu names"}</h2><p class="mut gs-admins-sub">${es?"Cambia cómo se llaman las secciones para todos. Deja vacío para usar el nombre original.":"Rename sections for everyone. Leave empty to keep the original name."}</p>
+ <div class="tw"><table><tr><th>${es?"Original":"Default"}</th><th>Español</th><th>English</th></tr>${K.map(k=>`<tr><td>${T.es[k]||k} / ${T.en[k]||k}</td><td><input data-lbl="${k}" data-l="es" maxlength="40" placeholder="${esc(T.es[k]||k)}" value="${esc((L[k]||{}).es||"")}"></td><td><input data-lbl="${k}" data-l="en" maxlength="40" placeholder="${esc(T.en[k]||k)}" value="${esc((L[k]||{}).en||"")}"></td></tr>`).join("")}</table></div>
+ <div class="act"><button class="pri" id="lbl-save">${es?"Guardar nombres":"Save names"}</button></div></div>`}
+function bindSuperadmins(){const bs=$("#lbl-save");if(bs)bs.onclick=async()=>{const body={};document.querySelectorAll("[data-lbl]").forEach(i=>{(body[i.dataset.lbl]=body[i.dataset.lbl]||{})[i.dataset.l]=i.value.trim()});
+  try{window.LBL=await api("/api/etiquetas/",{method:"PUT",body});S.me.etiquetas=window.LBL;save();clearResponseCache();toast(t("saved"));draw()}catch(e){toast(e.message,0)}};const es=lang==="es",sel=(n,opts)=>`<select name="${n}" required>${opts.map(([v,l])=>`<option value="${v}">${esc(l)}</option>`).join("")}</select>`;
  document.querySelectorAll("[data-sd]").forEach(b=>b.onclick=async()=>{const u=window._SA[b.dataset.sd];const c=await api("/api/centros/");const cs=(c.results||c).map(x=>[x.id,x.nombre]);
   if(!cs.length){toast(es?"Primero crea un negocio":"Create a business first",0);return}
   modal((es?"Quitar acceso general: ":"Remove admin access: ")+esc(u.nombre),`<label>${es?"Negocio al que pasará":"Business to move to"}</label>${sel("centro",cs)}<label>${t("rol")}</label>${sel("rol",[["ADMIN_NEGOCIO",t("ADMIN_NEGOCIO")],["RECEPCIONISTA",t("RECEPCIONISTA")],["ESTETICISTA",t("ESTETICISTA")]])}`,

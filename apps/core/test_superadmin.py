@@ -68,3 +68,17 @@ class SuperadminTest(APITestCase):
         # a sí mismo no, y un no-superadmin tampoco puede
         self.assertEqual(self.c.post(f"/api/superadmins/{self.saas.pk}/degradar/", {"centro": self.a.pk, "rol": "RECEPCIONISTA"}, format="json").status_code, 403)
         self.assertEqual(cliente(self.jefe).post(url, {"centro": self.a.pk, "rol": "ESTETICISTA"}, format="json").status_code, 403)
+
+
+class EtiquetasTest(APITestCase):
+    def test_renombrar_secciones(self):
+        a = crear_centro("A")
+        saas = crear_usuario("s@x.co", R.ADMIN_SAAS)
+        rec = crear_usuario("r@x.co", R.RECEPCIONISTA, a)
+        c = cliente(saas)
+        r = c.put("/api/etiquetas/", {"fichas": {"es": "Historias", "en": "Records"}, "dashboard": {"es": "Inicio"}}, format="json")
+        self.assertEqual(r.status_code, 200, r.content)
+        self.assertEqual(cliente(rec).get("/api/auth/me/").data["etiquetas"]["fichas"]["es"], "Historias")
+        self.assertEqual(c.put("/api/etiquetas/", {"fichas": {"es": "", "en": ""}}, format="json").data.get("fichas"), None)
+        self.assertEqual(c.put("/api/etiquetas/", {"hackeo": {"es": "x"}}, format="json").status_code, 400)
+        self.assertEqual(cliente(rec).put("/api/etiquetas/", {"fichas": {"es": "X"}}, format="json").status_code, 403)

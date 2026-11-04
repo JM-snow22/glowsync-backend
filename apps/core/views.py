@@ -39,6 +39,7 @@ class MeView(APIView):
             {"id": u.id, "nombre": u.nombre, "email": u.email, "rol": u.rol, "idioma": u.idioma,
              "centro_id": u.centro_id, "centro": u.centro.nombre if u.centro_id else None,
              "es_superadmin": es_superadmin(u),
+             "etiquetas": etiquetas(),
              "permisos": permisos_usuario(u, centro_id),
              "menu": menu_usuario(u, centro_id)}
         )
@@ -245,3 +246,35 @@ class SuperadminViewSet(viewsets.ModelViewSet):
         u.rol, u.centro, u.is_staff, u.is_superuser = rol, centro, False, False
         u.save()
         return Response(UsuarioSerializer(u, context={"request": request}).data)
+
+
+# ---------------------------------------------------------------- nombres del menú
+CLAVES_ETIQUETA = (*MODULOS, "rbac")
+
+
+def etiquetas():
+    from .models import EtiquetaModulo
+    return {e.clave: {"es": e.es, "en": e.en} for e in EtiquetaModulo.objects.all() if e.es or e.en}
+
+
+class EtiquetasView(APIView):
+    """GET: nombres personalizados del menú. PUT (solo administrador general): {"fichas": {"es": "...", "en": "..."}}."""
+
+    def get(self, request):
+        return Response(etiquetas())
+
+    def put(self, request):
+        from .models import EtiquetaModulo
+        if not es_superadmin(request.user):
+            raise PermissionDenied(_("Solo un administrador general puede cambiar los nombres."))
+        if not isinstance(request.data, dict):
+            raise ValidationError({"detail": _("Formato no válido.")})
+        for clave, val in request.data.items():
+            if clave not in CLAVES_ETIQUETA or not isinstance(val, dict):
+                raise ValidationError({clave: _("Sección no válida.")})
+            es_, en_ = (str(val.get("es") or "").strip()[:40], str(val.get("en") or "").strip()[:40])
+            if es_ or en_:
+                EtiquetaModulo.objects.update_or_create(clave=clave, defaults={"es": es_, "en": en_})
+            else:
+                EtiquetaModulo.objects.filter(clave=clave).delete()
+        return Response(etiquetas())
