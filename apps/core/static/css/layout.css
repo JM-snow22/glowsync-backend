@@ -146,3 +146,9 @@ html body .app input:focus,html body .app select:focus,html body .app textarea:f
 .gs-lbl-grid b{font-size:11px;color:var(--gl-muted);letter-spacing:.6px}
 .gs-lbl-grid span{font-size:13px;white-space:nowrap}
 .gs-lbl-grid input{padding:7px 9px!important;font-size:13px;margin:0!important;min-width:0}
+
+/* Íconos SVG de línea (reemplazan emojis) */
+.gs-i{width:1.1em;height:1.1em;vertical-align:-.18em;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.gs-icon .gs-i{width:22px;height:22px}
+.empty b .gs-i{width:40px;height:40px;stroke-width:1.4;opacity:.55}
+.gs-lbl-btn .gs-i{width:16px;height:16px;vertical-align:-.2em}

@@ -11,7 +11,7 @@
 <script>
 const T={es:{login:"Iniciar sesión",logout:"Salir",email:"Correo electrónico",pass:"Contraseña",bad:"No pudimos iniciar sesión. Revisa tus datos o consulta el estado de tu suscripción.",expired:"Tu sesión expiró",
 welcome:"Bienvenida de nuevo",signin:"Ingresa a tu panel de GlowSync",h1:"Cada cancelación, una cita recuperada.",h2:"GlowSync llena tu agenda: ofrece al instante los cupos libres a tu lista de espera por WhatsApp, evita cruces y recuerda a tus clientas.",
-b1:"⚡ Reasignación exprés por WhatsApp",b2:"🗓️ Agenda sin cruces entre cabinas y profesionales",b3:"🔔 Recordatorios 48 h y 24 h antes",b4:"🌎 Interfaz y mensajes en español e inglés",foot:"Pensado para profesionales de belleza y bienestar",
+b1:"Reasignación exprés por WhatsApp",b2:"Agenda sin cruces entre cabinas y profesionales",b3:"Recordatorios 48 h y 24 h antes",b4:"Interfaz y mensajes en español e inglés",foot:"Pensado para profesionales de belleza y bienestar",
 dashboard:"Resumen",citas:"Citas",clientas:"Clientas",usuarios:"Equipo",fichas:"Fichas",centros:"Negocios",rbac:"Permisos",denied:"Acceso denegado: tu rol no puede ver esta sección.",
 rol:"Rol",centro:"Sede",name:"Nombre",phone:"Teléfono",state:"Estado",plan:"Plan",expires:"Vence",active:"Activo",city:"Ciudad",
 create:"Crear",saved:"Guardado",confirm:"Confirmar",cancel:"Cancelar",edit:"Editar",save:"Guardar",search:"Buscar por nombre o teléfono…",showing:"Mostrando",of:"de",
@@ -22,7 +22,7 @@ eC:"No hay citas próximas",eCl:"No se encontraron clientas",eF:"Aún no hay fic
 ADMIN_SAAS:"Administrador general",ADMIN_NEGOCIO:"Administrador de negocio",RECEPCIONISTA:"Recepcionista",ESTETICISTA:"Esteticista",note:"La interfaz oculta lo que no corresponde, pero quien decide es el servidor (JWT + permisos por rol)."},
 en:{login:"Sign in",logout:"Sign out",email:"Email",pass:"Password",bad:"Invalid credentials or the center's subscription has expired",expired:"Your session expired",
 welcome:"Welcome back",signin:"Sign in to your GlowSync dashboard",h1:"Every cancellation, a recovered appointment.",h2:"GlowSync fills your calendar: free slots are instantly offered to your waiting list via WhatsApp, with no double bookings and automatic client reminders.",
-b1:"⚡ Express reassignment via WhatsApp",b2:"🗓️ Conflict-free scheduling for rooms and staff",b3:"🔔 Reminders 48 h and 24 h before",b4:"🌎 Interface and messages in English and Spanish",foot:"Designed for beauty and wellness professionals",
+b1:"Express reassignment via WhatsApp",b2:"Conflict-free scheduling for rooms and staff",b3:"Reminders 48 h and 24 h before",b4:"Interface and messages in English and Spanish",foot:"Designed for beauty and wellness professionals",
 dashboard:"Summary",citas:"Appointments",clientas:"Clients",usuarios:"Team",fichas:"Files",centros:"Businesses",rbac:"Permissions",denied:"Access denied: your role cannot view this section.",
 rol:"Role",centro:"Location",name:"Name",phone:"Phone",state:"Status",plan:"Plan",expires:"Expires",active:"Active",city:"City",
 create:"Create",saved:"Saved",confirm:"Confirm",cancel:"Cancel",edit:"Edit",save:"Save",search:"Search by name or phone…",showing:"Showing",of:"of",
@@ -43,8 +43,10 @@ const GS_NAV_ICONS={
   "centros":`<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="8" width="18" height="13" rx="2"/><path d="m3 8 3-5h12l3 5M9 21v-8h6v8"/></svg>`,
   "rbac":`<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/><circle cx="12" cy="15" r="1"/></svg>`
 };
+const GX={phone:`<svg class="gs-i" viewBox="0 0 24 24" aria-hidden="true"><rect x="7" y="2" width="10" height="20" rx="2"/><path d="M11 18h2"/></svg>`,alert:`<svg class="gs-i" viewBox="0 0 24 24" aria-hidden="true"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/></svg>`,shield:`<svg class="gs-i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>`,pen:`<svg class="gs-i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>`,spark:`<svg class="gs-i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v4M12 17v4M3 12h4M17 12h4M5.6 5.6l2.8 2.8M15.6 15.6l2.8 2.8M5.6 18.4l2.8-2.8M15.6 8.4l2.8-2.8"/></svg>`,heart:`<svg class="gs-i" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l1 1.1L12 21l7.8-7.5 1-1.1a5.5 5.5 0 0 0 0-7.8z"/></svg>`};
+const IC=k=>(GS_NAV_ICONS[k]?GS_NAV_ICONS[k].replace("<svg ",'<svg class="gs-i" '):GX[k]||"");
 const GS_LOGO=`<svg class="gs-logo-mark" viewBox="0 0 48 48" aria-hidden="true"><defs><linearGradient id="gsBg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#5a3552"/><stop offset="1" stop-color="#2f1f2d"/></linearGradient><linearGradient id="gsArc" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f6c9d9"/><stop offset="1" stop-color="#d98fae"/></linearGradient></defs><rect width="48" height="48" rx="14" fill="url(#gsBg)"/><path d="M31.1 15.6A11 11 0 1 0 35 24H25.5" fill="none" stroke="url(#gsArc)" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M37 6.5Q37.7 10.3 41.5 11Q37.7 11.7 37 15.5Q36.3 11.7 32.5 11Q36.3 10.3 37 6.5Z" fill="#ffe3ec"/></svg>`;
-const ICON={dashboard:"✨",citas:"📅",clientas:"💆‍♀️",fichas:"🧴",usuarios:"🤍",centros:"🌿",rbac:"🔐"};
+const ICON=new Proxy({},{get:(_,k)=>IC(k)});
 const TAGC={CONFIRMADA:"ok",COMPLETADA:"ok",ACTIVA:"ok",CANCELADA:"no",NO_ASISTIO:"no",PENDIENTE:"w"};
 let selectedCentro=sessionStorage.getItem("gs_centro")||"",lang=localStorage.getItem("lang")||"es",S=JSON.parse(sessionStorage.getItem("gs")||"null");
 const t=k=>{const o=window.LBL&&window.LBL[k];return (o&&o[lang])||T[lang][k]||k},$=s=>document.querySelector(s),loc=()=>lang==="es"?"es-CO":"en-US";
@@ -60,7 +62,7 @@ async function loadPermissions(){
   }catch(err){toast(err.message,0);throw err}
 }
 const isSuper=()=>S?.me?.rol==="ADMIN_SAAS";
-const LV=n=>n===0?`✖ ${t("none")}`:n===1?`👁 ${t("view")}`:`✔ ${t("full")}`;
+const LV=n=>n===0?t("none"):n===1?t("view"):t("full");
 const can=v=>(WRITE[v]||[]).includes(S.me.rol),save=()=>sessionStorage.setItem("gs",JSON.stringify(S));
 const ini=n=>String(n||"?").split(/\s+/).slice(0,2).map(x=>x[0]).join("").toUpperCase(),money=n=>"$"+Number(n||0).toLocaleString(loc());
 const pill=(s,l)=>`<span class="pill ${TAGC[s]||"v"}">${esc(l||s)}</span>`;
@@ -132,7 +134,7 @@ function draw(m){
       <header class="gs-topbar">
         <button type="button" class="gs-burger" id="gs-toggle" aria-controls="gs-sidebar" aria-label="${es?"Abrir o cerrar menú":"Toggle menu"}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h10"/></svg></button>
         ${me.rol==="ADMIN_SAAS"?`<div class="tenant-chooser"><label for="tenant-select">${es?"Negocio activo":"Active business"}</label><select id="tenant-select"><option value="">${es?"Selecciona un negocio":"Select business"}</option></select></div>`:""}
-        <div class="gs-top-tools">${me.rol==="ADMIN_SAAS"?`<button type="button" class="sm gs-lbl-btn" id="lbl-open" title="${es?"Nombres del menú":"Menu names"}" aria-label="${es?"Nombres del menú":"Menu names"}">✏️</button>`:""}${langSel()}<button class="sm" id="out">${t("logout")}</button></div>
+        <div class="gs-top-tools">${me.rol==="ADMIN_SAAS"?`<button type="button" class="sm gs-lbl-btn" id="lbl-open" title="${es?"Nombres del menú":"Menu names"}" aria-label="${es?"Nombres del menú":"Menu names"}">${IC("pen")}</button>`:""}${langSel()}<button class="sm" id="out">${t("logout")}</button></div>
       </header>
       <section class="body"><div class="top"><h1 id="ttl"></h1><span>${new Date().toLocaleDateString(loc(),{weekday:"long",day:"numeric",month:"long"})}</span></div><main id="m"></main></section>
     </div></div>`;
@@ -168,11 +170,11 @@ const VIEWS={
   const clients=(data[1]&&Array.isArray(data[1].results)?data[1].results:[]).slice(0,4);
   const userRole=S.me.rol;
   const quick=[
-    ["citas","🗓","Ir a la agenda","Open appointments"],
-    ["clientas","♡","Consultar clientas","View clients"],
-    ["fichas","▤","Consultar fichas","View files"],
-    ["usuarios","♧","Gestionar equipo","Manage team"],
-    ["rbac","♧","Gestionar permisos","Manage permissions"],
+    ["citas",IC("citas"),"Ir a la agenda","Open appointments"],
+    ["clientas",IC("clientas"),"Consultar clientas","View clients"],
+    ["fichas",IC("fichas"),"Consultar fichas","View files"],
+    ["usuarios",IC("usuarios"),"Gestionar equipo","Manage team"],
+    ["rbac",IC("rbac"),"Gestionar permisos","Manage permissions"],
     ["centros","⌂","Ver negocios","View businesses"]
   ].filter(([v])=>MENU[userRole].includes(v));
   const statusClass=s=>["CONFIRMADA","COMPLETADA","ACTIVA"].includes(s)?"ok":s==="PENDIENTE"?"pending":["CANCELADA","NO_ASISTIO"].includes(s)?"bad":"";
@@ -184,10 +186,10 @@ const VIEWS={
       <p>${lang==="es"?"Organiza tu agenda, atiende a tus clientas y haz crecer tu centro con todo a tu alcance.":"Organize appointments, care for your clients and grow your beauty center."}</p>
     </div></header>
     <section class="gs-kpis" aria-label="${lang==="es"?"Indicadores del negocio":"Business metrics"}">
-      <div class="gs-kpi"><span class="gs-icon">🗓</span><div><small>${t("k1")}</small><strong>${Number(d.citas_total||0).toLocaleString(loc())}</strong><em>${lang==="es"?"Citas del periodo":"Appointments in period"}</em></div></div>
-      <div class="gs-kpi"><span class="gs-icon">♡</span><div><small>${t("k2")}</small><strong>${pct.toLocaleString(loc(),{maximumFractionDigits:1})}%</strong><em>${lang==="es"?"Tasa de inasistencia":"No-show rate"}</em></div></div>
+      <div class="gs-kpi"><span class="gs-icon">${IC("citas")}</span><div><small>${t("k1")}</small><strong>${Number(d.citas_total||0).toLocaleString(loc())}</strong><em>${lang==="es"?"Citas del periodo":"Appointments in period"}</em></div></div>
+      <div class="gs-kpi"><span class="gs-icon">${IC("heart")}</span><div><small>${t("k2")}</small><strong>${pct.toLocaleString(loc(),{maximumFractionDigits:1})}%</strong><em>${lang==="es"?"Tasa de inasistencia":"No-show rate"}</em></div></div>
       <div class="gs-kpi"><span class="gs-icon">$</span><div><small>${t("k4")}</small><strong>${money(d.ingresos_aprobados)}</strong><em>${lang==="es"?"Ingresos aprobados":"Approved revenue"}</em></div></div>
-      <div class="gs-kpi"><span class="gs-icon">✧</span><div><small>${t("k5")}</small><strong>${Number(d.ofertas_aceptadas||0).toLocaleString(loc())}</strong><em>${lang==="es"?"Ofertas aceptadas":"Accepted offers"}</em></div></div>
+      <div class="gs-kpi"><span class="gs-icon">${IC("spark")}</span><div><small>${t("k5")}</small><strong>${Number(d.ofertas_aceptadas||0).toLocaleString(loc())}</strong><em>${lang==="es"?"Ofertas aceptadas":"Accepted offers"}</em></div></div>
     </section>
     <div class="gs-columns">
       <div>
@@ -200,7 +202,7 @@ const VIEWS={
         </section>`:""}
       </div>
       <div>
-        <section class="gs-panel"><div class="gs-panel-head"><h3>${t("recovered")}</h3><span class="gs-icon">✧</span></div>
+        <section class="gs-panel"><div class="gs-panel-head"><h3>${t("recovered")}</h3><span class="gs-icon">${IC("spark")}</span></div>
           <div class="gs-insight"><div><strong>${money(d.dinero_recuperado)}</strong><p>${t("recNote")}</p></div></div>
         </section>
         <section class="gs-panel"><div class="gs-panel-head"><h3>${lang==="es"?"Accesos rápidos":"Quick access"}</h3></div><div class="gs-quick-grid">
@@ -213,21 +215,21 @@ const VIEWS={
   </div>`
  },
  async citas(){const d=await cachedGet("/api/citas/?ordering=hora_inicio&hora_inicio__gte="+encodeURIComponent(new Date().toISOString()));
-  if(!d.results.length)return `<div class="card">${empty("🗓️",t("eC"))}</div>`;
+  if(!d.results.length)return `<div class="card">${empty(IC("citas"),t("eC"))}</div>`;
   const g={};d.results.forEach(c=>{const k=new Date(c.hora_inicio).toLocaleDateString(loc(),{weekday:"long",day:"numeric",month:"long"});(g[k]=g[k]||[]).push(c)});
   return `<div class="card">${cnt(d)}${Object.entries(g).map(([k,l])=>`<h3 class="day">${esc(k)}</h3>${l.map(c=>`<div class="row"><div class="hr">${new Date(c.hora_inicio).toLocaleTimeString(loc(),{hour:"2-digit",minute:"2-digit"})}</div>
    <div class="av">${esc(ini(c.clienta_nombre))}</div><div class="grow"><b>${esc(c.clienta_nombre)}</b><small>${esc(c.servicio_nombre)}</small></div>${pill(c.estado)}
    ${can("citas")&&["PENDIENTE","CONFIRMADA"].includes(c.estado)?`<div class="acts">${c.estado==="PENDIENTE"?`<button class="sm" data-a="${c.id}:confirmar">${t("confirm")}</button>`:""}<button class="sm d" data-a="${c.id}:cancelar">${t("cancel")}</button></div>`:""}</div>`).join("")}`).join("")}</div>`},
  async clientas(){const q=window._q||"",d=await cachedGet("/api/clientas/?search="+encodeURIComponent(q));
-  return `<div class="card"><input id="q" class="search" placeholder="${t("search")}" value="${esc(q)}">${d.results.length?cnt(d)+`<div class="grid">${d.results.map(c=>`<div class="tile"><div class="h"><div class="av">${esc(ini(c.nombre))}</div><div><b>${esc(c.nombre)}</b><small>📱 ${esc(c.telefono_whatsapp)}</small></div></div><div class="tags">${pill("",c.idioma==="en"?"English":"Español")}</div></div>`).join("")}</div>`:empty("👩",t("eCl"))}</div>`},
+  return `<div class="card"><input id="q" class="search" placeholder="${t("search")}" value="${esc(q)}">${d.results.length?cnt(d)+`<div class="grid">${d.results.map(c=>`<div class="tile"><div class="h"><div class="av">${esc(ini(c.nombre))}</div><div><b>${esc(c.nombre)}</b><small>${IC("phone")} ${esc(c.telefono_whatsapp)}</small></div></div><div class="tags">${pill("",c.idioma==="en"?"English":"Español")}</div></div>`).join("")}</div>`:empty(IC("clientas"),t("eCl"))}</div>`},
  async fichas(){const d=await cachedGet("/api/fichas/");window._F={};d.results.forEach(f=>window._F[f.id]=f);
   return `<div class="card">${d.results.length?cnt(d)+`<div class="grid">${d.results.map(f=>`<div class="tile"><div class="h"><div class="av">#${f.clienta}</div><div><b>${t("skin")}: ${esc(f.tipo_cutis||"—")}</b><small>${esc(f.observaciones||"")}</small></div></div>
-   <div class="tags">${f.alergias?`<span class="pill no">⚠ ${esc(f.alergias)}</span>`:`<span class="pill ok">${t("noAl")}</span>`}</div>${can("fichas")?`<div><button class="sm" data-f="${f.id}">${t("edit")}</button></div>`:""}</div>`).join("")}</div>`:empty("📋",t("eF"))}</div>`},
- async usuarios(){const d=await cachedGet("/api/usuarios/");return `<div class="card"><h2>${t("usuarios")}</h2>${d.results.length?`<div class="tw"><table><tr><th>${t("name")}</th><th>${t("email")}</th><th>${t("rol")}</th><th>${t("active")}</th>${can("usuarios")?"<th></th>":""}</tr>${d.results.map(u=>{window._U=window._U||{};window._U[u.id]=u;const gest=u.id!==S.me.id&&(isSuper()||(S.me.rol==="ADMIN_NEGOCIO"&&["RECEPCIONISTA","ESTETICISTA"].includes(u.rol)));return `<tr><td><b>${esc(u.nombre)}</b></td><td>${esc(u.email)}</td><td>${pill("",t(u.rol))}</td><td>${u.is_active?"✔":"✖"}</td>${can("usuarios")?`<td style="white-space:nowrap"><button class="sm" data-u="${u.id}">${t("edit")}</button> ${gest?`<button class="sm" data-up="${u.id}">🔐 ${t("rbac")}</button> `:""}<button class="sm d" data-ud="${u.id}">${lang==="es"?"Eliminar":"Delete"}</button></td>`:""}</tr>`}).join("")}</table></div>`:empty("👥",t("eU"))}</div>${isSuper()?await superadminsCard():""}
+   <div class="tags">${f.alergias?`<span class="pill no">${IC("alert")} ${esc(f.alergias)}</span>`:`<span class="pill ok">${t("noAl")}</span>`}</div>${can("fichas")?`<div><button class="sm" data-f="${f.id}">${t("edit")}</button></div>`:""}</div>`).join("")}</div>`:empty(IC("fichas"),t("eF"))}</div>`},
+ async usuarios(){const d=await cachedGet("/api/usuarios/");return `<div class="card"><h2>${t("usuarios")}</h2>${d.results.length?`<div class="tw"><table><tr><th>${t("name")}</th><th>${t("email")}</th><th>${t("rol")}</th><th>${t("active")}</th>${can("usuarios")?"<th></th>":""}</tr>${d.results.map(u=>{window._U=window._U||{};window._U[u.id]=u;const gest=u.id!==S.me.id&&(isSuper()||(S.me.rol==="ADMIN_NEGOCIO"&&["RECEPCIONISTA","ESTETICISTA"].includes(u.rol)));return `<tr><td><b>${esc(u.nombre)}</b></td><td>${esc(u.email)}</td><td>${pill("",t(u.rol))}</td><td>${u.is_active?"✔":"✖"}</td>${can("usuarios")?`<td style="white-space:nowrap"><button class="sm" data-u="${u.id}">${t("edit")}</button> ${gest?`<button class="sm" data-up="${u.id}">${IC("rbac")} ${t("rbac")}</button> `:""}<button class="sm d" data-ud="${u.id}">${lang==="es"?"Eliminar":"Delete"}</button></td>`:""}</tr>`}).join("")}</table></div>`:empty(IC("usuarios"),t("eU"))}</div>${isSuper()?await superadminsCard():""}
   <div class="card"><h2>${t("newUser")}</h2><form id="nu" class="fg"><div><label>${t("name")}</label><input name="nombre" required></div><div><label>${t("email")}</label><input name="email" type="email" required></div>
   <div><label>${t("rol")}</label><select name="rol"><option value="ESTETICISTA">${t("ESTETICISTA")}</option><option value="RECEPCIONISTA">${t("RECEPCIONISTA")}</option>${isSuper()?`<option value="ADMIN_NEGOCIO">${t("ADMIN_NEGOCIO")}</option><option value="ADMIN_SAAS">${t("ADMIN_SAAS")}</option>`:""}</select></div><div><label>${t("pass")}</label><input name="password" type="password" minlength="8" required></div><div><button class="pri">${t("create")}</button></div></form></div>`},
  async centros(){const d=await cachedGet("/api/centros/");
-  if(!isSuper()){const es=lang==="es",c=d.results[0];if(!c)return `<div class="card">${empty("🌿",es?"Sin negocio asignado":"No business assigned")}</div>`;
+  if(!isSuper()){const es=lang==="es",c=d.results[0];if(!c)return `<div class="card">${empty(IC("centros"),es?"Sin negocio asignado":"No business assigned")}</div>`;
    window._C={[c.id]:c};
    return `<div class="card"><h2>${esc(c.nombre)}</h2><div class="tw"><table>
    <tr><th>NIT</th><td>${esc(c.nit||"—")}</td></tr><tr><th>${t("city")}</th><td>${esc(c.ciudad||"—")}</td></tr>
@@ -247,8 +249,8 @@ const VIEWS={
   const R=["ADMIN_SAAS","ADMIN_NEGOCIO","RECEPCIONISTA","ESTETICISTA"];
   const rows=["dashboard","citas","clientas","fichas","usuarios","centros"].map(v=>`<tr><td><b>${ICON[v]} ${t(v)}</b></td>${R.map(r=>{
     const level=data.matriz[v][r], locked=r==="ADMIN_SAAS"||!(data.roles_editables||[]).includes(r)||!(data.modulos_editables||[]).includes(v);
-    if(!data.editable||locked)return `<td>${level===0?`<span class="pill">✖ ${t("none")}</span>`:level===1?`<span class="pill v">👁 ${t("view")}</span>`:`<span class="pill ok">✔ ${t("full")}</span>`}</td>`;
-    return `<td><select class="rbac-cell" data-module="${v}" data-role="${r}" aria-label="${t(v)} ${t(r)}"><option value="0" ${level===0?"selected":""}>✖ ${t("none")}</option><option value="1" ${level===1?"selected":""}>👁 ${t("view")}</option>${v!=="dashboard"?`<option value="2" ${level===2?"selected":""}>✔ ${t("full")}</option>`:""}</select></td>`;
+    if(!data.editable||locked)return `<td>${level===0?`<span class="pill">${t("none")}</span>`:level===1?`<span class="pill v">${t("view")}</span>`:`<span class="pill ok">${t("full")}</span>`}</td>`;
+    return `<td><select class="rbac-cell" data-module="${v}" data-role="${r}" aria-label="${t(v)} ${t(r)}"><option value="0" ${level===0?"selected":""}>${t("none")}</option><option value="1" ${level===1?"selected":""}>${t("view")}</option>${v!=="dashboard"?`<option value="2" ${level===2?"selected":""}>${t("full")}</option>`:""}</select></td>`;
   }).join("")}</tr>`).join("");
   const buttons=data.editable?`<div class="act"><button type="button" class="ghost" id="rbac-reset">${lang==="es"?"Restaurar predeterminados":"Reset defaults"}</button><button type="button" class="pri" id="rbac-save">${t("save")}</button></div>`:"";
   return `<div class="card"><h2>${t("matrix")}</h2><div class="tw"><table><tr><th></th>${R.map(r=>`<th>${t(r)}</th>`).join("")}</tr>${rows}</table></div>${buttons}<p class="mut" style="font-size:13px;margin-top:14px">${t("note")}</p></div>`
@@ -265,9 +267,9 @@ async function abrirPermisosPersona(id){
     await api(`/api/usuarios/${id}/permisos/`,{method:"PUT",body:{permisos}});toast(t("saved"));go()});
 }
 async function superadminsCard(){const es=lang==="es";let d;try{d=await api("/api/superadmins/")}catch(e){return ""}const L=d.results||d;window._SA={};
- return `<div class="card gs-admins"><h2>🛡️ ${es?"Administradores generales":"Platform admins"}</h2><p class="mut gs-admins-sub">${es?"Tienen acceso total a todos los negocios.":"Full access to every business."}</p><div class="tw"><table><tr><th>${t("name")}</th><th>${t("email")}</th><th></th></tr>${L.map(u=>{window._SA[u.id]=u;const yo=u.id===S.me.id;return `<tr><td><b>${esc(u.nombre)}</b>${yo?` <small class="mut">(${es?"tú":"you"})</small>`:""}</td><td>${esc(u.email)}</td><td style="white-space:nowrap">${yo?"":`<button class="sm" data-sd="${u.id}">${es?"Quitar acceso general":"Remove admin access"}</button> <button class="sm d" data-sx="${u.id}">${es?"Eliminar":"Delete"}</button>`}</td></tr>`}).join("")}</table></div></div>`}
+ return `<div class="card gs-admins"><h2>${IC("shield")} ${es?"Administradores generales":"Platform admins"}</h2><p class="mut gs-admins-sub">${es?"Tienen acceso total a todos los negocios.":"Full access to every business."}</p><div class="tw"><table><tr><th>${t("name")}</th><th>${t("email")}</th><th></th></tr>${L.map(u=>{window._SA[u.id]=u;const yo=u.id===S.me.id;return `<tr><td><b>${esc(u.nombre)}</b>${yo?` <small class="mut">(${es?"tú":"you"})</small>`:""}</td><td>${esc(u.email)}</td><td style="white-space:nowrap">${yo?"":`<button class="sm" data-sd="${u.id}">${es?"Quitar acceso general":"Remove admin access"}</button> <button class="sm d" data-sx="${u.id}">${es?"Eliminar":"Delete"}</button>`}</td></tr>`}).join("")}</table></div></div>`}
 function abrirNombres(){const es=lang==="es",K=["dashboard","citas","clientas","fichas","usuarios","centros","rbac"],L=window.LBL||{};
- modal("✏️ "+(es?"Nombres del menú":"Menu names"),`<p class="mut" style="font-size:12.5px;margin:0 0 10px">${es?"Vacío = nombre original.":"Empty = original name."}</p><div class="gs-lbl-grid"><b></b><b>ES</b><b>EN</b>${K.map(k=>`<span>${ICON[k]||""} ${esc(T[lang][k]||k)}</span><input name="${k}.es" maxlength="40" placeholder="${esc(T.es[k]||k)}" value="${esc((L[k]||{}).es||"")}"><input name="${k}.en" maxlength="40" placeholder="${esc(T.en[k]||k)}" value="${esc((L[k]||{}).en||"")}">`).join("")}</div>`,
+ modal(IC("pen")+" "+(es?"Nombres del menú":"Menu names"),`<p class="mut" style="font-size:12.5px;margin:0 0 10px">${es?"Vacío = nombre original.":"Empty = original name."}</p><div class="gs-lbl-grid"><b></b><b>ES</b><b>EN</b>${K.map(k=>`<span>${ICON[k]||""} ${esc(T[lang][k]||k)}</span><input name="${k}.es" maxlength="40" placeholder="${esc(T.es[k]||k)}" value="${esc((L[k]||{}).es||"")}"><input name="${k}.en" maxlength="40" placeholder="${esc(T.en[k]||k)}" value="${esc((L[k]||{}).en||"")}">`).join("")}</div>`,
   async d=>{const body={};Object.entries(d).forEach(([n,v])=>{const [k,l]=n.split(".");(body[k]=body[k]||{})[l]=String(v).trim()});
    window.LBL=await api("/api/etiquetas/",{method:"PUT",body});S.me.etiquetas=window.LBL;save();clearResponseCache();toast(t("saved"));draw()})}
 function bindSuperadmins(){const es=lang==="es",sel=(n,opts)=>`<select name="${n}" required>${opts.map(([v,l])=>`<option value="${v}">${esc(l)}</option>`).join("")}</select>`;
