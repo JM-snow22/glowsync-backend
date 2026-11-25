@@ -1,0 +1,146 @@
+/* GlowSync — vista móvil nativa (se carga DESPUÉS de layout.css).
+   Barra inferior de accesos, cabecera compacta y tarjetas densas para pantallas pequeñas. */
+
+.gs-mobile-nav,.gs-mobile-brand{display:none}
+
+@media (max-width:900px){
+  html,body{max-width:100%;overflow-x:hidden}
+
+  /* El contenido nunca queda tapado por la barra inferior */
+  html body .app.gs-layout{padding-bottom:calc(56px + env(safe-area-inset-bottom))}
+  html body .app.gs-layout .gs-main>.body{padding:10px 8px calc(12px + env(safe-area-inset-bottom))!important}
+
+  /* Cabecera compacta: una fila para marca/herramientas y otra solo para la sede */
+  html body .gs-topbar{position:sticky!important;top:0!important;z-index:45;display:grid!important;
+    grid-template-columns:36px minmax(0,1fr) auto;grid-template-rows:auto auto;align-items:center;gap:5px 7px;
+    padding:calc(5px + env(safe-area-inset-top)) 8px 5px!important;background:rgba(255,255,255,.97)!important;
+    border-bottom:1px solid var(--gl-line)!important;min-height:0!important}
+  html body .gs-burger{grid-column:1;grid-row:1;width:36px;height:36px;min-height:36px}
+  html body .gs-mobile-brand{grid-column:2;grid-row:1;display:flex;align-items:center;gap:7px;min-width:0;
+    font:600 15px/1 var(--sans,Inter,sans-serif)!important;color:var(--gl-plum)!important;letter-spacing:-.4px}
+  html body .gs-mobile-brand b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  html body .gs-mobile-brand .gs-logo-mark{width:25px;height:25px;flex:none;border-radius:8px}
+  html body .gs-top-tools{grid-column:3;grid-row:1;margin-left:0!important;gap:5px}
+  html body .gs-topbar .sm,html body .gs-topbar select{min-height:34px!important;padding:5px 7px!important;font-size:11px!important}
+  html body .gs-topbar .gs-lbl-btn{display:none!important}
+  html body .gs-topbar .tenant-chooser{grid-column:1/-1;grid-row:2;width:100%;min-width:0;max-width:none!important}
+  html body .gs-topbar .tenant-chooser select{width:100%;min-width:0;max-width:none!important;height:32px;font-size:11px!important}
+
+  /* Menú lateral: cajón cómodo para dedos, abierto por "Más" */
+  html body .gs-sidebar,html body .gs-collapsed .gs-sidebar{
+    width:min(86vw,300px)!important;padding-top:calc(12px + env(safe-area-inset-top))!important;
+    padding-bottom:calc(12px + env(safe-area-inset-bottom))!important;z-index:70}
+  html body .gs-sidebar nav a{height:44px!important;font-size:13px!important}
+  html body .gs-open .gs-backdrop{z-index:65!important}
+
+  /* Navegación inferior fija: reemplaza al menú lateral en el uso diario */
+  html body .app.gs-layout .gs-mobile-nav{
+    display:flex!important;position:fixed!important;left:0;right:0;bottom:0;z-index:60;
+    align-items:stretch;justify-content:space-around;gap:2px;overflow-x:auto;
+    padding:4px 4px calc(4px + env(safe-area-inset-bottom))!important;
+    background:#fff!important;border-top:1px solid var(--gl-line)!important;
+    box-shadow:0 -6px 20px rgba(43,26,40,.09);scrollbar-width:none}
+  html body .gs-mobile-nav::-webkit-scrollbar{display:none}
+  html body .gs-mobile-nav .gs-tab{
+    flex:1 0 56px;min-width:56px;min-height:48px;display:flex!important;flex-direction:column;
+    align-items:center;justify-content:center;gap:2px;padding:4px 2px!important;
+    border:0!important;border-radius:11px;background:transparent!important;
+    color:#847481!important;font:600 9.5px/1.05 var(--sans,Inter,sans-serif)!important;
+    text-decoration:none!important;white-space:nowrap;cursor:pointer;transition:background .16s,color .16s}
+  html body .gs-mobile-nav .gs-tab.on,html body .gs-mobile-nav .gs-tab[aria-current="page"]{
+    background:#f7e9f0!important;color:#74445f!important;font-weight:800!important}
+  html body .gs-mobile-nav .gs-tab:active{transform:scale(.96)}
+  html body .gs-mobile-nav .gs-nav-icon{width:18px;height:18px;display:inline-flex;align-items:center;justify-content:center}
+  html body .gs-mobile-nav .gs-nav-icon svg{width:18px;height:18px;stroke-width:2}
+
+  /* Encabezado de sección y tarjetas */
+  html body .app.gs-layout .body .top{margin-bottom:8px!important}
+  html body .app.gs-layout .body .top h1{font-size:22px!important;letter-spacing:-.5px!important}
+  html body .app.gs-layout .body .top span{font-size:10.5px!important}
+  html body .app.gs-layout .card{padding:12px!important;border-radius:13px!important;margin-bottom:8px!important}
+  html body .app.gs-layout .card h2{font-size:17px!important}
+  html body .app.gs-layout input,html body .app.gs-layout select,html body .app.gs-layout textarea{
+    font-size:16px!important;min-height:42px!important}
+  html body .app.gs-layout .pri,html body .app.gs-layout .sm,html body .app.gs-layout .ghost{min-height:40px!important}
+  html body .app.gs-layout .grid,html body .app.gs-layout .fg{grid-template-columns:1fr!important}
+  html body .app.gs-layout .tile{padding:11px!important}
+  html body .app.gs-layout .row{gap:6px!important;padding:8px 4px!important;align-items:center!important}
+  html body .app.gs-layout .row .acts{width:100%;justify-content:flex-end;gap:6px!important}
+  html body .app.gs-layout .row .acts .sm{flex:1 1 0;min-height:40px}
+  html body .app.gs-layout .tw{overflow-x:auto!important;-webkit-overflow-scrolling:touch;scrollbar-width:thin}
+  html body .app.gs-layout .tw table{min-width:520px}
+
+  /* Panel: protagonista en el teléfono, sin espacio desperdiciado */
+  html body .gs-dashboard>.gs-hero{min-height:116px!important;padding:13px!important;border-radius:14px!important;
+    background-position:68% center!important}
+  html body .gs-dashboard .gs-hero h2{font-size:clamp(21px,6vw,28px)!important;letter-spacing:-.7px!important;line-height:1.1!important}
+  html body .gs-dashboard .gs-hero p{font-size:11.5px!important;line-height:1.4!important;max-width:100%!important}
+  html body .gs-dashboard .gs-kpis{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:6px!important;margin-bottom:8px!important}
+  html body .gs-dashboard .gs-kpi{flex-direction:column!important;min-height:88px!important;padding:9px!important;gap:4px!important;border-radius:12px!important}
+  html body .gs-dashboard .gs-icon{width:26px;height:26px;min-width:26px;border-radius:8px;font-size:12px!important}
+  html body .gs-dashboard .gs-kpi small{margin:0 0 2px!important;font-size:10px!important}
+  html body .gs-dashboard .gs-kpi strong{font-size:clamp(16px,4.8vw,21px)!important;letter-spacing:-.4px!important;overflow-wrap:anywhere!important}
+  html body .gs-dashboard .gs-kpi em{font-size:9.5px!important;margin-top:2px!important}
+  html body .gs-dashboard .gs-columns{grid-template-columns:1fr!important;gap:8px!important}
+  html body .gs-dashboard .gs-panel{padding:11px!important;border-radius:13px!important}
+  html body .gs-dashboard .gs-panel-head h3{font-size:15px!important}
+  html body .gs-dashboard .gs-appt{grid-template-columns:52px 28px minmax(0,1fr) auto!important;gap:6px!important;min-height:46px!important;padding:6px 0!important}
+  html body .gs-dashboard .gs-initial{width:28px;height:28px;font-size:10px!important}
+  html body .gs-dashboard .gs-person b{font-size:12px!important}
+  html body .gs-dashboard .gs-person small{font-size:10px!important}
+  html body .gs-dashboard .gs-status{font-size:9.5px!important;padding:4px 6px!important}
+  html body .gs-dashboard .gs-quick-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:6px!important}
+  html body .gs-dashboard .gs-quick{padding:8px!important;font-size:10.5px!important;border-radius:9px!important;min-height:42px}
+  html body .gs-dashboard .gs-quick .gs-icon{width:24px;height:24px;min-width:24px}
+  html body .gs-dashboard .gs-insight strong{font-size:20px!important}
+  html body .gs-dashboard .ring{width:54px;height:54px}
+  html body .gs-dashboard .ring span{width:40px;height:40px}
+
+  /* Ventanas emergentes como hoja inferior y avisos por encima del menú */
+  html body .ov{align-items:flex-end!important;padding:0!important;z-index:90!important}
+  html body .ov .mod{width:100%!important;max-width:100%!important;border-radius:18px 18px 0 0!important;
+    max-height:92vh;max-height:92dvh;overflow-y:auto!important;
+    padding:16px 12px calc(16px + env(safe-area-inset-bottom))!important}
+  html body .ov .mod .act{display:flex;gap:6px!important;flex-wrap:wrap}
+  html body .ov .mod .act button{flex:1 1 0;min-height:40px}
+  html body .toast{left:10px!important;right:10px!important;max-width:none!important;text-align:center!important;
+    bottom:calc(64px + env(safe-area-inset-bottom))!important;z-index:95!important}
+}
+
+/* Teléfonos pequeños (≤600 px): quita repeticiones y aprieta la cuadrícula. */
+@media (max-width:600px){
+  html body .gs-dashboard .gs-kpi em{display:none!important}
+  html body .gs-dashboard .gs-caption,html body .gs-dashboard .gs-note{margin-top:8px!important;font-size:11px!important}
+  html body .gs-dashboard .gs-insight p{font-size:11px!important;margin-top:6px!important}
+  html body .app.gs-layout .body .top{flex-direction:row!important;align-items:center!important;justify-content:space-between!important}
+  html body .app.gs-layout .body .top span{font-size:10px!important;max-width:45%;text-align:right!important}
+}
+
+/* Pantallas muy estrechas (≤430 px): dos columnas de KPI en una sola fila cada una. */
+@media (max-width:430px){
+  html body .app.gs-layout .gs-main>.body{padding:8px 7px calc(10px + env(safe-area-inset-bottom))!important}
+  html body .gs-topbar{grid-template-columns:34px minmax(0,1fr) auto!important;gap:4px 6px!important}
+  html body .gs-burger{width:34px;height:34px;min-height:34px}
+  html body .gs-mobile-brand{font-size:14px!important;gap:6px}
+  html body .gs-mobile-brand .gs-logo-mark{width:23px;height:23px}
+  html body .gs-mobile-nav .gs-tab{font-size:9px!important;min-width:52px;flex-basis:52px}
+  html body .app.gs-layout .body .top h1{font-size:20px!important}
+  html body .gs-dashboard>.gs-hero{min-height:104px!important;padding:11px!important}
+  html body .gs-dashboard .gs-hero h2{font-size:21px!important}
+  html body .gs-dashboard .gs-kpi{min-height:80px!important;padding:8px!important}
+  html body .gs-dashboard .gs-kpi strong{font-size:17px!important}
+  html body .gs-dashboard .gs-panel{padding:10px!important}
+  html body .gs-dashboard .gs-panel-head h3{font-size:14px!important}
+}
+
+@media (max-width:360px){
+  html body .gs-mobile-nav .gs-tab{min-width:48px;flex-basis:48px;font-size:8.5px}
+  html body .gs-dashboard .gs-kpis{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:5px!important}
+  html body .gs-dashboard .gs-kpi{flex-direction:row!important;min-height:0!important;gap:6px!important;padding:7px!important}
+  html body .gs-dashboard .gs-kpi small{font-size:9.5px!important}
+  html body .app.gs-layout .body .top h1{font-size:19px!important}
+}
+
+@media (prefers-reduced-motion:reduce){
+  html body .gs-mobile-nav .gs-tab,html body .gs-sidebar{transition:none!important}
+}

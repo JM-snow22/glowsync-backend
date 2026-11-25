@@ -4,7 +4,7 @@
 <title>GlowSync</title><link rel="icon" type="image/svg+xml" href="{% static 'img/glowsync-logo.svg' %}"><meta name="theme-color" content="#b9708f">
 <link rel="stylesheet" href="{% static 'css/base.css' %}">
 <link rel="stylesheet" href="{% static 'css/modules.css' %}">
-<link rel="stylesheet" href="{% static 'css/navigation.css' %}"><link rel="stylesheet" href="{% static 'css/dashboard-polish.css' %}"><link rel="stylesheet" href="{% static 'css/mobile.css' %}"><link rel="stylesheet" href="{% static 'css/layout.css' %}">
+<link rel="stylesheet" href="{% static 'css/navigation.css' %}"><link rel="stylesheet" href="{% static 'css/dashboard-polish.css' %}"><link rel="stylesheet" href="{% static 'css/mobile.css' %}"><link rel="stylesheet" href="{% static 'css/layout.css' %}"><link rel="stylesheet" href="{% static 'css/mobile-app.css' %}">
 <style>.logo{display:flex!important;align-items:center;gap:10px}.gs-logo-mark{width:34px;height:34px;flex:none;border-radius:11px;box-shadow:0 6px 16px rgba(66,42,61,.18)}.hero .logo .gs-logo-mark{width:40px;height:40px;box-shadow:0 8px 22px rgba(0,0,0,.25)}@media(max-width:600px){.gs-logo-mark{width:28px;height:28px}}</style>
 </head>
 <body><div id="app"></div>
@@ -123,6 +123,10 @@ function draw(m){
   const es=lang==="es",GROUPS=[[es?"Operación":"Operations",["dashboard","citas","clientas","fichas"]],[es?"Administración":"Administration",["usuarios","rbac","centros"]]];
   const navHtml=GROUPS.map(([g,vs])=>{const items=vs.filter(v=>MENU[me.rol].includes(v));return items.length?`<div class="gs-group">${g}</div>`+items.map(v=>`<a href="#/${v}" title="${t(v)}"><span class="gs-nav-icon" aria-hidden="true">${GS_NAV_ICONS[v]||""}</span><span class="gs-label">${t(v)}</span></a>`).join(""):""}).join("");
   const collapsed=localStorage.getItem("gs_sb")!=="0"; // plegada por defecto; se abre con el cursor
+  // En celular, cuatro accesos rápidos fijos abajo y "Más" abre el menú completo.
+  const primary=["dashboard","citas","clientas","fichas"].filter(v=>MENU[me.rol].includes(v));
+  const tabsHtml=primary.map(v=>`<a href="#/${v}" class="gs-tab" title="${esc(t(v))}"><span class="gs-nav-icon" aria-hidden="true">${GS_NAV_ICONS[v]||""}</span><span>${esc(t(v))}</span></a>`).join("")
+    +`<button type="button" class="gs-tab" id="gs-more" aria-label="${es?"Más opciones":"More options"}"><span class="gs-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.6" fill="currentColor"/><circle cx="12" cy="12" r="1.6" fill="currentColor"/><circle cx="19" cy="12" r="1.6" fill="currentColor"/></svg></span><span>${es?"Más":"More"}</span></button>`;
   $("#app").innerHTML=`<div class="app gs-layout${collapsed?" gs-collapsed":""}">
     <aside class="gs-sidebar" id="gs-sidebar" aria-label="${es?"Navegación principal":"Main navigation"}">
       <div class="gs-sb-head"><div><div class="logo">${GS_LOGO}<span>GlowSync</span></div></div></div>
@@ -133,15 +137,18 @@ function draw(m){
     <div class="gs-main">
       <header class="gs-topbar">
         <button type="button" class="gs-burger" id="gs-toggle" aria-controls="gs-sidebar" aria-label="${es?"Abrir o cerrar menú":"Toggle menu"}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h10"/></svg></button>
+        <span class="gs-mobile-brand">${GS_LOGO}<b>GlowSync</b></span>
         ${me.rol==="ADMIN_SAAS"?`<div class="tenant-chooser"><label for="tenant-select">${es?"Negocio activo":"Active business"}</label><select id="tenant-select"><option value="">${es?"Selecciona un negocio":"Select business"}</option></select></div>`:""}
         <div class="gs-top-tools">${me.rol==="ADMIN_SAAS"?`<button type="button" class="sm gs-lbl-btn" id="lbl-open" title="${es?"Nombres del menú":"Menu names"}" aria-label="${es?"Nombres del menú":"Menu names"}">${IC("pen")}</button>`:""}${langSel()}<button class="sm" id="out">${t("logout")}</button></div>
       </header>
       <section class="body"><div class="top"><h1 id="ttl"></h1><span>${new Date().toLocaleDateString(loc(),{weekday:"long",day:"numeric",month:"long"})}</span></div><main id="m"></main></section>
-    </div></div>`;
+    </div>
+    <nav class="gs-mobile-nav" aria-label="${es?"Navegación rápida":"Quick navigation"}">${tabsHtml}</nav></div>`;
   const shell=$(".app.gs-layout"),mobile=()=>matchMedia("(max-width:900px)").matches;
   $("#gs-toggle").onclick=()=>{if(mobile()){shell.classList.toggle("gs-open")}else{const c=shell.classList.toggle("gs-collapsed");localStorage.setItem("gs_sb",c?"1":"0")}};
+  $("#gs-more").onclick=()=>shell.classList.add("gs-open");
   $("#gs-backdrop").onclick=()=>shell.classList.remove("gs-open");
-  document.querySelectorAll("#gs-sidebar nav a").forEach(a=>a.addEventListener("click",()=>shell.classList.remove("gs-open")));
+  document.querySelectorAll("#gs-sidebar nav a, .gs-mobile-nav a").forEach(a=>a.addEventListener("click",()=>shell.classList.remove("gs-open")));
   if(!window._gsEsc){window._gsEsc=1;document.addEventListener("keydown",e=>{if(e.key==="Escape")$(".app.gs-layout")?.classList.remove("gs-open")})}
   $("#lg").onchange=e=>setLang(e.target.value);$("#out").onclick=()=>logout();const lo=$("#lbl-open");if(lo)lo.onclick=abrirNombres;if(me.rol==="ADMIN_SAAS")loadCentros();go()}
 async function loadCentros(){const el=$("#tenant-select");if(!el)return;try{const data=await cachedGet("/api/centros/");const items=data.results||data;el.innerHTML=`<option value="">${lang==="es"?"Selecciona un negocio":"Select business"}</option>`+items.map(c=>`<option value="${c.id}">${esc(c.nombre)}</option>`).join("");const prev=selectedCentro;if(!items.some(c=>String(c.id)===selectedCentro)){selectedCentro=items.length?String(items[0].id):"";if(selectedCentro)sessionStorage.setItem("gs_centro",selectedCentro);else sessionStorage.removeItem("gs_centro")}el.value=selectedCentro;if(selectedCentro!==prev){clearResponseCache();loadPermissions().then(()=>draw()).catch(()=>go());return}el.onchange=()=>{selectedCentro=el.value;sessionStorage.setItem("gs_centro",selectedCentro);clearResponseCache();loadPermissions().then(()=>draw()).catch(()=>go())}}catch(e){toast(e.message,0)}}
